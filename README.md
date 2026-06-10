@@ -19,17 +19,10 @@
   </a>
 </p>
 
----
-
 # Sistem Informasi Kosan Darussalam
-
 ## Deskripsi Project
-
 **Sistem Informasi Kosan Darussalam** adalah aplikasi berbasis website yang dibangun menggunakan framework Laravel untuk membantu pengelolaan kos secara digital.
-
 Sistem ini dirancang untuk mempermudah pengelola kos dalam mengatur data kamar, pemesanan, feedback penghuni, serta laporan maintenance (kerusakan fasilitas). Seluruh proses pengelolaan kos menjadi lebih terstruktur, efisien, dan terdokumentasi dengan baik.
-
----
 
 ## Tujuan Sistem
 
