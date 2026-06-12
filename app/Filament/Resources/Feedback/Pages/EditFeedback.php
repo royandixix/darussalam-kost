@@ -10,10 +10,24 @@ class EditFeedback extends EditRecord
 {
     protected static string $resource = FeedbackResource::class;
 
+    public function getTitle(): string
+    {
+        return 'Edit Feedback';
+    }
+
+    protected function getSavedNotificationTitle(): ?string
+    {
+        return 'Feedback berhasil diperbarui';
+    }
+
     protected function getHeaderActions(): array
     {
         return [
-            DeleteAction::make(),
+            DeleteAction::make()
+                ->label('Hapus')
+                ->modalHeading('Hapus Feedback')
+                ->modalDescription('Apakah Anda yakin ingin menghapus feedback ini?')
+                ->modalSubmitActionLabel('Ya, Hapus'),
         ];
     }
 }

@@ -13,6 +13,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class PaymentResource extends Resource
 {
@@ -21,6 +22,22 @@ class PaymentResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     protected static ?string $recordTitleAttribute = 'id';
+
+    protected static ?string $navigationLabel = 'Pembayaran';
+
+    protected static string|UnitEnum|null $navigationGroup = 'Transaksi';
+
+    protected static ?int $navigationSort = 2;
+
+    public static function getModelLabel(): string
+    {
+        return 'Pembayaran';
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return 'Data Pembayaran';
+    }
 
     public static function form(Schema $schema): Schema
     {
@@ -34,9 +51,7 @@ class PaymentResource extends Resource
 
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 
     public static function getPages(): array

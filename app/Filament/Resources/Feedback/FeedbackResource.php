@@ -13,6 +13,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class FeedbackResource extends Resource
 {
@@ -21,6 +22,22 @@ class FeedbackResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     protected static ?string $recordTitleAttribute = 'id';
+
+    protected static ?string $navigationLabel = 'Feedback Penghuni';
+
+    protected static string|UnitEnum|null $navigationGroup = 'Layanan Penghuni';
+
+    protected static ?int $navigationSort = 1;
+
+    public static function getModelLabel(): string
+    {
+        return 'Feedback';
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return 'Feedback Penghuni';
+    }
 
     public static function form(Schema $schema): Schema
     {
@@ -34,9 +51,7 @@ class FeedbackResource extends Resource
 
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 
     public static function getPages(): array

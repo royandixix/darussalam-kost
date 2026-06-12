@@ -19,11 +19,16 @@ class FeedbackTable
                 //
             ])
             ->recordActions([
-                EditAction::make(),
+                EditAction::make()
+                    ->label('Edit'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                    DeleteBulkAction::make()
+                        ->label('Hapus Terpilih')
+                        ->modalHeading('Hapus Data Feedback')
+                        ->modalDescription('Apakah Anda yakin ingin menghapus data yang dipilih?')
+                        ->modalSubmitActionLabel('Ya, Hapus'),
                 ]),
             ]);
     }

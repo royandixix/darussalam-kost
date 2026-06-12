@@ -11,6 +11,7 @@ class Feedback extends Model
 
     protected $fillable = [
         'user_id',
+        'booking_id', // ✔ FIX
         'rating',
         'comment',
     ];
@@ -18,5 +19,10 @@ class Feedback extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function booking(): BelongsTo
+    {
+        return $this->belongsTo(Booking::class);
     }
 }

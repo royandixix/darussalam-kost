@@ -10,10 +10,16 @@ class ListRooms extends ListRecords
 {
     protected static string $resource = RoomResource::class;
 
+    public function getTitle(): string
+    {
+        return 'Data Kamar';
+    }
+
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            CreateAction::make()
+                ->label('Tambah Kamar'),
         ];
     }
 }

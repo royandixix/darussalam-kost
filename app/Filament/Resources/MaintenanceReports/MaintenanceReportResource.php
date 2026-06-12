@@ -13,6 +13,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class MaintenanceReportResource extends Resource
 {
@@ -21,6 +22,22 @@ class MaintenanceReportResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     protected static ?string $recordTitleAttribute = 'title';
+
+    protected static ?string $navigationLabel = 'Laporan Kerusakan';
+
+    protected static string|UnitEnum|null $navigationGroup = 'Layanan Penghuni';
+
+    protected static ?int $navigationSort = 3;
+
+    public static function getModelLabel(): string
+    {
+        return 'Laporan Kerusakan';
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return 'Data Laporan Kerusakan';
+    }
 
     public static function form(Schema $schema): Schema
     {
@@ -34,9 +51,7 @@ class MaintenanceReportResource extends Resource
 
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 
     public static function getPages(): array

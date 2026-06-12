@@ -10,10 +10,16 @@ class ListBookings extends ListRecords
 {
     protected static string $resource = BookingResource::class;
 
+    public function getTitle(): string
+    {
+        return 'Data Pemesanan Kamar';
+    }
+
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            CreateAction::make()
+                ->label('Tambah Pemesanan Kamar'),
         ];
     }
 }

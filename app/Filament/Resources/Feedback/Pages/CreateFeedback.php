@@ -8,4 +8,14 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateFeedback extends CreateRecord
 {
     protected static string $resource = FeedbackResource::class;
+
+    public function getTitle(): string
+    {
+        return 'Tambah Feedback';
+    }
+
+    protected function getCreatedNotificationTitle(): ?string
+    {
+        return 'Feedback berhasil ditambahkan';
+    }
 }

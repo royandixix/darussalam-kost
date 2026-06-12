@@ -13,6 +13,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class RoomResource extends Resource
 {
@@ -21,6 +22,22 @@ class RoomResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     protected static ?string $recordTitleAttribute = 'room_number';
+
+    protected static ?string $navigationLabel = 'Data Kamar';
+
+    protected static string|UnitEnum|null $navigationGroup = 'Manajemen Kamar';
+
+    protected static ?int $navigationSort = 1;
+
+    public static function getModelLabel(): string
+    {
+        return 'Kamar';
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return 'Data Kamar';
+    }
 
     public static function form(Schema $schema): Schema
     {
@@ -34,9 +51,7 @@ class RoomResource extends Resource
 
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 
     public static function getPages(): array

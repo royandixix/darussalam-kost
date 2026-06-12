@@ -14,25 +14,39 @@ class RoomForm
         return $schema
             ->components([
                 TextInput::make('room_number')
+                    ->label('Nomor Kamar')
                     ->required(),
+
                 TextInput::make('price')
-                    ->required()
+                    ->label('Harga Sewa')
                     ->numeric()
-                    ->prefix('$'),
+                    ->prefix('Rp')
+                    ->required(),
+
                 TextInput::make('capacity')
-                    ->required()
+                    ->label('Kapasitas Penghuni')
                     ->numeric()
-                    ->default(1),
+                    ->default(1)
+                    ->required(),
+
                 TextInput::make('size')
-                    ->numeric()
-                    ->default(null),
+                    ->label('Ukuran Kamar (m²)')
+                    ->numeric(),
+
                 Textarea::make('facilities')
-                    ->default(null)
+                    ->label('Fasilitas')
                     ->columnSpanFull(),
+
                 TextInput::make('photo')
-                    ->default(null),
+                    ->label('Foto Kamar'),
+
                 Select::make('status')
-                    ->options(['available' => 'Available', 'occupied' => 'Occupied', 'maintenance' => 'Maintenance'])
+                    ->label('Status Kamar')
+                    ->options([
+                        'available' => 'Tersedia',
+                        'occupied' => 'Terisi',
+                        'maintenance' => 'Perbaikan',
+                    ])
                     ->default('available')
                     ->required(),
             ]);

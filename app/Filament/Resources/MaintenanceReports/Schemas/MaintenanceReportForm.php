@@ -14,26 +14,43 @@ class MaintenanceReportForm
         return $schema
             ->components([
                 Select::make('user_id')
+                    ->label('Penghuni')
                     ->relationship('user', 'name')
+                    ->searchable()
+                    ->preload()
                     ->required(),
+
                 TextInput::make('title')
+                    ->label('Judul Laporan')
                     ->required(),
+
                 Textarea::make('description')
+                    ->label('Deskripsi Kerusakan')
                     ->required()
                     ->columnSpanFull(),
+
                 TextInput::make('photo')
+                    ->label('Foto Kerusakan')
                     ->default(null),
+
                 Select::make('priority')
-                    ->options(['low' => 'Low', 'medium' => 'Medium', 'high' => 'High'])
+                    ->label('Prioritas')
+                    ->options([
+                        'low' => 'Rendah',
+                        'medium' => 'Sedang',
+                        'high' => 'Tinggi',
+                    ])
                     ->default('medium')
                     ->required(),
+
                 Select::make('status')
+                    ->label('Status Laporan')
                     ->options([
-            'pending' => 'Pending',
-            'assigned' => 'Assigned',
-            'in_progress' => 'In progress',
-            'completed' => 'Completed',
-        ])
+                        'pending' => 'Menunggu',
+                        'assigned' => 'Ditugaskan',
+                        'in_progress' => 'Sedang Dikerjakan',
+                        'completed' => 'Selesai',
+                    ])
                     ->default('pending')
                     ->required(),
             ]);

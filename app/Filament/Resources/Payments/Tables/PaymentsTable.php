@@ -15,35 +15,58 @@ class PaymentsTable
         return $table
             ->columns([
                 TextColumn::make('booking.id')
+                    ->label('Pemesanan')
                     ->searchable(),
+
                 TextColumn::make('amount')
-                    ->numeric()
+                    ->label('Jumlah Pembayaran')
+                    ->money('IDR')
                     ->sortable(),
+
                 TextColumn::make('payment_proof')
+                    ->label('Bukti Pembayaran')
                     ->searchable(),
+
                 TextColumn::make('payment_date')
+                    ->label('Tanggal Pembayaran')
                     ->dateTime()
                     ->sortable(),
+
                 TextColumn::make('status')
-                    ->badge(),
+                    ->label('Status Pembayaran')
+                    ->badge()
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'pending' => 'Menunggu Verifikasi',
+                        'verified' => 'Terverifikasi',
+                        'rejected' => 'Ditolak',
+                        default => $state,
+                    }),
+
                 TextColumn::make('created_at')
+                    ->label('Tanggal Dibuat')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+
                 TextColumn::make('updated_at')
+                    ->label('Tanggal Diperbarui')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
             ])
             ->recordActions([
-                EditAction::make(),
+                EditAction::make()
+                    ->label('Edit'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                    DeleteBulkAction::make()
+                        ->label('Hapus Terpilih')
+                        ->modalHeading('Hapus Data Pembayaran')
+                        ->modalDescription('Apakah Anda yakin ingin menghapus data pembayaran yang dipilih?')
+                        ->modalSubmitActionLabel('Ya, Hapus'),
                 ]),
             ]);
     }

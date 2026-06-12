@@ -14,16 +14,32 @@ class PaymentForm
         return $schema
             ->components([
                 Select::make('booking_id')
+                    ->label('Pemesanan')
                     ->relationship('booking', 'id')
+                    ->searchable()
+                    ->preload()
                     ->required(),
+
                 TextInput::make('amount')
-                    ->required()
-                    ->numeric(),
-                TextInput::make('payment_proof')
+                    ->label('Jumlah Pembayaran')
+                    ->numeric()
+                    ->prefix('Rp')
                     ->required(),
-                DateTimePicker::make('payment_date'),
+
+                TextInput::make('payment_proof')
+                    ->label('Bukti Pembayaran')
+                    ->required(),
+
+                DateTimePicker::make('payment_date')
+                    ->label('Tanggal Pembayaran'),
+
                 Select::make('status')
-                    ->options(['pending' => 'Pending', 'verified' => 'Verified', 'rejected' => 'Rejected'])
+                    ->label('Status Pembayaran')
+                    ->options([
+                        'pending' => 'Menunggu Verifikasi',
+                        'verified' => 'Terverifikasi',
+                        'rejected' => 'Ditolak',
+                    ])
                     ->default('pending')
                     ->required(),
             ]);

@@ -10,10 +10,16 @@ class ListPayments extends ListRecords
 {
     protected static string $resource = PaymentResource::class;
 
+    public function getTitle(): string
+    {
+        return 'Data Pembayaran';
+    }
+
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            CreateAction::make()
+                ->label('Tambah Pembayaran'),
         ];
     }
 }

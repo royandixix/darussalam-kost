@@ -10,10 +10,16 @@ class ListFeedback extends ListRecords
 {
     protected static string $resource = FeedbackResource::class;
 
+    public function getTitle(): string
+    {
+        return 'Daftar Feedback';
+    }
+
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            CreateAction::make()
+                ->label('Tambah Feedback'),
         ];
     }
 }

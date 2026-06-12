@@ -10,10 +10,24 @@ class EditRoom extends EditRecord
 {
     protected static string $resource = RoomResource::class;
 
+    public function getTitle(): string
+    {
+        return 'Edit Kamar';
+    }
+
+    protected function getSavedNotificationTitle(): ?string
+    {
+        return 'Data kamar berhasil diperbarui';
+    }
+
     protected function getHeaderActions(): array
     {
         return [
-            DeleteAction::make(),
+            DeleteAction::make()
+                ->label('Hapus')
+                ->modalHeading('Hapus Kamar')
+                ->modalDescription('Apakah Anda yakin ingin menghapus data kamar ini?')
+                ->modalSubmitActionLabel('Ya, Hapus'),
         ];
     }
 }
