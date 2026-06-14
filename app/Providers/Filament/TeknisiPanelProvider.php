@@ -6,14 +6,13 @@ use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\View\PanelsRenderHook;
 use Filament\Widgets\AccountWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
-use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
@@ -27,24 +26,17 @@ class TeknisiPanelProvider extends PanelProvider
             ->path('teknisi')
             ->login()
             ->brandName('Teknisi Kost Darussalam')
-            ->colors([
-                'primary' => Color::Amber,
-            ])
-            ->discoverResources(
-                in: app_path('Filament/Teknisi/Resources'),
-                for: 'App\\Filament\\Teknisi\\Resources',
-            )
-            ->discoverPages(
-                in: app_path('Filament/Teknisi/Pages'),
-                for: 'App\\Filament\\Teknisi\\Pages',
+            ->brandLogoHeight('2.5rem')
+            ->colors(['primary' => Color::Amber])
+            ->font('Inter')
+            ->sidebarCollapsibleOnDesktop()
+            ->renderHook(
+                PanelsRenderHook::AUTH_LOGIN_FORM_BEFORE,
+                fn () => view('filament.teknisi.login-header')
             )
             ->pages([
-                Dashboard::class,
+                \App\Filament\Teknisi\Pages\TeknisiDashboard::class,
             ])
-            ->discoverWidgets(
-                in: app_path('Filament/Teknisi/Widgets'),
-                for: 'App\\Filament\\Teknisi\\Widgets',
-            )
             ->widgets([
                 AccountWidget::class,
             ])
@@ -54,7 +46,6 @@ class TeknisiPanelProvider extends PanelProvider
                 StartSession::class,
                 AuthenticateSession::class,
                 ShareErrorsFromSession::class,
-                ValidateCsrfToken::class,
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,

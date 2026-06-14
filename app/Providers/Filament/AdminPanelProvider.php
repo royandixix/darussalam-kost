@@ -2,24 +2,25 @@
 
 namespace App\Providers\Filament;
 
+use Filament\Enums\ThemeMode;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\NavigationGroup;
 use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\View\PanelsRenderHook;
 use Filament\Widgets\AccountWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
-use Illuminate\View\Middleware\ShareErrorsFromSession;
-use Filament\Navigation\NavigationGroup;
-use Filament\Enums\ThemeMode;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -34,26 +35,26 @@ class AdminPanelProvider extends PanelProvider
             ->passwordReset()
             ->emailVerification()
             ->profile()
-            ->brandName(function () {
-                $user = Auth::user();
-                if ($user) {
-                    $role = $user->role ?? 'User';
-                    return 'Selamat Datang, ' . ucfirst($role);
-                }
-                return 'Selamat Datang';
-            })
+            ->brandName(fn () => Auth::check()
+                ? 'Selamat Datang, ' . ucfirst(Auth::user()->role ?? 'User')
+                : 'Selamat Datang'
+            )
             ->favicon(asset('images/favicon.png'))
             ->colors([
+                'primary' => Color::Amber,
                 'danger'  => Color::Rose,
                 'gray'    => Color::Zinc,
                 'info'    => Color::Blue,
-                'primary' => Color::Cyan,
-                'success' => Color::Teal,
+                'success' => Color::Emerald,
                 'warning' => Color::Amber,
             ])
             ->font('Plus Jakarta Sans')
             ->defaultThemeMode(ThemeMode::Dark)
             ->sidebarCollapsibleOnDesktop()
+            ->renderHook(
+                PanelsRenderHook::AUTH_LOGIN_FORM_BEFORE,
+                fn () => view('filament.admin.login-header')
+            )
             ->navigationGroups([
                 NavigationGroup::make()
                     ->label('Manajemen Kost')

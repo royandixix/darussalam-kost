@@ -15,6 +15,10 @@ class RoomsTable
     {
         return $table
             ->columns([
+                TextColumn::make('no')
+                    ->label('No')
+                    ->rowIndex(),
+                    
                 TextColumn::make('room_number')
                     ->label('Nomor Kamar')
                     ->searchable(),

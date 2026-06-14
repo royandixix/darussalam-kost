@@ -14,6 +14,10 @@ class PaymentsTable
     {
         return $table
             ->columns([
+                TextColumn::make('row_number')
+                    ->label('No')
+                    ->rowIndex(),
+
                 TextColumn::make('booking.id')
                     ->label('Pemesanan')
                     ->searchable(),
@@ -53,8 +57,6 @@ class PaymentsTable
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-            ])
-            ->filters([
             ])
             ->recordActions([
                 EditAction::make()

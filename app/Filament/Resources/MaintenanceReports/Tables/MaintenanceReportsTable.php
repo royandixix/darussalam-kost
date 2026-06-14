@@ -14,6 +14,10 @@ class MaintenanceReportsTable
     {
         return $table
             ->columns([
+                TextColumn::make('no')
+                    ->label('No')
+                    ->rowIndex(),
+                    
                 TextColumn::make('user.name')
                     ->label('Penghuni')
                     ->searchable(),

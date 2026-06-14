@@ -14,6 +14,10 @@ class TenantsTable
     {
         return $table
             ->columns([
+                TextColumn::make('no')
+                    ->label('No')
+                    ->rowIndex(),
+
                 TextColumn::make('name')
                     ->label('Nama Penghuni')
                     ->searchable(),

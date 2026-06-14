@@ -14,6 +14,10 @@ class BookingsTable
     {
         return $table
             ->columns([
+                TextColumn::make('no')
+                    ->label('No')
+                    ->rowIndex(),
+
                 TextColumn::make('user.name')
                     ->label('Penghuni')
                     ->searchable(),
@@ -60,8 +64,7 @@ class BookingsTable
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->filters([
-            ])
+            ->filters([])
             ->recordActions([
                 EditAction::make()
                     ->label('Edit'),
