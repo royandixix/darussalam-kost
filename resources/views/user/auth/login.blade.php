@@ -1,264 +1,128 @@
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="auto">
+<html lang="id">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Sign In - Darussalam Kost</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <style>
-        html, body {
-            height: 100%;
-            margin: 0;
-            padding: 0;
-            background-color: #e5e7eb;
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-        }
-        .wrapper-container {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem;
-        }
-        .main-card {
-            background-color: #ffffff;
-            border-radius: 0px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            width: 100%;
-            max-width: 1000px;
-            min-height: 600px;
-            overflow: hidden;
-        }
-        .left-banner {
-            background-color: #2b5ae4;
-            color: #ffffff;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-            align-items: center;
-            padding: 4rem 3rem;
-            text-align: center;
-            position: relative;
-        }
-        .vector-illustration {
-            width: 100%;
-            max-width: 280px;
-            height: auto;
-            margin-bottom: auto;
-            margin-top: auto;
-            opacity: 0.9;
-        }
-        .right-form-panel {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            padding: 4rem 4rem;
-            background-color: #ffffff;
-        }
-        .app-brand {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 700;
-            font-size: 1.25rem;
-            color: #0f172a;
-            margin-bottom: 3rem;
-        }
-        .brand-dot {
-            width: 16px;
-            height: 16px;
-            border: 4px solid #2b5ae4;
-            border-radius: 50%;
-        }
-        .form-title {
-            font-size: 1.75rem;
-            font-weight: 700;
-            color: #0f172a;
-            margin-bottom: 0.25rem;
-        }
-        .form-subtitle {
-            font-size: 0.9rem;
-            color: #64748b;
-            margin-bottom: 2rem;
-        }
-        .form-floating {
-            margin-bottom: 1rem;
-        }
-        .form-control {
-            border-radius: 4px;
-            border: 1px solid #cbd5e1;
-            padding: 1rem 0.75rem;
-            font-size: 0.9rem;
-            color: #0f172a;
-            background-color: #ffffff;
-            transition: all 0.2s ease;
-        }
-        .form-control:focus {
-            background-color: #ffffff;
-            border-color: #2b5ae4;
-            box-shadow: none;
-        }
-        .form-floating > label {
-            padding: 1rem 0.75rem;
-            color: #94a3b8;
-            font-size: 0.9rem;
-        }
-        .form-floating > .form-control:focus ~ label,
-        .form-floating > .form-control:not(:placeholder-shown) ~ label {
-            transform: scale(0.85) translateY(-0.75rem) translateX(0.15rem);
-            color: #2b5ae4 !important;
-        }
-        .action-buttons-group {
-            display: flex;
-            gap: 12px;
-            margin-top: 1.5rem;
-            margin-bottom: 2rem;
-        }
-        .btn-main-action {
-            flex: 1;
-            border-radius: 4px;
-            padding: 0.75rem;
-            font-weight: 600;
-            font-size: 0.9rem;
-            background-color: #2b5ae4;
-            border: 1px solid #2b5ae4;
-            color: #ffffff;
-            transition: all 0.2s ease;
-        }
-        .btn-main-action:hover {
-            background-color: #1e40af;
-            border-color: #1e40af;
-        }
-        .btn-secondary-action {
-            flex: 1;
-            border-radius: 4px;
-            padding: 0.75rem;
-            font-weight: 600;
-            font-size: 0.9rem;
-            background-color: #ffffff;
-            border: 1px solid #2b5ae4;
-            color: #2b5ae4;
-            text-align: center;
-            text-decoration: none;
-            transition: all 0.2s ease;
-        }
-        .btn-secondary-action:hover {
-            background-color: #f8fafc;
-            color: #1e40af;
-            border-color: #1e40af;
-        }
-        .social-login-footer {
-            margin-top: auto;
-            font-size: 0.8rem;
-            color: #64748b;
-            font-weight: 500;
-        }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Masuk - Darussalam Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body>
+<body class="bg-[#f4f7fa] font-sans min-h-screen flex flex-col justify-between antialiased selection:bg-blue-600/10 selection:text-blue-600">
 
-<div class="wrapper-container">
-    <div class="row g-0 main-card">
+    <main class="flex-grow flex items-center justify-center p-4 sm:p-6 md:p-12">
+        <div class="bg-white rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.05)] border border-gray-100 max-w-4xl w-full flex overflow-hidden min-h-[580px]">
+            
+            <div class="w-full md:w-5/12 p-10 bg-gradient-to-b from-[#f8fafc] to-[#f1f5f9] border-r border-gray-100 hidden md:flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center space-x-2.5 mb-12">
+                        <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center shadow-[0_4px_12px_rgba(37,99,235,0.2)]">
+                            <i class="fa-solid fa-house-laptop text-white text-sm"></i>
+                        </div>
+                        <span class="text-gray-900 font-bold text-base tracking-tight">Darussalam <span class="text-blue-600 font-medium">Platform</span></span>
+                    </div>
 
-        <div class="col-lg-5 d-none d-lg-flex left-banner">
-            <svg class="vector-illustration" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="100" cy="100" r="80" fill="#3b6bf1"/>
-                <rect x="60" y="70" width="80" height="70" rx="6" fill="#ffffff"/>
-                <rect x="90" y="110" width="20" height="30" fill="#2b5ae4"/>
-                <rect x="70" y="85" width="20" height="15" rx="2" fill="#cbd5e1"/>
-                <rect x="110" y="85" width="20" height="15" rx="2" fill="#cbd5e1"/>
-                <path d="M50 80 L100 40 L150 80" stroke="#ffffff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <div class="text-center w-100">
-                <h3 class="fw-bold mb-2" style="font-size: 1.5rem; letter-spacing: -0.5px;">Akses Instan</h3>
-                <p class="small mb-0" style="color: #bfdbfe; font-weight: 400; line-height: 1.5;">
-                    Silakan masuk untuk mengelola pemesanan kamar, memantau riwayat pembayaran, atau mengajukan laporan pemeliharaan fasilitas kos Anda.
-                </p>
-            </div>
-        </div>
+                    <div class="flex flex-col space-y-2">
+                        <a href="{{ route('login') }}" class="flex items-center space-x-3 text-blue-600 bg-blue-50 border border-blue-100/50 font-semibold text-sm px-4 py-3 rounded-xl transition-all">
+                            <i class="fa-solid fa-right-to-bracket text-blue-600"></i>
+                            <span>Masuk ke Akun</span>
+                        </a>
 
-        <div class="col-lg-7 col-12 right-form-panel">
-
-            <div class="app-brand">
-                <div class="brand-dot"></div>
-                Darussalam Kost
-            </div>
-
-            <h2 class="form-title">Selamat Datang</h2>
-            <p class="form-subtitle">Masukkan alamat email dan kata sandi akun kos Anda.</p>
-
-            @if (session('success'))
-                <div class="alert alert-success p-3 small border-0 mb-4" style="border-radius: 4px; background-color: #f0fdf4; color: #166534; font-weight: 500;">
-                    {{ session('success') }}
-                </div>
-            @endif
-
-            @if ($errors->any())
-                <div class="alert alert-danger p-3 small border-0 mb-4" style="border-radius: 4px; background-color: #fef2f2; color: #991b1b; font-weight: 500;">
-                    <ul class="mb-0 px-3">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-
-            <form method="POST" action="{{ route('login.post') }}">
-                @csrf
-
-                <div class="form-floating">
-                    <input type="email"
-                           name="email"
-                           class="form-control @error('email') is-invalid @enderror"
-                           id="floatingInput"
-                           placeholder="Alamat Email"
-                           value="{{ old('email') }}"
-                           required autofocus>
-                    <label for="floatingInput">Alamat Email</label>
-                    @error('email')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <div class="form-floating">
-                    <input type="password"
-                           name="password"
-                           class="form-control @error('password') is-invalid @enderror"
-                           id="floatingPassword"
-                           placeholder="Password"
-                           required>
-                    <label for="floatingPassword">Password</label>
-                    @error('password')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <div class="d-flex justify-content-between align-items-center my-3">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" name="remember" id="checkDefault" style="cursor: pointer;">
-                        <label class="form-check-label text-secondary small" for="checkDefault" style="cursor: pointer; user-select: none;">
-                            Ingat saya di perangkat ini
-                        </label>
+                        <a href="{{ route('register') }}" class="flex items-center space-x-3 text-gray-500 hover:text-gray-900 hover:bg-gray-50 font-medium text-sm px-4 py-3 rounded-xl transition-all group">
+                            <i class="fa-solid fa-user-plus text-gray-400 group-hover:text-gray-600"></i>
+                            <span>Daftar Akun Baru</span>
+                        </a>
                     </div>
                 </div>
-
-                <div class="action-buttons-group">
-                    <button class="btn btn-main-action" type="submit">
-                        Masuk Aplikasi
-                    </button>
-                    <a href="{{ route('register') }}" class="btn btn-secondary-action">
-                        Buat Akun Baru
-                    </a>
+                
+                <div class="text-[11px] text-gray-400 font-semibold tracking-wide uppercase">
+                    &copy; 2026 Core System Integrated
                 </div>
-            </form>
+            </div>
 
-            <div class="social-login-footer">
-                &copy; {{ date('Y') }} Platform Hunian Terintegrasi - Darussalam Kost
+            <div class="w-full md:w-7/12 p-8 sm:p-12 lg:p-16 flex flex-col justify-center bg-white">
+                
+                <div class="mb-8">
+                    <h1 class="text-2xl font-bold tracking-tight text-gray-900 mb-2">Selamat Datang di Kos Ini!</h1>
+                    <p class="text-sm text-gray-500 leading-relaxed">Silakan login terlebih dahulu untuk masuk ke sistem.</p>
+                </div>
+
+                @if($errors->any())
+                <div class="mb-6 p-4 bg-red-50 border border-red-100 text-sm text-red-600 rounded-xl flex items-start space-x-3">
+                    <i class="fa-solid fa-circle-exclamation mt-0.5 flex-shrink-0 text-red-500"></i>
+                    <span class="font-medium">{{ $errors->first() }}</span>
+                </div>
+                @endif
+
+                <form action="{{ route('login.post') }}" method="POST" class="space-y-5">
+                    @csrf
+
+                    <div>
+                        <label class="block text-[11px] font-bold tracking-widest uppercase text-gray-500 mb-2">Alamat Email</label>
+                        <div class="relative group">
+                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-600 transition-colors">
+                                <i class="fa-regular fa-envelope text-sm"></i>
+                            </div>
+                            <input type="email" name="email" value="{{ old('email') }}"
+                                class="w-full pl-10 pr-4 py-3 rounded-xl bg-[#f8fafc] border border-gray-200 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 text-sm transition-all placeholder-gray-400 text-gray-900 outline-none"
+                                placeholder="nama@email.com" required>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-bold tracking-widest uppercase text-gray-500 mb-2">Kata Sandi</label>
+                        <div class="relative group">
+                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-600 transition-colors">
+                                <i class="fa-solid fa-lock text-sm"></i>
+                            </div>
+                            <input type="password" name="password" id="passwordField"
+                                class="w-full pl-10 pr-12 py-3 rounded-xl bg-[#f8fafc] border border-gray-200 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 text-sm transition-all placeholder-gray-400 text-gray-900 outline-none"
+                                placeholder="••••••••" required>
+                            <button type="button" onclick="togglePassword()" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 transition-colors">
+                                <i id="passwordIcon" class="fa-regular fa-eye text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between pt-1">
+                        <label class="flex items-center select-none cursor-pointer group">
+                            <input type="checkbox" name="remember" id="remember"
+                                class="w-4 h-4 text-blue-600 border-gray-200 rounded focus:ring-blue-500/20 focus:ring-offset-0 transition cursor-pointer">
+                            <span class="ml-2.5 text-sm text-gray-500 group-hover:text-gray-900 transition-colors">Ingat sesi perangkat ini</span>
+                        </label>
+                    </div>
+
+                    <div class="pt-2">
+                        <button type="submit"
+                            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl text-sm transition-all duration-200 shadow-[0_4px_12px_rgba(37,99,235,0.15)] hover:shadow-[0_4px_20px_rgba(37,99,235,0.3)] transform active:scale-[0.99]">
+                            Masuk
+                        </button>
+                    </div>
+
+                    <div class="text-center mt-6 md:hidden border-t border-gray-100 pt-4">
+                        <p class="text-sm text-gray-500">
+                            Belum terdaftar di platform? 
+                            <a href="{{ route('register') }}" class="text-blue-600 font-semibold hover:text-blue-700 transition-colors">Daftar sekarang</a>
+                        </p>
+                    </div>
+
+                </form>
             </div>
 
         </div>
-    </div>
-</div>
+    </main>
 
+    <script>
+        function togglePassword() {
+            const field = document.getElementById('passwordField');
+            const icon = document.getElementById('passwordIcon');
+            if (field.type === 'password') {
+                field.type = 'text';
+                icon.className = 'fa-solid fa-eye-slash text-xs';
+            } else {
+                field.type = 'password';
+                icon.className = 'fa-regular fa-eye text-xs';
+            }
+        }
+    </script>
 </body>
 </html>

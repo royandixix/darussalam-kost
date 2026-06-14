@@ -10,12 +10,20 @@
 </head>
 <body>
 
-@include('user.partials.navbar')
+@hasSection('hide_navbar')
+@else
+    @include('user.partials.navbar')
+@endif
 
 <div class="container py-5">
     @yield('content')
 </div>
-@include('user.partials.footer')
+
+@hasSection('hide_navbar')
+@else
+    @include('user.partials.footer')
+@endif
+
 @include('user.partials.scripts')
 
 </body>

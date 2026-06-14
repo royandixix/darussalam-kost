@@ -13,10 +13,13 @@ use Filament\Support\Colors\Color;
 use Filament\Widgets\AccountWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
-use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
+use Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Filament\Navigation\NavigationGroup;
+use Filament\Enums\ThemeMode;
+use Illuminate\Support\Facades\Auth;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -27,9 +30,41 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
-            ->brandName('Sistem Informasi Darussalam Kost')
+            ->registration()
+            ->passwordReset()
+            ->emailVerification()
+            ->profile()
+            ->brandName(function () {
+                $user = Auth::user();
+                if ($user) {
+                    $role = $user->role ?? 'User';
+                    return 'Selamat Datang, ' . ucfirst($role);
+                }
+                return 'Selamat Datang';
+            })
+            ->favicon(asset('images/favicon.png'))
             ->colors([
-                'primary' => Color::Emerald,
+                'danger'  => Color::Rose,
+                'gray'    => Color::Zinc,
+                'info'    => Color::Blue,
+                'primary' => Color::Cyan,
+                'success' => Color::Teal,
+                'warning' => Color::Amber,
+            ])
+            ->font('Plus Jakarta Sans')
+            ->defaultThemeMode(ThemeMode::Dark)
+            ->sidebarCollapsibleOnDesktop()
+            ->navigationGroups([
+                NavigationGroup::make()
+                    ->label('Manajemen Kost')
+                    ->icon('heroicon-o-home-modern'),
+                NavigationGroup::make()
+                    ->label('Transaksi')
+                    ->icon('heroicon-o-banknotes'),
+                NavigationGroup::make()
+                    ->label('Pengaturan')
+                    ->icon('heroicon-o-cog-6-tooth')
+                    ->collapsed(),
             ])
             ->discoverResources(
                 in: app_path('Filament/Resources'),
@@ -55,7 +90,7 @@ class AdminPanelProvider extends PanelProvider
                 StartSession::class,
                 AuthenticateSession::class,
                 ShareErrorsFromSession::class,
-                PreventRequestForgery::class,
+                PreventRequestsDuringMaintenance::class,
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,

@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Rooms\Tables;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -33,9 +34,9 @@ class RoomsTable
                     ->numeric()
                     ->sortable(),
 
-                TextColumn::make('photo')
+                ImageColumn::make('photo')
                     ->label('Foto Kamar')
-                    ->searchable(),
+                    ->size(60),
 
                 TextColumn::make('status')
                     ->label('Status Kamar')
@@ -58,8 +59,6 @@ class RoomsTable
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-            ])
-            ->filters([
             ])
             ->recordActions([
                 EditAction::make()

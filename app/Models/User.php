@@ -13,29 +13,34 @@ class User extends Authenticatable implements FilamentUser
 {
     use HasFactory, Notifiable;
 
-    protected $fillable=[
+    protected $fillable = [
         'name',
         'email',
         'password',
         'role',
         'phone',
         'address',
-        'photo'
+        'photo',
     ];
 
-    protected $hidden=[
+    protected $hidden = [
         'password',
-        'remember_token'
+        'remember_token',
     ];
 
-    protected $casts=[
-        'email_verified_at'=>'datetime',
-        'password'=>'hashed'
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
     ];
 
     public function canAccessPanel(Panel $panel): bool
     {
-        return in_array($this->role,['admin','teknisi']);
+        return match ($panel->getId()) {
+            'admin' => $this->role === 'admin',
+            'teknisi' => $this->role === 'teknisi',
+            'penghuni' => $this->role === 'penghuni',
+            default => false,
+        };
     }
 
     public function bookings(): HasMany
@@ -55,21 +60,31 @@ class User extends Authenticatable implements FilamentUser
 
     public function maintenanceUpdates(): HasMany
     {
-        return $this->hasMany(MaintenanceUpdate::class,'technician_id');
+        return $this->hasMany(MaintenanceUpdate::class, 'technician_id');
     }
 
     public function isAdmin(): bool
     {
-        return $this->role==='admin';
+        return $this->role === 'admin';
     }
 
     public function isTeknisi(): bool
     {
-        return $this->role==='teknisi';
+        return $this->role === 'teknisi';
     }
 
     public function isPenghuni(): bool
     {
-        return $this->role==='penghuni';
+        return $this->role === 'penghuni';
+    }
+
+    public function getRoleLabelAttribute(): string
+    {
+        return match ($this->role) {
+            'admin' => 'Administrator',
+            'teknisi' => 'Teknisi',
+            'penghuni' => 'Penghuni',
+            default => 'Pengguna',
+        };
     }
 }

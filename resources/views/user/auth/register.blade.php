@@ -1,233 +1,182 @@
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="auto">
-
+<html lang="id">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Register - Darussalam Kost</title>
-
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-
-    <style>
-        html,
-        body {
-            height: 100%;
-            margin: 0;
-            background: #e5e7eb;
-            font-family: 'Inter', system-ui, sans-serif;
-        }
-
-        .wrapper-container {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem;
-        }
-
-        .main-card {
-            background: #fff;
-            border-radius: 0;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-            max-width: 1000px;
-            width: 100%;
-            min-height: 600px;
-            overflow: hidden;
-        }
-
-        .left-banner {
-            background: #2b5ae4;
-            color: #fff;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 3rem;
-            text-align: center;
-        }
-
-        .right-form-panel {
-            padding: 4rem;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .app-brand {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 700;
-            font-size: 1.25rem;
-            margin-bottom: 2.5rem;
-        }
-
-        .brand-dot {
-            width: 14px;
-            height: 14px;
-            border: 3px solid #2b5ae4;
-            border-radius: 50%;
-        }
-
-        .form-title {
-            font-size: 1.7rem;
-            font-weight: 700;
-        }
-
-        .form-subtitle {
-            font-size: 0.9rem;
-            color: #64748b;
-            margin-bottom: 2rem;
-        }
-
-        .form-control {
-            border-radius: 6px;
-            border: 1px solid #cbd5e1;
-            padding: 0.9rem;
-        }
-
-        .form-control:focus {
-            border-color: #2b5ae4;
-            box-shadow: none;
-        }
-
-        .action-buttons-group {
-            display: flex;
-            gap: 12px;
-            margin-top: 1.5rem;
-        }
-
-        .btn-main-action {
-            flex: 1;
-            background: #2b5ae4;
-            border: none;
-            color: #fff;
-            padding: 0.75rem;
-            font-weight: 600;
-            border-radius: 6px;
-        }
-
-        .btn-main-action:hover {
-            background: #1e40af;
-        }
-
-        .btn-secondary-action {
-            flex: 1;
-            border: 1px solid #2b5ae4;
-            color: #2b5ae4;
-            text-align: center;
-            padding: 0.75rem;
-            border-radius: 6px;
-            text-decoration: none;
-            font-weight: 600;
-            background: #fff;
-        }
-
-        .btn-secondary-action:hover {
-            background: #f8fafc;
-        }
-
-        .alert {
-            border-radius: 6px;
-        }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar Akun - Darussalam Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
+<body class="bg-[#f4f7fa] font-sans min-h-screen flex flex-col justify-between antialiased selection:bg-blue-600/10 selection:text-blue-600">
 
-<body>
+    <main class="flex-grow flex items-center justify-center p-4 sm:p-6 md:p-12 my-2">
+        <div class="bg-white rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.05)] border border-gray-100 max-w-4xl w-full flex overflow-hidden min-h-[650px]">
+            
+            <div class="w-full md:w-5/12 p-10 bg-gradient-to-b from-[#f8fafc] to-[#f1f5f9] border-r border-gray-100 hidden md:flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center space-x-2.5 mb-12">
+                        <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center shadow-[0_4px_12px_rgba(37,99,235,0.2)]">
+                            <i class="fa-solid fa-house-laptop text-white text-sm"></i>
+                        </div>
+                        <span class="text-gray-900 font-bold text-base tracking-tight">Darussalam <span class="text-blue-600 font-medium">Platform</span></span>
+                    </div>
 
-    <div class="wrapper-container">
-        <div class="row g-0 main-card">
+                    <div class="flex flex-col space-y-2">
+                        <a href="{{ route('login') }}" class="flex items-center space-x-3 text-gray-500 hover:text-gray-900 hover:bg-gray-50 font-medium text-sm px-4 py-3 rounded-xl transition-all group">
+                            <i class="fa-solid fa-right-to-bracket text-gray-400 group-hover:text-gray-600"></i>
+                            <span>Masuk ke Akun</span>
+                        </a>
 
-            {{-- LEFT SIDE --}}
-            <div class="col-lg-5 d-none d-lg-flex left-banner">
-
-                <svg width="140" height="140" fill="white" viewBox="0 0 16 16">
-                    <path
-                        d="M8.354 1.146a.5.5 0 0 0-.708 0l-6 6A.5.5 0 0 0 2 8h1v6a1 1 0 0 0 1 1h3V9h2v6h3a1 1 0 0 0 1-1V8h1a.5.5 0 0 0 .354-.854z" />
-                </svg>
-
-                <h4 class="mt-4 fw-bold">Hunian Nyaman</h4>
-                <p class="small text-white-50">
-                    Daftarkan akun untuk mulai booking kamar & pembayaran dengan mudah.
-                </p>
-
+                        <a href="{{ route('register') }}" class="flex items-center space-x-3 text-blue-600 bg-blue-50 border border-blue-100/50 font-semibold text-sm px-4 py-3 rounded-xl transition-all">
+                            <i class="fa-solid fa-user-plus text-blue-500"></i>
+                            <span>Daftar Akun Baru</span>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="text-[11px] text-gray-400 font-semibold tracking-wide uppercase">
+                    &copy; 2026 Core System Integrated
+                </div>
             </div>
 
-            {{-- RIGHT SIDE --}}
-            <div class="col-lg-7 col-12 right-form-panel">
-
-                <div class="app-brand">
-                    <div class="brand-dot"></div>
-                    Darussalam Kost
+            <div class="w-full md:w-7/12 p-8 sm:p-12 flex flex-col justify-center bg-white">
+                
+                <div class="mb-6">
+                    <h1 class="text-2xl font-bold tracking-tight text-gray-900 mb-2">Selamat Datang di Kos Ini!</h1>
+                    <p class="text-sm text-gray-500 leading-relaxed">Silakan register terlebih dahulu untuk membuat akun baru.</p>
                 </div>
 
-                <h2 class="form-title">Daftar Akun</h2>
-                <p class="form-subtitle">Lengkapi data untuk membuat akun baru</p>
-
-                {{-- ERROR --}}
-                @if ($errors->any())
-                    <div class="alert alert-danger">
-                        {{ $errors->first() }}
+                @if($errors->any())
+                <div class="mb-6 p-4 bg-red-50 border border-red-100 text-sm text-red-600 rounded-xl">
+                    <div class="flex items-start space-x-3 mb-1">
+                        <i class="fa-solid fa-circle-exclamation mt-0.5 flex-shrink-0 text-red-500"></i>
+                        <span class="font-semibold">Terjadi kesalahan input:</span>
                     </div>
+                    <ul class="list-disc list-inside text-xs text-gray-500 space-y-0.5 pl-2">
+                        @foreach($errors->all() as $e)
+                            <li>{{ $e }}</li>
+                        @endforeach
+                    </ul>
+                </div>
                 @endif
 
-                <form method="POST" action="{{ route('register.post') }}">
+                <form action="{{ route('register.post') }}" method="POST" class="space-y-4">
                     @csrf
 
-                    <div class="mb-3">
-                        <input type="text" name="name" class="form-control" placeholder="Nama Lengkap"
-                            value="{{ old('name') }}" required>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[11px] font-bold tracking-widest uppercase text-gray-500 mb-1.5">Nama Lengkap</label>
+                            <div class="relative group">
+                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-600 transition-colors">
+                                    <i class="fa-regular fa-user text-sm"></i>
+                                </div>
+                                <input type="text" name="name" value="{{ old('name') }}"
+                                    class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#f8fafc] border border-gray-200 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 text-sm transition-all placeholder-gray-400 text-gray-900 outline-none"
+                                    placeholder="Nama Anda" required>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-[11px] font-bold tracking-widest uppercase text-gray-500 mb-1.5">Nomor Telepon</label>
+                            <div class="relative group">
+                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-600 transition-colors">
+                                    <i class="fa-solid fa-phone text-xs"></i>
+                                </div>
+                                <input type="text" name="phone" value="{{ old('phone') }}"
+                                    class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#f8fafc] border border-gray-200 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 text-sm transition-all placeholder-gray-400 text-gray-900 outline-none"
+                                    placeholder="0812xxxx" required>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="mb-3">
-                        <input type="email" name="email" class="form-control" placeholder="Email"
-                            value="{{ old('email') }}" required>
+                    <div>
+                        <label class="block text-[11px] font-bold tracking-widest uppercase text-gray-500 mb-1.5">Alamat Email</label>
+                        <div class="relative group">
+                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-600 transition-colors">
+                                <i class="fa-regular fa-envelope text-sm"></i>
+                            </div>
+                            <input type="email" name="email" value="{{ old('email') }}"
+                                class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#f8fafc] border border-gray-200 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 text-sm transition-all placeholder-gray-400 text-gray-900 outline-none"
+                                placeholder="nama@email.com" required>
+                        </div>
                     </div>
 
-                    <div class="form-floating">
-                        <input type="text" name="phone" class="form-control @error('phone') is-invalid @enderror"
-                            id="floatingPhone" placeholder="No HP" value="{{ old('phone') }}" required>
-                        <label for="floatingPhone">No HP</label>
-                        @error('phone')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                    <div>
+                        <label class="block text-[11px] font-bold tracking-widest uppercase text-gray-500 mb-1.5">Alamat Domisili</label>
+                        <div class="relative group">
+                            <div class="absolute inset-y-0 left-0 pl-3.5 pt-3 flex items-start pointer-events-none text-gray-400 group-focus-within:text-blue-600 transition-colors">
+                                <i class="fa-regular fa-map text-sm"></i>
+                            </div>
+                            <textarea name="address" rows="2"
+                                class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#f8fafc] border border-gray-200 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 text-sm transition-all placeholder-gray-400 text-gray-900 outline-none resize-none"
+                                placeholder="Tulis alamat lengkap..." required>{{ old('address') }}</textarea>
+                        </div>
                     </div>
 
-                    <div class="form-floating">
-                        <textarea name="address" class="form-control @error('address') is-invalid @enderror" id="floatingAddress"
-                            placeholder="Alamat" style="height: 100px" required>{{ old('address') }}</textarea>
-                        <label for="floatingAddress">Alamat</label>
-                        @error('address')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[11px] font-bold tracking-widest uppercase text-gray-500 mb-1.5">Kata Sandi</label>
+                            <div class="relative group">
+                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-600 transition-colors">
+                                    <i class="fa-solid fa-lock text-sm"></i>
+                                </div>
+                                <input type="password" name="password" id="passField"
+                                    class="w-full pl-10 pr-10 py-2.5 rounded-xl bg-[#f8fafc] border border-gray-200 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 text-sm transition-all placeholder-gray-400 text-gray-900 outline-none"
+                                    placeholder="••••••••" required>
+                                <button type="button" onclick="toggleVisibility('passField', 'passIcon')" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 transition-colors">
+                                    <i id="passIcon" class="fa-regular fa-eye text-xs"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-[11px] font-bold tracking-widest uppercase text-gray-500 mb-1.5">Konfirmasi Sandi</label>
+                            <div class="relative group">
+                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-600 transition-colors">
+                                    <i class="fa-solid fa-shield-stroke text-xs"></i>
+                                </div>
+                                <input type="password" name="password_confirmation" id="confirmField"
+                                    class="w-full pl-10 pr-10 py-2.5 rounded-xl bg-[#f8fafc] border border-gray-200 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 text-sm transition-all placeholder-gray-400 text-gray-900 outline-none"
+                                    placeholder="••••••••" required>
+                                <button type="button" onclick="toggleVisibility('confirmField', 'confirmIcon')" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 transition-colors">
+                                    <i id="confirmIcon" class="fa-regular fa-eye text-xs"></i>
+                                </button>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="mb-3">
-                        <input type="password" name="password" class="form-control" placeholder="Password" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <input type="password" name="password_confirmation" class="form-control"
-                            placeholder="Konfirmasi Password" required>
-                    </div>
-
-                    <div class="action-buttons-group">
-                        <button type="submit" class="btn btn-main-action">
-                            Daftar
+                    <div class="pt-4">
+                        <button type="submit"
+                            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl text-sm transition-all duration-200 shadow-[0_4px_12px_rgba(37,99,235,0.15)] hover:shadow-[0_4px_20px_rgba(37,99,235,0.3)] transform active:scale-[0.99]">
+                            Daftar Akun
                         </button>
+                    </div>
 
-                        <a href="{{ route('login') }}" class="btn btn-secondary-action">
-                            Login
-                        </a>
+                    <div class="text-center mt-4 md:hidden border-t border-gray-100 pt-4">
+                        <p class="text-sm text-gray-500">
+                            Sudah memiliki akun? 
+                            <a href="{{ route('login') }}" class="text-blue-600 font-semibold hover:text-blue-700 transition-colors">Masuk sekarang</a>
+                        </p>
                     </div>
 
                 </form>
-
             </div>
 
         </div>
-    </div>
+    </main>
 
+    <script>
+        function toggleVisibility(fieldId, iconId) {
+            const field = document.getElementById(fieldId);
+            const icon = document.getElementById(iconId);
+            if (field.type === 'password') {
+                field.type = 'text';
+                icon.className = 'fa-solid fa-eye-slash text-xs';
+            } else {
+                field.type = 'password';
+                icon.className = 'fa-regular fa-eye text-xs';
+            }
+        }
+    </script>
 </body>
-
 </html>

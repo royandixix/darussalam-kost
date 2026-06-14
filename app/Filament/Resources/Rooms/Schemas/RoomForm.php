@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Rooms\Schemas;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\FileUpload;
 use Filament\Schemas\Schema;
 
 class RoomForm
@@ -37,8 +38,12 @@ class RoomForm
                     ->label('Fasilitas')
                     ->columnSpanFull(),
 
-                TextInput::make('photo')
-                    ->label('Foto Kamar'),
+                FileUpload::make('photo')
+                    ->label('Foto Kamar')
+                    ->image()
+                    ->directory('rooms')
+                    ->imagePreviewHeight('120')
+                    ->maxSize(2048),
 
                 Select::make('status')
                     ->label('Status Kamar')
