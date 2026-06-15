@@ -4,6 +4,7 @@ namespace App\Filament\Widgets;
 
 use App\Models\MaintenanceReport;
 use Filament\Widgets\ChartWidget;
+use Illuminate\Support\Facades\DB;
 
 class AdminReportChart extends ChartWidget
 {
@@ -27,9 +28,14 @@ class AdminReportChart extends ChartWidget
 
     protected function getData(): array
     {
-        $pending = MaintenanceReport::where('status', 'pending')->count();
-        $inProgress = MaintenanceReport::where('status', 'in_progress')->count();
-        $completed = MaintenanceReport::where('status', 'completed')->count();
+        $counts = MaintenanceReport::select('status', DB::raw('count(*) as total'))
+            ->groupBy('status')
+            ->pluck('total', 'status')
+            ->toArray();
+
+        $pending = $counts['pending'] ?? 0;
+        $inProgress = $counts['in_progress'] ?? 0;
+        $completed = $counts['completed'] ?? 0;
 
         if (in_array($this->filter, ['doughnut', 'pie'])) {
             return [
@@ -48,19 +54,30 @@ class AdminReportChart extends ChartWidget
         }
 
         if ($this->filter === 'line') {
-            $last7Days = collect(range(6, 0))->map(fn($day) =>
-                now()->subDays($day)->format('d M')
-            )->toArray();
+            $last7DaysLabels = collect(range(6, 0))->map(fn($day) => now()->subDays($day)->format('d M'))->toArray();
 
-            $pendingData = collect(range(6, 0))->map(fn($day) =>
-                MaintenanceReport::where('status', 'pending')
-                    ->whereDate('created_at', now()->subDays($day))->count()
-            )->toArray();
+            $pendingDb = MaintenanceReport::where('status', 'pending')
+                ->where('created_at', '>=', now()->subDays(6)->startOfDay())
+                ->select(DB::raw('DATE(created_at) as date'), DB::raw('count(*) as total'))
+                ->groupBy('date')
+                ->pluck('total', 'date')
+                ->toArray();
 
-            $completedData = collect(range(6, 0))->map(fn($day) =>
-                MaintenanceReport::where('status', 'completed')
-                    ->whereDate('updated_at', now()->subDays($day))->count()
-            )->toArray();
+            $completedDb = MaintenanceReport::where('status', 'completed')
+                ->where('updated_at', '>=', now()->subDays(6)->startOfDay())
+                ->select(DB::raw('DATE(updated_at) as date'), DB::raw('count(*) as total'))
+                ->groupBy('date')
+                ->pluck('total', 'date')
+                ->toArray();
+
+            $pendingData = [];
+            $completedData = [];
+
+            foreach (range(6, 0) as $day) {
+                $dateKey = now()->subDays($day)->format('Y-m-d');
+                $pendingData[] = $pendingDb[$dateKey] ?? 0;
+                $completedData[] = $completedDb[$dateKey] ?? 0;
+            }
 
             return [
                 'datasets' => [
@@ -68,7 +85,7 @@ class AdminReportChart extends ChartWidget
                         'label' => 'Menunggu',
                         'data' => $pendingData,
                         'borderColor' => '#f59e0b',
-                        'backgroundColor' => '#fef3c7',
+                        'backgroundColor' => 'rgba(245, 158, 11, 0.1)',
                         'fill' => true,
                         'tension' => 0.4,
                         'pointBackgroundColor' => '#f59e0b',
@@ -78,14 +95,14 @@ class AdminReportChart extends ChartWidget
                         'label' => 'Selesai',
                         'data' => $completedData,
                         'borderColor' => '#10b981',
-                        'backgroundColor' => '#d1fae5',
+                        'backgroundColor' => 'rgba(16, 185, 129, 0.1)',
                         'fill' => true,
                         'tension' => 0.4,
                         'pointBackgroundColor' => '#10b981',
                         'pointRadius' => 4,
                     ],
                 ],
-                'labels' => $last7Days,
+                'labels' => $last7DaysLabels,
             ];
         }
 

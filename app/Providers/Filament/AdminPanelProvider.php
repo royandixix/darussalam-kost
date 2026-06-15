@@ -51,10 +51,10 @@ class AdminPanelProvider extends PanelProvider
             ->font('Plus Jakarta Sans')
             ->defaultThemeMode(ThemeMode::Dark)
             ->sidebarCollapsibleOnDesktop()
-            ->renderHook(
-                PanelsRenderHook::AUTH_LOGIN_FORM_BEFORE,
-                fn () => view('filament.admin.login-header')
-            )
+            // ->renderHook(
+            //     PanelsRenderHook::AUTH_LOGIN_FORM_BEFORE,
+            //     fn () => view('filament.admin.login-header')
+            // )
             ->navigationGroups([
                 NavigationGroup::make()
                     ->label('Manajemen Kost')
