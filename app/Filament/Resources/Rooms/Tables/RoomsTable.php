@@ -18,7 +18,7 @@ class RoomsTable
                 TextColumn::make('no')
                     ->label('No')
                     ->rowIndex(),
-                    
+
                 TextColumn::make('room_number')
                     ->label('Nomor Kamar')
                     ->searchable(),
@@ -40,12 +40,13 @@ class RoomsTable
 
                 ImageColumn::make('photo')
                     ->label('Foto Kamar')
+                    ->disk('public')
                     ->size(60),
 
                 TextColumn::make('status')
                     ->label('Status Kamar')
                     ->badge()
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                    ->formatStateUsing(fn(string $state): string => match ($state) {
                         'available' => 'Tersedia',
                         'occupied' => 'Terisi',
                         'maintenance' => 'Perbaikan',

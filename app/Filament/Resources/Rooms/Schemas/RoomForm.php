@@ -41,7 +41,9 @@ class RoomForm
                 FileUpload::make('photo')
                     ->label('Foto Kamar')
                     ->image()
+                    ->disk('public')
                     ->directory('rooms')
+                    ->visibility('public')
                     ->imagePreviewHeight('120')
                     ->maxSize(2048),
 

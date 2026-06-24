@@ -13,7 +13,13 @@ class Booking extends Model
         'room_id',
         'check_in_date',
         'duration_month',
+        'total_price',
         'status',
+    ];
+
+    protected $casts = [
+        'check_in_date' => 'date',
+        'total_price' => 'decimal:2',
     ];
 
     public function user(): BelongsTo
@@ -29,5 +35,10 @@ class Booking extends Model
     public function payment(): HasOne
     {
         return $this->hasOne(Payment::class);
+    }
+
+    public function feedback(): HasOne
+    {
+        return $this->hasOne(Feedback::class);
     }
 }

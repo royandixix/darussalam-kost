@@ -10,10 +10,11 @@ class MaintenanceReport extends Model
 {
     protected $fillable = [
         'user_id',
-        'room_id', // ✔ FIX
+        'room_id',
         'title',
         'description',
         'photo',
+        'priority',
         'status',
     ];
 

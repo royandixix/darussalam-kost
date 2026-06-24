@@ -11,7 +11,13 @@ class Payment extends Model
         'booking_id',
         'amount',
         'payment_proof',
+        'payment_date',
         'status',
+    ];
+
+    protected $casts = [
+        'amount' => 'decimal:2',
+        'payment_date' => 'datetime',
     ];
 
     public function booking(): BelongsTo

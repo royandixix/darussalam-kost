@@ -1,35 +1,31 @@
-<nav class="navbar navbar-expand-lg navbar-light sticky-top" data-navbar-on-scroll="data-navbar-on-scroll">
-    <div class="container">
+<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom sticky-top">
+    <div class="container d-flex align-items-center justify-content-between">
 
-        <a class="navbar-brand" href="{{ route('user.dashboard') }}">
-            <a class="navbar-brand " href="{{ route('user.dashboard') }}">
-                Darussalam Kost
-            </a>
+        <a class="navbar-brand fw-bold" href="{{ route('user.dashboard') }}">
+            Darussalam Kost
         </a>
 
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
             <span class="navbar-toggler-icon"></span>
         </button>
 
-        <div class="collapse navbar-collapse border-top border-lg-0 mt-4 mt-lg-0" id="navbarSupportedContent">
+        <div class="collapse navbar-collapse" id="navMenu">
 
-            <ul class="navbar-nav ms-auto">
+            <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
 
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ route('user.dashboard') }}">
-                        Dashboard
-                    </a>
+                    <a class="nav-link" href="{{ route('user.dashboard') }}">Dashboard</a>
                 </li>
 
                 <li class="nav-item">
                     <a class="nav-link" href="{{ route('user.rooms.index') }}">
-                        Kamar
+                        Cari Kamar
                     </a>
                 </li>
 
                 <li class="nav-item">
                     <a class="nav-link" href="{{ route('user.bookings.index') }}">
-                        Booking
+                        Sewa Saya
                     </a>
                 </li>
 
@@ -41,7 +37,7 @@
 
                 <li class="nav-item">
                     <a class="nav-link" href="{{ route('user.maintenance.index') }}">
-                        Pemeliharaan
+                        Perbaikan
                     </a>
                 </li>
 
@@ -57,16 +53,16 @@
                     </a>
                 </li>
 
-            </ul>
+                <li class="nav-item ms-lg-3">
+                    <form action="{{ route('user.logout') }}" method="POST">
+                        @csrf
+                        <button class="btn btn-dark btn-sm px-3">
+                            Logout
+                        </button>
+                    </form>
+                </li>
 
-            <div class="d-flex ms-lg-4">
-                <form action="{{ route('user.logout') }}" method="POST">
-                    @csrf
-                    <button class="btn btn-warning">
-                        Logout
-                    </button>
-                </form>
-            </div>
+            </ul>
 
         </div>
 

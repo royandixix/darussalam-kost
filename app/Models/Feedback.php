@@ -11,9 +11,14 @@ class Feedback extends Model
 
     protected $fillable = [
         'user_id',
-        'booking_id', // ✔ FIX
+        'booking_id',
         'rating',
         'comment',
+        'is_published',
+    ];
+
+    protected $casts = [
+        'is_published' => 'boolean',
     ];
 
     public function user(): BelongsTo
