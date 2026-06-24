@@ -73,10 +73,16 @@ class User extends Authenticatable implements FilamentUser
         return $this->role === 'teknisi';
     }
 
+    // public function isPenghuni(): bool
+    // {
+    //     return $this->role === 'penghuni';
+    // }
+
     public function isPenghuni(): bool
     {
         return $this->role === 'penghuni';
     }
+
 
     public function getRoleLabelAttribute(): string
     {

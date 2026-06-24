@@ -97,6 +97,7 @@
                         <button type="button" onclick="togglePassword()" class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 transition-colors z-10">
                             <i id="passwordIcon" class="fa-regular fa-eye text-sm"></i>
                         </button>
+                        
                     </div>
 
                     <div class="flex items-center justify-between pt-1">
