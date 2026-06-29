@@ -48,8 +48,9 @@
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ route('user.profile.index') }}">
-                        Profil
+                    <a class="nav-link" href="{{ route('user.profile.index') }}" data-bs-toggle="tooltip"
+                        data-bs-placement="bottom" title="Profil">
+                        <i class="bi bi-person-circle fs-5"></i>
                     </a>
                 </li>
 

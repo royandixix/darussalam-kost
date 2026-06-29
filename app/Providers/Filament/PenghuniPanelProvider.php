@@ -21,7 +21,7 @@ use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
-class TeknisiPanelProvider extends PanelProvider
+class PenghuniPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {

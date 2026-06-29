@@ -34,6 +34,13 @@ class TeknisiPanelProvider extends PanelProvider
                 PanelsRenderHook::AUTH_LOGIN_FORM_BEFORE,
                 fn () => view('filament.teknisi.login-header')
             )
+
+            // INI YANG DITAMBAHKAN
+            ->discoverResources(
+                in: app_path('Filament/Teknisi/Resources'),
+                for: 'App\\Filament\\Teknisi\\Resources'
+            )
+
             ->pages([
                 \App\Filament\Teknisi\Pages\TeknisiDashboard::class,
             ])
