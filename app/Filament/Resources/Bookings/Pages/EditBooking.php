@@ -20,6 +20,21 @@ class EditBooking extends EditRecord
         return 'Pemesanan kamar berhasil diperbarui';
     }
 
+    protected function afterSave(): void
+    {
+        if ($this->record->status === 'approved') {
+            $this->record->room?->update([
+                'status' => 'occupied',
+            ]);
+        }
+
+        if (in_array($this->record->status, ['rejected', 'completed'])) {
+            $this->record->room?->update([
+                'status' => 'available',
+            ]);
+        }
+    }
+
     protected function getHeaderActions(): array
     {
         return [

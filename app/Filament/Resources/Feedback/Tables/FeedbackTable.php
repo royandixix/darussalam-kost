@@ -22,22 +22,30 @@ class FeedbackTable
                     ->label('Penghuni')
                     ->searchable(),
 
-                TextColumn::make('message')
-                    ->label('Pesan')
-                    ->limit(40),
+                TextColumn::make('booking.id')
+                    ->label('Pemesanan')
+                    ->searchable(),
 
                 TextColumn::make('rating')
                     ->label('Rating')
                     ->sortable(),
 
+                TextColumn::make('comment')
+                    ->label('Komentar')
+                    ->limit(40)
+                    ->searchable(),
+
+                TextColumn::make('is_published')
+                    ->label('Publikasi')
+                    ->formatStateUsing(fn (bool $state): string => $state ? 'Ditampilkan' : 'Disembunyikan')
+                    ->badge(),
+
                 TextColumn::make('created_at')
                     ->label('Tanggal')
-                    ->dateTime()
+                    ->dateTime('d M Y H:i')
                     ->sortable(),
             ])
-            ->filters([
-                //
-            ])
+            ->filters([])
             ->recordActions([
                 EditAction::make()
                     ->label('Edit'),

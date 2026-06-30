@@ -18,4 +18,11 @@ class CreateMaintenanceUpdate extends CreateRecord
     {
         return 'Catatan perbaikan berhasil ditambahkan';
     }
+
+    protected function afterCreate(): void
+    {
+        $this->record->report?->update([
+            'status' => $this->record->status,
+        ]);
+    }
 }

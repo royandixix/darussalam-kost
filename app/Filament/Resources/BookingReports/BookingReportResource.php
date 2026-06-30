@@ -2,15 +2,11 @@
 
 namespace App\Filament\Resources\BookingReports;
 
-use App\Filament\Resources\BookingReports\Pages\CreateBookingReport;
-use App\Filament\Resources\BookingReports\Pages\EditBookingReport;
 use App\Filament\Resources\BookingReports\Pages\ListBookingReports;
-use App\Filament\Resources\BookingReports\Schemas\BookingReportForm;
 use App\Filament\Resources\BookingReports\Tables\BookingReportsTable;
 use App\Models\MaintenanceReport;
 use BackedEnum;
 use Filament\Resources\Resource;
-use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 use UnitEnum;
 
@@ -38,11 +34,6 @@ class BookingReportResource extends Resource
         return 'Laporan Maintenance';
     }
 
-    public static function form(Schema $schema): Schema
-    {
-        return BookingReportForm::configure($schema);
-    }
-
     public static function table(Table $table): Table
     {
         return BookingReportsTable::configure($table);
@@ -57,8 +48,21 @@ class BookingReportResource extends Resource
     {
         return [
             'index' => ListBookingReports::route('/'),
-            'create' => CreateBookingReport::route('/create'),
-            'edit' => EditBookingReport::route('/{record}/edit'),
         ];
+    }
+
+    public static function canCreate(): bool
+    {
+        return false;
+    }
+
+    public static function canEdit($record): bool
+    {
+        return false;
+    }
+
+    public static function canDelete($record): bool
+    {
+        return false;
     }
 }

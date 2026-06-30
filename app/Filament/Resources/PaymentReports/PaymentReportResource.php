@@ -2,15 +2,11 @@
 
 namespace App\Filament\Resources\PaymentReports;
 
-use App\Filament\Resources\PaymentReports\Pages\CreatePaymentReport;
-use App\Filament\Resources\PaymentReports\Pages\EditPaymentReport;
 use App\Filament\Resources\PaymentReports\Pages\ListPaymentReports;
-use App\Filament\Resources\PaymentReports\Schemas\PaymentReportForm;
 use App\Filament\Resources\PaymentReports\Tables\PaymentReportsTable;
 use App\Models\Payment;
 use BackedEnum;
 use Filament\Resources\Resource;
-use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 use UnitEnum;
 
@@ -38,11 +34,6 @@ class PaymentReportResource extends Resource
         return 'Laporan Pembayaran';
     }
 
-    public static function form(Schema $schema): Schema
-    {
-        return PaymentReportForm::configure($schema);
-    }
-
     public static function table(Table $table): Table
     {
         return PaymentReportsTable::configure($table);
@@ -57,8 +48,21 @@ class PaymentReportResource extends Resource
     {
         return [
             'index' => ListPaymentReports::route('/'),
-            'create' => CreatePaymentReport::route('/create'),
-            'edit' => EditPaymentReport::route('/{record}/edit'),
         ];
+    }
+
+    public static function canCreate(): bool
+    {
+        return false;
+    }
+
+    public static function canEdit($record): bool
+    {
+        return false;
+    }
+
+    public static function canDelete($record): bool
+    {
+        return false;
     }
 }

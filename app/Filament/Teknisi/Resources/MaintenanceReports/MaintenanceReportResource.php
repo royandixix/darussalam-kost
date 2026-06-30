@@ -2,26 +2,30 @@
 
 namespace App\Filament\Teknisi\Resources\MaintenanceReports;
 
-use App\Filament\Teknisi\Resources\MaintenanceReports\Pages\CreateMaintenanceReport;
 use App\Filament\Teknisi\Resources\MaintenanceReports\Pages\EditMaintenanceReport;
 use App\Filament\Teknisi\Resources\MaintenanceReports\Pages\ListMaintenanceReports;
 use App\Filament\Teknisi\Resources\MaintenanceReports\Schemas\MaintenanceReportForm;
 use App\Filament\Teknisi\Resources\MaintenanceReports\Tables\MaintenanceReportsTable;
 use App\Models\MaintenanceReport;
 use BackedEnum;
-use UnitEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class MaintenanceReportResource extends Resource
 {
+    protected static ?string $model = MaintenanceReport::class;
+
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-wrench-screwdriver';
+
     protected static ?string $navigationLabel = 'Laporan Kerusakan';
 
     protected static ?string $modelLabel = 'Laporan Kerusakan';
 
     protected static ?string $pluralModelLabel = 'Laporan Kerusakan';
+
+    protected static ?string $recordTitleAttribute = 'title';
 
     protected static ?int $navigationSort = 1;
 
@@ -39,17 +43,24 @@ class MaintenanceReportResource extends Resource
 
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 
     public static function getPages(): array
     {
         return [
             'index' => ListMaintenanceReports::route('/'),
-            'create' => CreateMaintenanceReport::route('/create'),
             'edit' => EditMaintenanceReport::route('/{record}/edit'),
         ];
+    }
+
+    public static function canCreate(): bool
+    {
+        return false;
+    }
+
+    public static function canDelete($record): bool
+    {
+        return false;
     }
 }

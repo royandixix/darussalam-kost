@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\MaintenanceReports\Schemas;
 
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
@@ -20,6 +21,13 @@ class MaintenanceReportForm
                     ->preload()
                     ->required(),
 
+                Select::make('room_id')
+                    ->label('Kamar')
+                    ->relationship('room', 'room_number')
+                    ->searchable()
+                    ->preload()
+                    ->required(),
+
                 TextInput::make('title')
                     ->label('Judul Laporan')
                     ->required(),
@@ -29,9 +37,13 @@ class MaintenanceReportForm
                     ->required()
                     ->columnSpanFull(),
 
-                TextInput::make('photo')
+                FileUpload::make('photo')
                     ->label('Foto Kerusakan')
-                    ->default(null),
+                    ->image()
+                    ->disk('public')
+                    ->directory('maintenance-reports')
+                    ->visibility('public')
+                    ->maxSize(2048),
 
                 Select::make('priority')
                     ->label('Prioritas')

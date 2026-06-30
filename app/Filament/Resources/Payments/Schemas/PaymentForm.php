@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Payments\Schemas;
 
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
@@ -26,8 +27,13 @@ class PaymentForm
                     ->prefix('Rp')
                     ->required(),
 
-                TextInput::make('payment_proof')
+                FileUpload::make('payment_proof')
                     ->label('Bukti Pembayaran')
+                    ->image()
+                    ->disk('public')
+                    ->directory('payment-proofs')
+                    ->visibility('public')
+                    ->maxSize(2048)
                     ->required(),
 
                 DateTimePicker::make('payment_date')

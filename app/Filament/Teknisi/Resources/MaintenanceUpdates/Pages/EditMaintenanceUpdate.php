@@ -20,6 +20,13 @@ class EditMaintenanceUpdate extends EditRecord
         return 'Catatan perbaikan berhasil diperbarui';
     }
 
+    protected function afterSave(): void
+    {
+        $this->record->report?->update([
+            'status' => $this->record->status,
+        ]);
+    }
+
     protected function getHeaderActions(): array
     {
         return [

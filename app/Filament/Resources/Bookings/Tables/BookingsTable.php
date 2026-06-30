@@ -22,7 +22,7 @@ class BookingsTable
                     ->label('Penghuni')
                     ->searchable(),
 
-                TextColumn::make('room.id')
+                TextColumn::make('room.room_number')
                     ->label('Kamar')
                     ->searchable(),
 
@@ -32,8 +32,8 @@ class BookingsTable
                     ->sortable(),
 
                 TextColumn::make('duration_month')
-                    ->label('Durasi Sewa (Bulan)')
-                    ->numeric()
+                    ->label('Durasi Sewa')
+                    ->suffix(' bulan')
                     ->sortable(),
 
                 TextColumn::make('total_price')
@@ -54,13 +54,13 @@ class BookingsTable
 
                 TextColumn::make('created_at')
                     ->label('Tanggal Dibuat')
-                    ->dateTime()
+                    ->dateTime('d M Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('updated_at')
                     ->label('Tanggal Diperbarui')
-                    ->dateTime()
+                    ->dateTime('d M Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])

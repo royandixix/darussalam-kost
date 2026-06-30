@@ -22,7 +22,7 @@ class BookingForm
 
                 Select::make('room_id')
                     ->label('Kamar')
-                    ->relationship('room', 'id')
+                    ->relationship('room', 'room_number')
                     ->searchable()
                     ->preload()
                     ->required(),
@@ -32,7 +32,7 @@ class BookingForm
                     ->required(),
 
                 TextInput::make('duration_month')
-                    ->label('Durasi Sewa (Bulan)')
+                    ->label('Durasi Sewa Bulan')
                     ->numeric()
                     ->required(),
 

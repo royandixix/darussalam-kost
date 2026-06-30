@@ -5,6 +5,7 @@ namespace App\Filament\Resources\MaintenanceReports\Tables;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -17,18 +18,23 @@ class MaintenanceReportsTable
                 TextColumn::make('no')
                     ->label('No')
                     ->rowIndex(),
-                    
+
                 TextColumn::make('user.name')
                     ->label('Penghuni')
+                    ->searchable(),
+
+                TextColumn::make('room.room_number')
+                    ->label('Kamar')
                     ->searchable(),
 
                 TextColumn::make('title')
                     ->label('Judul Laporan')
                     ->searchable(),
 
-                TextColumn::make('photo')
-                    ->label('Foto Kerusakan')
-                    ->searchable(),
+                ImageColumn::make('photo')
+                    ->label('Foto')
+                    ->disk('public')
+                    ->size(60),
 
                 TextColumn::make('priority')
                     ->label('Prioritas')
@@ -53,18 +59,17 @@ class MaintenanceReportsTable
 
                 TextColumn::make('created_at')
                     ->label('Tanggal Dibuat')
-                    ->dateTime()
+                    ->dateTime('d M Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('updated_at')
                     ->label('Tanggal Diperbarui')
-                    ->dateTime()
+                    ->dateTime('d M Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->filters([
-            ])
+            ->filters([])
             ->recordActions([
                 EditAction::make()
                     ->label('Edit'),

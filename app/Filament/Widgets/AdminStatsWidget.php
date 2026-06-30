@@ -2,87 +2,101 @@
 
 namespace App\Filament\Widgets;
 
+use App\Models\Booking;
 use App\Models\MaintenanceReport;
+use App\Models\Payment;
+use App\Models\Room;
+use App\Models\Tenant;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
-use Illuminate\Support\Facades\DB;
 
 class AdminStatsWidget extends BaseWidget
 {
     protected static ?int $sort = 1;
-    protected ?string $pollingInterval = '10s';
+
+    protected ?string $pollingInterval = '5s';
 
     protected function getStats(): array
     {
-        $counts = MaintenanceReport::select('status', DB::raw('count(*) as total'))
-            ->groupBy('status')
-            ->pluck('total', 'status')
-            ->toArray();
+        $totalRooms = Room::count();
+        $availableRooms = Room::where('status', 'available')->count();
+        $occupiedRooms = Room::where('status', 'occupied')->count();
+        $maintenanceRooms = Room::where('status', 'maintenance')->count();
 
-        $pending = $counts['pending'] ?? 0;
-        $inProgress = $counts['in_progress'] ?? 0;
-        $completed = $counts['completed'] ?? 0;
-        $total = $pending + $inProgress + $completed;
+        $totalTenants = Tenant::count();
+        $activeTenants = Tenant::where('status', 'active')->count();
 
-        $successRate = $total > 0 ? round(($completed / $total) * 100) : 0;
+        $totalBookings = Booking::count();
+        $pendingBookings = Booking::where('status', 'pending')->count();
+        $approvedBookings = Booking::where('status', 'approved')->count();
 
-        $reportsDb = MaintenanceReport::where('created_at', '>=', now()->subDays(6)->startOfDay())
-            ->select(DB::raw('DATE(created_at) as date'), 'status', DB::raw('count(*) as total'))
-            ->groupBy('date', 'status')
-            ->get()
-            ->groupBy('date');
+        $totalPayments = Payment::count();
+        $pendingPayments = Payment::where('status', 'pending')->count();
+        $verifiedPayments = Payment::where('status', 'verified')->count();
 
-        $updatedReportsDb = MaintenanceReport::whereIn('status', ['in_progress', 'completed'])
-            ->where('updated_at', '>=', now()->subDays(6)->startOfDay())
-            ->select(DB::raw('DATE(updated_at) as date'), 'status', DB::raw('count(*) as total'))
-            ->groupBy('date', 'status')
-            ->get()
-            ->groupBy('date');
+        $totalReports = MaintenanceReport::count();
+        $pendingReports = MaintenanceReport::where('status', 'pending')->count();
+        $assignedReports = MaintenanceReport::where('status', 'assigned')->count();
+        $inProgressReports = MaintenanceReport::where('status', 'in_progress')->count();
+        $completedReports = MaintenanceReport::where('status', 'completed')->count();
 
-        $last7Days = [];
-        $last7Pending = [];
-        $last7InProgress = [];
-        $last7Completed = [];
+        $roomChart = $this->dailyCounts(Room::class);
+        $tenantChart = $this->dailyCounts(Tenant::class);
+        $bookingChart = $this->dailyCounts(Booking::class);
+        $paymentChart = $this->dailyCounts(Payment::class);
+        $reportChart = $this->dailyCounts(MaintenanceReport::class);
 
-        foreach (range(6, 0) as $day) {
-            $dateKey = now()->subDays($day)->format('Y-m-d');
-
-            $dayCreatedReports = $reportsDb->get($dateKey, collect());
-            $dayUpdatedReports = $updatedReportsDb->get($dateKey, collect());
-
-            $last7Days[] = $dayCreatedReports->sum('total');
-            
-            $last7Pending[] = $dayCreatedReports->where('status', 'pending')->first()?->total ?? 0;
-            
-            $last7InProgress[] = $dayUpdatedReports->where('status', 'in_progress')->first()?->total ?? 0;
-            
-            $last7Completed[] = $dayUpdatedReports->where('status', 'completed')->first()?->total ?? 0;
-        }
+        $completionRate = $totalReports > 0 ? round(($completedReports / $totalReports) * 100) : 0;
 
         return [
-            Stat::make('Total Laporan', $total)
-                ->description('Semua laporan masuk')
-                ->descriptionIcon('heroicon-o-clipboard-document-list')
-                ->chart($last7Days)
+            Stat::make('Total Kamar', $totalRooms)
+                ->description("Tersedia {$availableRooms}, Terisi {$occupiedRooms}, Perbaikan {$maintenanceRooms}")
+                ->descriptionIcon('heroicon-o-home-modern')
+                ->chart($roomChart)
                 ->color('primary'),
 
-            Stat::make('Menunggu', $pending)
-                ->description($pending > 0 ? "{$pending} laporan perlu ditangani" : 'Tidak ada antrian')
-                ->descriptionIcon($pending > 0 ? 'heroicon-o-exclamation-circle' : 'heroicon-o-clock')
-                ->chart($last7Pending)
-                ->color($pending > 5 ? 'danger' : 'warning'),
+            Stat::make('Penghuni Aktif', $activeTenants)
+                ->description("Total data penghuni {$totalTenants}")
+                ->descriptionIcon('heroicon-o-users')
+                ->chart($tenantChart)
+                ->color('success'),
 
-            Stat::make('Sedang Proses', $inProgress)
-                ->description('Sedang diperbaiki teknisi')
+            Stat::make('Pemesanan', $totalBookings)
+                ->description("Menunggu {$pendingBookings}, Disetujui {$approvedBookings}")
+                ->descriptionIcon('heroicon-o-clipboard-document-list')
+                ->chart($bookingChart)
+                ->color($pendingBookings > 0 ? 'warning' : 'primary'),
+
+            Stat::make('Pembayaran', $totalPayments)
+                ->description("Menunggu {$pendingPayments}, Terverifikasi {$verifiedPayments}")
+                ->descriptionIcon('heroicon-o-credit-card')
+                ->chart($paymentChart)
+                ->color($pendingPayments > 0 ? 'warning' : 'success'),
+
+            Stat::make('Laporan Kerusakan', $totalReports)
+                ->description("Menunggu {$pendingReports}, Ditugaskan {$assignedReports}, Proses {$inProgressReports}")
                 ->descriptionIcon('heroicon-o-wrench-screwdriver')
-                ->chart($last7InProgress)
-                ->color('info'),
+                ->chart($reportChart)
+                ->color($pendingReports > 0 ? 'danger' : 'info'),
 
-            Stat::make('Selesai', $completed)
-                ->description("Tingkat selesai {$successRate}%")
-                ->descriptionIcon($successRate >= 80 ? 'heroicon-o-trophy' : 'heroicon-o-check-badge')
-                ->chart($last7Completed)
-                ->color($successRate >= 80 ? 'success' : 'warning'),
+            Stat::make('Maintenance Selesai', $completedReports)
+                ->description("Tingkat selesai {$completionRate}%")
+                ->descriptionIcon($completionRate >= 80 ? 'heroicon-o-trophy' : 'heroicon-o-check-badge')
+                ->chart($reportChart)
+                ->color($completionRate >= 80 ? 'success' : 'warning'),
         ];
+    }
+
+    private function dailyCounts(string $model): array
+    {
+        $data = [];
+
+        foreach (range(6, 0) as $day) {
+            $data[] = $model::query()
+                ->whereDate('created_at', now()->subDays($day)->toDateString())
+                ->count();
+        }
+
+        return $data;
     }
 }

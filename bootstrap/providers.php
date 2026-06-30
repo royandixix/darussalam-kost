@@ -3,6 +3,5 @@
 return [
     App\Providers\AppServiceProvider::class,
     App\Providers\Filament\AdminPanelProvider::class,
-    App\Providers\Filament\PenghuniPanelProvider::class,
     App\Providers\Filament\TeknisiPanelProvider::class,
 ];

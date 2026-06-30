@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Payments\Tables;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -27,13 +28,14 @@ class PaymentsTable
                     ->money('IDR')
                     ->sortable(),
 
-                TextColumn::make('payment_proof')
-                    ->label('Bukti Pembayaran')
-                    ->searchable(),
+                ImageColumn::make('payment_proof')
+                    ->label('Bukti')
+                    ->disk('public')
+                    ->size(60),
 
                 TextColumn::make('payment_date')
                     ->label('Tanggal Pembayaran')
-                    ->dateTime()
+                    ->dateTime('d M Y H:i')
                     ->sortable(),
 
                 TextColumn::make('status')
@@ -48,13 +50,13 @@ class PaymentsTable
 
                 TextColumn::make('created_at')
                     ->label('Tanggal Dibuat')
-                    ->dateTime()
+                    ->dateTime('d M Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('updated_at')
                     ->label('Tanggal Diperbarui')
-                    ->dateTime()
+                    ->dateTime('d M Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])

@@ -2,6 +2,8 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Widgets\AdminReportChart;
+use App\Filament\Widgets\AdminStatsWidget;
 use Filament\Enums\ThemeMode;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -12,7 +14,6 @@ use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
-use Filament\View\PanelsRenderHook;
 use Filament\Widgets\AccountWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
@@ -31,41 +32,35 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
-            ->registration()
             ->passwordReset()
             ->emailVerification()
             ->profile()
-            ->brandName(fn () => Auth::check()
-                ? 'Selamat Datang, ' . ucfirst(Auth::user()->role ?? 'User')
-                : 'Selamat Datang'
-            )
+            ->brandName(fn () => Auth::check() ? 'Admin Kost Darussalam' : 'Kost Darussalam')
             ->favicon(asset('images/favicon.png'))
             ->colors([
                 'primary' => Color::Amber,
-                'danger'  => Color::Rose,
-                'gray'    => Color::Zinc,
-                'info'    => Color::Blue,
+                'danger' => Color::Rose,
+                'gray' => Color::Zinc,
+                'info' => Color::Blue,
                 'success' => Color::Emerald,
                 'warning' => Color::Amber,
             ])
             ->font('Plus Jakarta Sans')
             ->defaultThemeMode(ThemeMode::Dark)
             ->sidebarCollapsibleOnDesktop()
-            // ->renderHook(
-            //     PanelsRenderHook::AUTH_LOGIN_FORM_BEFORE,
-            //     fn () => view('filament.admin.login-header')
-            // )
             ->navigationGroups([
                 NavigationGroup::make()
-                    ->label('Manajemen Kost')
+                    ->label('Manajemen Kamar')
                     ->icon('heroicon-o-home-modern'),
+                NavigationGroup::make()
+                    ->label('Layanan Penghuni')
+                    ->icon('heroicon-o-users'),
                 NavigationGroup::make()
                     ->label('Transaksi')
                     ->icon('heroicon-o-banknotes'),
                 NavigationGroup::make()
-                    ->label('Pengaturan')
-                    ->icon('heroicon-o-cog-6-tooth')
-                    ->collapsed(),
+                    ->label('Laporan')
+                    ->icon('heroicon-o-document-chart-bar'),
             ])
             ->discoverResources(
                 in: app_path('Filament/Resources'),
@@ -78,12 +73,10 @@ class AdminPanelProvider extends PanelProvider
             ->pages([
                 Dashboard::class,
             ])
-            ->discoverWidgets(
-                in: app_path('Filament/Widgets'),
-                for: 'App\\Filament\\Widgets',
-            )
             ->widgets([
                 AccountWidget::class,
+                AdminStatsWidget::class,
+                AdminReportChart::class,
             ])
             ->middleware([
                 EncryptCookies::class,
