@@ -2,6 +2,7 @@
 
 namespace App\Filament\Teknisi\Resources\MaintenanceUpdates\Schemas;
 
+use App\Models\MaintenanceReport;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -14,10 +15,16 @@ class MaintenanceUpdateForm
     {
         return $schema
             ->components([
-
                 Select::make('maintenance_report_id')
                     ->label('Laporan Kerusakan')
-                    ->relationship('report', 'title')
+                    ->options(fn () => MaintenanceReport::query()
+                        ->with(['user', 'room'])
+                        ->latest()
+                        ->get()
+                        ->mapWithKeys(fn (MaintenanceReport $report): array => [
+                            $report->id => $report->title . ' - ' . ($report->user?->name ?? 'Penghuni') . ' - Kamar ' . ($report->room?->room_number ?? '-'),
+                        ])
+                        ->toArray())
                     ->searchable()
                     ->required(),
 

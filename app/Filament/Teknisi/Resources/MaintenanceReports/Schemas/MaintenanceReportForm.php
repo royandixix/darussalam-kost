@@ -14,7 +14,6 @@ class MaintenanceReportForm
     {
         return $schema
             ->components([
-
                 Select::make('user_id')
                     ->label('Nama Penghuni')
                     ->relationship('user', 'name')
@@ -37,6 +36,9 @@ class MaintenanceReportForm
                 FileUpload::make('photo')
                     ->label('Foto Kerusakan')
                     ->image()
+                    ->disk('public')
+                    ->directory('maintenance-reports')
+                    ->visibility('public')
                     ->disabled(),
 
                 Select::make('priority')
@@ -51,7 +53,6 @@ class MaintenanceReportForm
                 Select::make('status')
                     ->label('Status Pengerjaan')
                     ->options([
-                        'pending' => 'Menunggu',
                         'assigned' => 'Ditugaskan',
                         'in_progress' => 'Sedang Dikerjakan',
                         'completed' => 'Selesai',

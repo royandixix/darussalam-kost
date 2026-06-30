@@ -2,29 +2,31 @@
 
 namespace App\Filament\Teknisi\Pages;
 
-use Filament\Pages\Dashboard;
+use App\Filament\Teknisi\Widgets\TeknisiReportChart;
+use App\Filament\Teknisi\Widgets\TeknisiStatsWidget;
+use BackedEnum;
+use Filament\Pages\Dashboard as BaseDashboard;
 
-class TeknisiDashboard extends Dashboard
+class TeknisiDashboard extends BaseDashboard
 {
+    protected static ?string $navigationLabel = 'Dasbor';
+
     protected static ?string $title = 'Dasbor';
-    protected static string $routePath = 'dashboard';
+
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-home';
+
+    protected static ?int $navigationSort = 0;
 
     public function getColumns(): int | array
     {
-        return 1;
+        return 3;
     }
 
-    protected function getHeaderWidgets(): array
+    public function getWidgets(): array
     {
         return [
-            \App\Filament\Teknisi\Widgets\TeknisiStatsWidget::class,
-        ];
-    }
-
-    protected function getFooterWidgets(): array
-    {
-        return [
-            \App\Filament\Teknisi\Widgets\TeknisiReportChart::class,
+            TeknisiStatsWidget::class,
+            TeknisiReportChart::class,
         ];
     }
 }

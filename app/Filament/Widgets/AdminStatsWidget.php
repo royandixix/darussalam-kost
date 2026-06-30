@@ -66,7 +66,7 @@ class AdminStatsWidget extends BaseWidget
                 ->descriptionIcon('heroicon-o-clipboard-document-list')
                 ->chart($bookingChart)
                 ->color($pendingBookings > 0 ? 'warning' : 'primary'),
-
+            
             Stat::make('Pembayaran', $totalPayments)
                 ->description("Menunggu {$pendingPayments}, Terverifikasi {$verifiedPayments}")
                 ->descriptionIcon('heroicon-o-credit-card')
