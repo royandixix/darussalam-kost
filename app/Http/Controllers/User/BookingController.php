@@ -42,12 +42,33 @@ class BookingController extends Controller
             'sender_name' => ['nullable', 'string', 'max:255'],
             'sender_bank' => ['nullable', 'string', 'max:255'],
             'payment_proof' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+        ], [
+            'room_id.required' => 'Kamar wajib dipilih.',
+            'check_in_date.required' => 'Tanggal masuk wajib diisi.',
+            'duration_month.required' => 'Lama sewa wajib diisi.',
+            'payment_method.required' => 'Metode pembayaran wajib dipilih.',
+            'payment_proof.image' => 'Bukti pembayaran harus berupa gambar.',
+            'payment_proof.mimes' => 'Format bukti pembayaran harus JPG, JPEG, PNG, atau WEBP.',
+            'payment_proof.max' => 'Ukuran bukti pembayaran maksimal 2MB.',
         ]);
 
-        if (in_array($request->payment_method, ['bank_transfer', 'qris'])) {
+        if ($request->payment_method === 'bank_transfer') {
             $request->validate([
                 'sender_name' => ['required', 'string', 'max:255'],
+                'sender_bank' => ['required', 'string', 'max:255'],
                 'payment_proof' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            ], [
+                'sender_name.required' => 'Nama pengirim wajib diisi untuk transfer bank.',
+                'sender_bank.required' => 'Bank atau rekening pengirim wajib diisi untuk transfer bank.',
+                'payment_proof.required' => 'Bukti pembayaran wajib diupload untuk transfer bank.',
+            ]);
+        }
+
+        if ($request->payment_method === 'qris') {
+            $request->validate([
+                'payment_proof' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            ], [
+                'payment_proof.required' => 'Bukti pembayaran QRIS wajib diupload.',
             ]);
         }
 
@@ -76,8 +97,8 @@ class BookingController extends Controller
             'booking_id' => $booking->id,
             'amount' => $totalPrice,
             'payment_method' => $request->payment_method,
-            'sender_name' => $request->payment_method === 'cod' ? null : $request->sender_name,
-            'sender_bank' => $request->payment_method === 'cod' ? null : $request->sender_bank,
+            'sender_name' => $request->payment_method === 'bank_transfer' ? $request->sender_name : null,
+            'sender_bank' => $request->payment_method === 'bank_transfer' ? $request->sender_bank : null,
             'payment_proof' => $proofPath,
             'payment_date' => now(),
             'status' => 'pending',

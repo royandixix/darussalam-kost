@@ -184,12 +184,12 @@
 
                                                 <div class="mb-2">
                                                     Bank:
-                                                    <strong>BCA / BRI / Mandiri</strong>
+                                                    <strong>BCA</strong>
                                                 </div>
 
                                                 <div class="mb-2">
                                                     Nomor Rekening:
-                                                    <strong>1234567890</strong>
+                                                    <strong>827351492608</strong>
                                                 </div>
 
                                                 <div>
@@ -225,7 +225,7 @@
                                             </div>
                                         </div>
 
-                                        <div class="col-12 payment-proof-area" id="paymentProofArea{{ $room->id }}">
+                                        <div class="col-12 d-none" id="bankTransferArea{{ $room->id }}">
                                             <div class="mb-4">
                                                 <label class="form-label fw-semibold">
                                                     Nama Pengirim
@@ -234,7 +234,7 @@
                                                 <input 
                                                     type="text" 
                                                     name="sender_name" 
-                                                    class="form-control rounded-0 sender-name-input"
+                                                    class="form-control rounded-0 bank-sender-name"
                                                     placeholder="Contoh: Siti Nurhalizah"
                                                 >
                                             </div>
@@ -247,8 +247,8 @@
                                                 <input 
                                                     type="text" 
                                                     name="sender_bank" 
-                                                    class="form-control rounded-0"
-                                                    placeholder="Contoh: BCA, BRI, DANA, GoPay, ShopeePay"
+                                                    class="form-control rounded-0 bank-sender-bank"
+                                                    placeholder="Contoh: BCA - 827351492608"
                                                 >
                                             </div>
 
@@ -260,13 +260,96 @@
                                                 <input 
                                                     type="file" 
                                                     name="payment_proof" 
-                                                    class="form-control rounded-0 payment-proof-input"
+                                                    class="form-control rounded-0 bank-payment-proof payment-proof-preview-input"
                                                     accept="image/*"
+                                                    data-preview-wrapper="bankPreviewWrapper{{ $room->id }}"
+                                                    data-preview-image="bankPreviewImage{{ $room->id }}"
+                                                    data-preview-name="bankPreviewName{{ $room->id }}"
                                                 >
 
                                                 <small class="text-black-50">
                                                     Format: JPG, JPEG, PNG, WEBP. Maksimal 2MB.
                                                 </small>
+                                            </div>
+
+                                            <div class="mb-4 d-none" id="bankPreviewWrapper{{ $room->id }}">
+                                                <label class="form-label fw-semibold">
+                                                    Preview Bukti Transfer
+                                                </label>
+
+                                                <div class="border p-3">
+                                                    <img 
+                                                        id="bankPreviewImage{{ $room->id }}" 
+                                                        src="" 
+                                                        alt="Preview Bukti Transfer"
+                                                        class="img-fluid mb-3"
+                                                        style="max-height: 320px;"
+                                                    >
+
+                                                    <div class="text-black-50 mb-3" id="bankPreviewName{{ $room->id }}"></div>
+
+                                                    <button 
+                                                        type="button" 
+                                                        class="btn btn-outline-danger btn-sm rounded-0 clear-payment-preview"
+                                                        data-input-class="bank-payment-proof"
+                                                        data-preview-wrapper="bankPreviewWrapper{{ $room->id }}"
+                                                        data-preview-image="bankPreviewImage{{ $room->id }}"
+                                                        data-preview-name="bankPreviewName{{ $room->id }}"
+                                                    >
+                                                        Hapus Bukti
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-12 d-none" id="qrisUploadArea{{ $room->id }}">
+                                            <div class="mb-4">
+                                                <label class="form-label fw-semibold">
+                                                    Upload Bukti Pembayaran QRIS
+                                                </label>
+
+                                                <input 
+                                                    type="file" 
+                                                    name="payment_proof" 
+                                                    class="form-control rounded-0 qris-payment-proof payment-proof-preview-input"
+                                                    accept="image/*"
+                                                    data-preview-wrapper="qrisPreviewWrapper{{ $room->id }}"
+                                                    data-preview-image="qrisPreviewImage{{ $room->id }}"
+                                                    data-preview-name="qrisPreviewName{{ $room->id }}"
+                                                >
+
+                                                <small class="text-black-50">
+                                                    Upload screenshot atau foto bukti pembayaran QRIS. Format: JPG, JPEG, PNG, WEBP. Maksimal 2MB.
+                                                </small>
+                                            </div>
+
+                                            <div class="mb-4 d-none" id="qrisPreviewWrapper{{ $room->id }}">
+                                                <label class="form-label fw-semibold">
+                                                    Preview Bukti QRIS
+                                                </label>
+
+                                                <div class="border p-3">
+                                                    <img 
+                                                        id="qrisPreviewImage{{ $room->id }}" 
+                                                        src="" 
+                                                        alt="Preview Bukti QRIS"
+                                                        class="img-fluid mb-3"
+                                                        style="max-height: 320px;"
+                                                    >
+
+                                                    <div class="text-black-50 mb-3" id="qrisPreviewName{{ $room->id }}"></div>
+
+                                                    <button 
+                                                        type="button" 
+                                                        class="btn btn-outline-danger btn-sm rounded-0 clear-payment-preview"
+                                                        data-input-class="qris-payment-proof"
+                                                        data-preview-wrapper="qrisPreviewWrapper{{ $room->id }}"
+                                                        data-preview-image="qrisPreviewImage{{ $room->id }}"
+                                                        data-preview-name="qrisPreviewName{{ $room->id }}"
+                                                    >
+                                                        Hapus Bukti
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
 
@@ -303,6 +386,7 @@
     </div>
 </div>
 
+@once
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -325,43 +409,123 @@
                 const bankInfo = document.getElementById('bankInfo' + roomId);
                 const qrisInfo = document.getElementById('qrisInfo' + roomId);
                 const codInfo = document.getElementById('codInfo' + roomId);
-                const proofArea = document.getElementById('paymentProofArea' + roomId);
-                const senderInput = proofArea.querySelector('.sender-name-input');
-                const proofInput = proofArea.querySelector('.payment-proof-input');
+                const bankTransferArea = document.getElementById('bankTransferArea' + roomId);
+                const qrisUploadArea = document.getElementById('qrisUploadArea' + roomId);
+
+                const bankSenderName = bankTransferArea.querySelector('.bank-sender-name');
+                const bankSenderBank = bankTransferArea.querySelector('.bank-sender-bank');
+                const bankPaymentProof = bankTransferArea.querySelector('.bank-payment-proof');
+                const qrisPaymentProof = qrisUploadArea.querySelector('.qris-payment-proof');
 
                 bankInfo.classList.add('d-none');
                 qrisInfo.classList.add('d-none');
                 codInfo.classList.add('d-none');
+                bankTransferArea.classList.add('d-none');
+                qrisUploadArea.classList.add('d-none');
 
-                senderInput.removeAttribute('required');
-                proofInput.removeAttribute('required');
+                bankSenderName.removeAttribute('required');
+                bankSenderBank.removeAttribute('required');
+                bankPaymentProof.removeAttribute('required');
+                qrisPaymentProof.removeAttribute('required');
+
+                bankSenderName.disabled = true;
+                bankSenderBank.disabled = true;
+                bankPaymentProof.disabled = true;
+                qrisPaymentProof.disabled = true;
 
                 if (method === 'bank_transfer') {
                     bankInfo.classList.remove('d-none');
-                    proofArea.classList.remove('d-none');
-                    senderInput.setAttribute('required', 'required');
-                    proofInput.setAttribute('required', 'required');
+                    bankTransferArea.classList.remove('d-none');
+
+                    bankSenderName.disabled = false;
+                    bankSenderBank.disabled = false;
+                    bankPaymentProof.disabled = false;
+
+                    bankSenderName.setAttribute('required', 'required');
+                    bankSenderBank.setAttribute('required', 'required');
+                    bankPaymentProof.setAttribute('required', 'required');
                 }
 
                 if (method === 'qris') {
                     qrisInfo.classList.remove('d-none');
-                    proofArea.classList.remove('d-none');
-                    senderInput.setAttribute('required', 'required');
-                    proofInput.setAttribute('required', 'required');
+                    qrisUploadArea.classList.remove('d-none');
+
+                    qrisPaymentProof.disabled = false;
+                    qrisPaymentProof.setAttribute('required', 'required');
                 }
 
                 if (method === 'cod') {
                     codInfo.classList.remove('d-none');
-                    proofArea.classList.add('d-none');
-                    senderInput.removeAttribute('required');
-                    proofInput.removeAttribute('required');
-                }
-
-                if (method === '') {
-                    proofArea.classList.remove('d-none');
                 }
             });
+        });
+
+        document.querySelectorAll('.payment-method-select').forEach(function (select) {
+            select.dispatchEvent(new Event('change'));
+        });
+
+        document.addEventListener('change', function (event) {
+            const input = event.target.closest('.payment-proof-preview-input');
+
+            if (!input) {
+                return;
+            }
+
+            const file = input.files[0];
+            const wrapper = document.getElementById(input.dataset.previewWrapper);
+            const image = document.getElementById(input.dataset.previewImage);
+            const name = document.getElementById(input.dataset.previewName);
+
+            if (!file) {
+                wrapper.classList.add('d-none');
+                image.src = '';
+                name.innerText = '';
+                return;
+            }
+
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
+
+            if (!allowedTypes.includes(file.type)) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'File Tidak Valid',
+                    text: 'Bukti pembayaran harus berupa gambar JPG, JPEG, PNG, atau WEBP.',
+                    confirmButtonText: 'Oke'
+                });
+
+                input.value = '';
+                wrapper.classList.add('d-none');
+                image.src = '';
+                name.innerText = '';
+                return;
+            }
+
+            image.src = URL.createObjectURL(file);
+            name.innerText = file.name;
+            wrapper.classList.remove('d-none');
+        });
+
+        document.addEventListener('click', function (event) {
+            const button = event.target.closest('.clear-payment-preview');
+
+            if (!button) {
+                return;
+            }
+
+            const wrapper = document.getElementById(button.dataset.previewWrapper);
+            const image = document.getElementById(button.dataset.previewImage);
+            const name = document.getElementById(button.dataset.previewName);
+            const input = wrapper.closest('form').querySelector('.' + button.dataset.inputClass);
+
+            if (input) {
+                input.value = '';
+            }
+
+            image.src = '';
+            name.innerText = '';
+            wrapper.classList.add('d-none');
         });
     });
 </script>
 @endpush
+@endonce

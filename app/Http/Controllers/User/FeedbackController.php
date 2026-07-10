@@ -53,6 +53,15 @@ class FeedbackController extends Controller
             'booking_id' => ['required', 'exists:bookings,id'],
             'rating' => ['required', 'integer', 'min:1', 'max:5'],
             'comment' => ['required', 'string', 'max:1000'],
+        ], [
+            'booking_id.required' => 'Booking wajib dipilih.',
+            'booking_id.exists' => 'Booking yang dipilih tidak valid.',
+            'rating.required' => 'Rating wajib dipilih.',
+            'rating.integer' => 'Rating tidak valid.',
+            'rating.min' => 'Rating minimal 1.',
+            'rating.max' => 'Rating maksimal 5.',
+            'comment.required' => 'Komentar wajib diisi.',
+            'comment.max' => 'Komentar maksimal 1000 karakter.',
         ]);
 
         $booking = Booking::where('id', $request->booking_id)
