@@ -1,14 +1,15 @@
 <div class="modal fade" id="roomModal{{ $room->id }}" tabindex="-1" aria-labelledby="roomModalLabel{{ $room->id }}" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
         <div class="modal-content rounded-0">
 
             <div class="modal-header">
                 <div>
                     <h5 class="modal-title" id="roomModalLabel{{ $room->id }}">
-                        Kamar {{ $room->room_number }}
+                        Detail Kamar {{ $room->room_number }}
                     </h5>
+
                     <small class="text-muted">
-                        Detail kamar dan checkout pemesanan
+                        Cek detail kamar dan ajukan sewa secara online.
                     </small>
                 </div>
 
@@ -16,249 +17,284 @@
             </div>
 
             <div class="modal-body">
-                <form 
-                    id="checkoutForm{{ $room->id }}"
-                    action="{{ route('user.bookings.store') }}" 
-                    method="POST" 
-                    enctype="multipart/form-data"
-                >
-                    @csrf
+                <div class="row">
 
-                    <input type="hidden" name="room_id" value="{{ $room->id }}">
+                    <div class="col-12 col-lg-5 mb-4 mb-lg-0">
+                        <div class="border h-100">
+                            <img 
+                                src="{{ $room->photo ? asset('storage/' . $room->photo) : asset('property-1.0.0/images/img_1.jpg') }}" 
+                                alt="Kamar {{ $room->room_number }}" 
+                                class="img-fluid w-100"
+                            >
 
-                    <div class="row g-3">
+                            <div class="p-4">
+                                <h4 class="text-primary mb-3">
+                                    Kamar {{ $room->room_number }}
+                                </h4>
 
-                        <div class="col-md-5">
-                            <div class="border rounded-0 p-3">
-                                @if($room->photo)
-                                    <img 
-                                        src="{{ Storage::url($room->photo) }}" 
-                                        alt="Kamar {{ $room->room_number }}"
-                                        class="img-fluid w-100 rounded-0"
-                                    >
-                                @else
-                                    <img 
-                                        src="{{ asset('assets/img/default-room.jpg') }}" 
-                                        alt="Default Room"
-                                        class="img-fluid w-100 rounded-0"
-                                    >
-                                @endif
+                                <div class="mb-3">
+                                    <span class="d-block text-black-50">
+                                        Harga Per Bulan
+                                    </span>
 
-                                <div class="mt-3">
-                                    <h5 class="fw-bold mb-1">
+                                    <h3 class="text-primary mb-0">
                                         Rp {{ number_format($room->price, 0, ',', '.') }}
-                                    </h5>
+                                    </h3>
+                                </div>
 
-                                    <small class="text-muted">
-                                        Harga sewa per bulan
-                                    </small>
+                                <div class="mb-3">
+                                    <span class="d-block text-black-50">
+                                        Kapasitas
+                                    </span>
 
-                                    <hr>
+                                    <strong>
+                                        {{ $room->capacity ?? '-' }} orang
+                                    </strong>
+                                </div>
 
-                                    <p class="mb-1">
-                                        <span class="text-muted">Kapasitas:</span>
-                                        <strong>{{ $room->capacity ?? '-' }} orang</strong>
-                                    </p>
+                                <div class="mb-3">
+                                    <span class="d-block text-black-50">
+                                        Ukuran
+                                    </span>
 
-                                    <p class="mb-1">
-                                        <span class="text-muted">Ukuran:</span>
-                                        <strong>{{ $room->size ?? '-' }} m²</strong>
-                                    </p>
+                                    <strong>
+                                        {{ $room->size ?? '-' }} m²
+                                    </strong>
+                                </div>
 
-                                    <p class="mb-1">
-                                        <span class="text-muted">Status:</span>
+                                <div class="mb-3">
+                                    <span class="d-block text-black-50">
+                                        Status
+                                    </span>
 
-                                        @if($room->status === 'available')
-                                            <span class="badge bg-success rounded-0">Tersedia</span>
-                                        @elseif($room->status === 'occupied')
-                                            <span class="badge bg-danger rounded-0">Terisi</span>
-                                        @elseif($room->status === 'maintenance')
-                                            <span class="badge bg-warning text-dark rounded-0">Perbaikan</span>
-                                        @else
-                                            <span class="badge bg-secondary rounded-0">{{ $room->status }}</span>
-                                        @endif
-                                    </p>
+                                    @if($room->status === 'available')
+                                        <span class="badge bg-success rounded-0">
+                                            Tersedia
+                                        </span>
+                                    @elseif($room->status === 'occupied')
+                                        <span class="badge bg-danger rounded-0">
+                                            Terisi
+                                        </span>
+                                    @elseif($room->status === 'maintenance')
+                                        <span class="badge bg-warning text-dark rounded-0">
+                                            Perbaikan
+                                        </span>
+                                    @else
+                                        <span class="badge bg-secondary rounded-0">
+                                            {{ $room->status }}
+                                        </span>
+                                    @endif
+                                </div>
 
-                                    <p class="mb-0">
-                                        <span class="text-muted">Fasilitas:</span>
-                                        <br>
+                                <div>
+                                    <span class="d-block text-black-50">
+                                        Fasilitas
+                                    </span>
+
+                                    <p class="text-dark mb-0">
                                         {{ $room->facilities ?? '-' }}
                                     </p>
                                 </div>
                             </div>
                         </div>
-
-                        <div class="col-md-7">
-                            <div class="border rounded-0 p-3">
-
-                                <div class="mb-3">
-                                    <label class="form-label">Tanggal Masuk</label>
-                                    <input 
-                                        type="date" 
-                                        name="check_in_date" 
-                                        class="form-control rounded-0" 
-                                        required
-                                    >
-                                </div>
-
-                                <div class="mb-3">
-                                    <label class="form-label">Lama Sewa Bulan</label>
-                                    <input 
-                                        type="number" 
-                                        name="duration_month" 
-                                        id="duration_month_{{ $room->id }}"
-                                        class="form-control rounded-0" 
-                                        value="1" 
-                                        min="1"
-                                        data-price="{{ $room->price }}"
-                                        required
-                                    >
-                                    <small class="text-muted">
-                                        Contoh: isi 1 untuk sewa 1 bulan, isi 2 untuk sewa 2 bulan.
-                                    </small>
-                                </div>
-
-                                <div class="mb-3">
-                                    <label class="form-label">Estimasi Total</label>
-                                    <div class="border rounded-0 p-3">
-                                        <strong id="total_price_{{ $room->id }}">
-                                            Rp {{ number_format($room->price, 0, ',', '.') }}
-                                        </strong>
-                                    </div>
-                                </div>
-
-                                <hr>
-
-                                <div class="mb-3">
-                                    <label class="form-label">Metode Pembayaran</label>
-
-                                    <div class="form-check border rounded-0 p-3 mb-2">
-                                        <input 
-                                            class="form-check-input payment-method ms-0 me-2 rounded-0" 
-                                            type="radio" 
-                                            name="payment_method" 
-                                            id="bank_transfer_{{ $room->id }}" 
-                                            value="bank_transfer"
-                                            data-room-id="{{ $room->id }}"
-                                            required
-                                        >
-                                        <label class="form-check-label" for="bank_transfer_{{ $room->id }}">
-                                            <strong>Transfer Bank</strong>
-                                            <br>
-                                            <small class="text-muted">
-                                                BRI: 1234567890 a.n Darussalam Kost. Wajib upload bukti.
-                                            </small>
-                                        </label>
-                                    </div>
-
-                                    <div class="form-check border rounded-0 p-3 mb-2">
-                                        <input 
-                                            class="form-check-input payment-method ms-0 me-2 rounded-0" 
-                                            type="radio" 
-                                            name="payment_method" 
-                                            id="qris_{{ $room->id }}" 
-                                            value="qris"
-                                            data-room-id="{{ $room->id }}"
-                                            required
-                                        >
-                                        <label class="form-check-label" for="qris_{{ $room->id }}">
-                                            <strong>QRIS</strong>
-                                            <br>
-                                            <small class="text-muted">
-                                                Scan QRIS lalu upload bukti pembayaran.
-                                            </small>
-                                        </label>
-                                    </div>
-
-                                    <div class="form-check border rounded-0 p-3">
-                                        <input 
-                                            class="form-check-input payment-method ms-0 me-2 rounded-0" 
-                                            type="radio" 
-                                            name="payment_method" 
-                                            id="cod_{{ $room->id }}" 
-                                            value="cod"
-                                            data-room-id="{{ $room->id }}"
-                                            required
-                                        >
-                                        <label class="form-check-label" for="cod_{{ $room->id }}">
-                                            <strong>COD / Bayar di Tempat</strong>
-                                            <br>
-                                            <small class="text-muted">
-                                                Tidak perlu upload bukti pembayaran.
-                                            </small>
-                                        </label>
-                                    </div>
-                                </div>
-
-                                <div id="payment_proof_area_{{ $room->id }}" class="border rounded-0 p-3 mb-3 d-none">
-                                    <div class="mb-3">
-                                        <label class="form-label">Nama Pengirim</label>
-                                        <input 
-                                            type="text" 
-                                            name="sender_name" 
-                                            id="sender_name_{{ $room->id }}"
-                                            class="form-control rounded-0"
-                                            placeholder="Contoh: Siti Nurhalizah"
-                                        >
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label class="form-label">Bank / Aplikasi Pengirim</label>
-                                        <input 
-                                            type="text" 
-                                            name="sender_bank" 
-                                            id="sender_bank_{{ $room->id }}"
-                                            class="form-control rounded-0"
-                                            placeholder="Contoh: BRI, BCA, DANA, GoPay"
-                                        >
-                                    </div>
-
-                                    <div class="mb-0">
-                                        <label class="form-label">Upload Bukti Pembayaran</label>
-                                        <input 
-                                            type="file" 
-                                            name="payment_proof" 
-                                            id="payment_proof_{{ $room->id }}"
-                                            class="form-control rounded-0"
-                                            accept="image/*"
-                                        >
-                                        <small class="text-muted">
-                                            Wajib untuk Transfer Bank dan QRIS. Maksimal 2MB.
-                                        </small>
-                                    </div>
-                                </div>
-
-                                <div id="cod_info_{{ $room->id }}" class="border rounded-0 p-3 mb-3 d-none">
-                                    <strong>COD dipilih.</strong>
-                                    <br>
-                                    <small class="text-muted">
-                                        Bukti pembayaran tidak wajib diupload.
-                                    </small>
-                                </div>
-
-                            </div>
-                        </div>
-
                     </div>
-                </form>
+
+                    <div class="col-12 col-lg-7">
+                        <div class="border p-4 h-100">
+
+                            <h4 class="text-primary mb-3">
+                                Form Checkout
+                            </h4>
+
+                            <p class="text-dark mb-4">
+                                Pilih tanggal masuk, lama sewa, dan metode pembayaran.
+                            </p>
+
+                            @if($room->status === 'available')
+
+                                <form id="checkoutForm{{ $room->id }}" action="{{ route('user.bookings.store') }}" method="POST" enctype="multipart/form-data">
+                                    @csrf
+
+                                    <input type="hidden" name="room_id" value="{{ $room->id }}">
+
+                                    <div class="row">
+
+                                        <div class="col-12 col-md-6 mb-4">
+                                            <label class="form-label fw-semibold">
+                                                Tanggal Masuk
+                                            </label>
+
+                                            <input 
+                                                type="date" 
+                                                name="check_in_date" 
+                                                class="form-control rounded-0" 
+                                                required
+                                            >
+                                        </div>
+
+                                        <div class="col-12 col-md-6 mb-4">
+                                            <label class="form-label fw-semibold">
+                                                Lama Sewa Bulan
+                                            </label>
+
+                                            <input 
+                                                type="number" 
+                                                name="duration_month" 
+                                                class="form-control rounded-0 duration-input" 
+                                                min="1"
+                                                value="1"
+                                                data-price="{{ $room->price }}"
+                                                data-target="totalPrice{{ $room->id }}"
+                                                required
+                                            >
+                                        </div>
+
+                                        <div class="col-12 mb-4">
+                                            <div class="alert alert-info rounded-0 mb-0">
+                                                Total pembayaran:
+                                                <strong id="totalPrice{{ $room->id }}">
+                                                    Rp {{ number_format($room->price, 0, ',', '.') }}
+                                                </strong>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-12 mb-4">
+                                            <label class="form-label fw-semibold">
+                                                Metode Pembayaran
+                                            </label>
+
+                                            <select 
+                                                name="payment_method" 
+                                                class="form-control rounded-0 payment-method-select" 
+                                                data-room-id="{{ $room->id }}"
+                                                required
+                                            >
+                                                <option value="">Pilih Metode Pembayaran</option>
+                                                <option value="bank_transfer">Transfer Bank</option>
+                                                <option value="qris">QRIS</option>
+                                                <option value="cod">COD / Bayar di Tempat</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="col-12 mb-4 d-none" id="bankInfo{{ $room->id }}">
+                                            <div class="alert alert-light border rounded-0 mb-0">
+                                                <h6 class="text-primary mb-3">
+                                                    Informasi Transfer Bank
+                                                </h6>
+
+                                                <div class="mb-2">
+                                                    Bank:
+                                                    <strong>BCA / BRI / Mandiri</strong>
+                                                </div>
+
+                                                <div class="mb-2">
+                                                    Nomor Rekening:
+                                                    <strong>1234567890</strong>
+                                                </div>
+
+                                                <div>
+                                                    Atas Nama:
+                                                    <strong>Kosan Darussalam</strong>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-12 mb-4 d-none" id="qrisInfo{{ $room->id }}">
+                                            <div class="alert alert-light border rounded-0 mb-0">
+                                                <h6 class="text-primary mb-3">
+                                                    Scan QRIS
+                                                </h6>
+
+                                                <p class="text-dark mb-3">
+                                                    Silakan scan QRIS berikut, lalu upload bukti pembayaran.
+                                                </p>
+
+                                                @if(file_exists(public_path('images/qris.png')))
+                                                    <img src="{{ asset('images/qris.png') }}" alt="QRIS" class="img-fluid" style="max-width: 260px;">
+                                                @else
+                                                    <div class="alert alert-warning rounded-0 mb-0">
+                                                        QRIS belum tersedia. Simpan gambar QRIS di public/images/qris.png
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        </div>
+
+                                        <div class="col-12 mb-4 d-none" id="codInfo{{ $room->id }}">
+                                            <div class="alert alert-info rounded-0 mb-0">
+                                                Kamu memilih COD / Bayar di Tempat. Bukti pembayaran tidak wajib diupload.
+                                            </div>
+                                        </div>
+
+                                        <div class="col-12 payment-proof-area" id="paymentProofArea{{ $room->id }}">
+                                            <div class="mb-4">
+                                                <label class="form-label fw-semibold">
+                                                    Nama Pengirim
+                                                </label>
+
+                                                <input 
+                                                    type="text" 
+                                                    name="sender_name" 
+                                                    class="form-control rounded-0 sender-name-input"
+                                                    placeholder="Contoh: Siti Nurhalizah"
+                                                >
+                                            </div>
+
+                                            <div class="mb-4">
+                                                <label class="form-label fw-semibold">
+                                                    Bank / Aplikasi Pengirim
+                                                </label>
+
+                                                <input 
+                                                    type="text" 
+                                                    name="sender_bank" 
+                                                    class="form-control rounded-0"
+                                                    placeholder="Contoh: BCA, BRI, DANA, GoPay, ShopeePay"
+                                                >
+                                            </div>
+
+                                            <div class="mb-4">
+                                                <label class="form-label fw-semibold">
+                                                    Upload Bukti Pembayaran
+                                                </label>
+
+                                                <input 
+                                                    type="file" 
+                                                    name="payment_proof" 
+                                                    class="form-control rounded-0 payment-proof-input"
+                                                    accept="image/*"
+                                                >
+
+                                                <small class="text-black-50">
+                                                    Format: JPG, JPEG, PNG, WEBP. Maksimal 2MB.
+                                                </small>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </form>
+
+                            @else
+
+                                <div class="alert alert-warning rounded-0 mb-0">
+                                    Kamar ini belum tersedia untuk disewa.
+                                </div>
+
+                            @endif
+
+                        </div>
+                    </div>
+
+                </div>
             </div>
 
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary rounded-0" data-bs-dismiss="modal">
-                    Batal
+                <button type="button" class="btn btn-outline-primary py-2 px-4" data-bs-dismiss="modal">
+                    Tutup
                 </button>
 
                 @if($room->status === 'available')
-                    <button 
-                        type="submit" 
-                        form="checkoutForm{{ $room->id }}"
-                        class="btn btn-primary rounded-0"
-                    >
-                        Checkout
-                    </button>
-                @else
-                    <button type="button" class="btn btn-secondary rounded-0" disabled>
-                        Tidak Tersedia
+                    <button type="submit" form="checkoutForm{{ $room->id }}" class="btn btn-primary text-white py-2 px-4">
+                        Checkout Sekarang
                     </button>
                 @endif
             </div>
@@ -267,60 +303,65 @@
     </div>
 </div>
 
+@push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const roomId = '{{ $room->id }}';
-        const durationInput = document.getElementById('duration_month_' + roomId);
-        const totalPriceText = document.getElementById('total_price_' + roomId);
+        document.querySelectorAll('.duration-input').forEach(function (input) {
+            input.addEventListener('input', function () {
+                const price = parseInt(this.dataset.price);
+                const target = document.getElementById(this.dataset.target);
+                const duration = parseInt(this.value) || 1;
+                const total = price * duration;
 
-        const proofArea = document.getElementById('payment_proof_area_' + roomId);
-        const codInfo = document.getElementById('cod_info_' + roomId);
-        const senderName = document.getElementById('sender_name_' + roomId);
-        const paymentProof = document.getElementById('payment_proof_' + roomId);
-
-        function formatRupiah(number) {
-            return new Intl.NumberFormat('id-ID', {
-                style: 'currency',
-                currency: 'IDR',
-                minimumFractionDigits: 0
-            }).format(number);
-        }
-
-        function updateTotal() {
-            const price = Number(durationInput.getAttribute('data-price'));
-            const duration = Number(durationInput.value || 1);
-
-            totalPriceText.innerText = formatRupiah(price * duration);
-        }
-
-        function updatePaymentArea(method) {
-            if (method === 'bank_transfer' || method === 'qris') {
-                proofArea.classList.remove('d-none');
-                codInfo.classList.add('d-none');
-
-                senderName.setAttribute('required', 'required');
-                paymentProof.setAttribute('required', 'required');
-            }
-
-            if (method === 'cod') {
-                proofArea.classList.add('d-none');
-                codInfo.classList.remove('d-none');
-
-                senderName.removeAttribute('required');
-                paymentProof.removeAttribute('required');
-            }
-        }
-
-        if (durationInput) {
-            durationInput.addEventListener('input', updateTotal);
-        }
-
-        document.querySelectorAll('.payment-method[data-room-id="' + roomId + '"]').forEach(function (radio) {
-            radio.addEventListener('change', function () {
-                updatePaymentArea(this.value);
+                target.innerText = 'Rp ' + total.toLocaleString('id-ID');
             });
         });
 
-        updateTotal();
+        document.querySelectorAll('.payment-method-select').forEach(function (select) {
+            select.addEventListener('change', function () {
+                const roomId = this.dataset.roomId;
+                const method = this.value;
+
+                const bankInfo = document.getElementById('bankInfo' + roomId);
+                const qrisInfo = document.getElementById('qrisInfo' + roomId);
+                const codInfo = document.getElementById('codInfo' + roomId);
+                const proofArea = document.getElementById('paymentProofArea' + roomId);
+                const senderInput = proofArea.querySelector('.sender-name-input');
+                const proofInput = proofArea.querySelector('.payment-proof-input');
+
+                bankInfo.classList.add('d-none');
+                qrisInfo.classList.add('d-none');
+                codInfo.classList.add('d-none');
+
+                senderInput.removeAttribute('required');
+                proofInput.removeAttribute('required');
+
+                if (method === 'bank_transfer') {
+                    bankInfo.classList.remove('d-none');
+                    proofArea.classList.remove('d-none');
+                    senderInput.setAttribute('required', 'required');
+                    proofInput.setAttribute('required', 'required');
+                }
+
+                if (method === 'qris') {
+                    qrisInfo.classList.remove('d-none');
+                    proofArea.classList.remove('d-none');
+                    senderInput.setAttribute('required', 'required');
+                    proofInput.setAttribute('required', 'required');
+                }
+
+                if (method === 'cod') {
+                    codInfo.classList.remove('d-none');
+                    proofArea.classList.add('d-none');
+                    senderInput.removeAttribute('required');
+                    proofInput.removeAttribute('required');
+                }
+
+                if (method === '') {
+                    proofArea.classList.remove('d-none');
+                }
+            });
+        });
     });
 </script>
+@endpush

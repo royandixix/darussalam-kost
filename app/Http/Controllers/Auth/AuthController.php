@@ -1,5 +1,7 @@
 <?php
+
 namespace App\Http\Controllers\Auth;
+
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -13,61 +15,96 @@ class AuthController extends Controller
         return view('user.auth.login');
     }
 
-    public function login(Request $request)
-    {
-        $request->validate([
-            'email'=>'required|email',
-            'password'=>'required|min:6'
-        ]);
-
-        if(Auth::attempt($request->only('email','password'))){
-            $request->session()->regenerate();
-            $user=Auth::user();
-            if($user->role!=='penghuni'){
-                Auth::logout();
-                return back()->withErrors(['login'=>'Akses hanya untuk penghuni']);
-            }
-            return redirect()->route('user.dashboard');
-        }
-
-        return back()->withErrors(['login'=>'Email atau password salah'])->withInput();
-    }
-
     public function showRegister()
     {
         return view('user.auth.register');
     }
 
+    public function login(Request $request)
+    {
+        $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required', 'string'],
+        ], [
+            'email.required' => 'Email wajib diisi.',
+            'email.email' => 'Format email tidak valid.',
+            'password.required' => 'Kata sandi wajib diisi.',
+        ]);
+
+        $credentials = $request->only('email', 'password');
+        $remember = $request->boolean('remember');
+
+        if (!Auth::attempt($credentials, $remember)) {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'login' => 'Email atau kata sandi salah.',
+                ]);
+        }
+
+        $request->session()->regenerate();
+
+        if (Auth::user()->role !== 'penghuni') {
+            Auth::logout();
+
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'login' => 'Akun ini tidak memiliki akses sebagai penghuni.',
+                ]);
+        }
+
+        return redirect()
+            ->route('user.dashboard')
+            ->with('success', 'Login berhasil. Selamat datang di Darussalam Kost.');
+    }
+
     public function register(Request $request)
     {
         $request->validate([
-            'name'=>'required|string',
-            'email'=>'required|email|unique:users,email',
-            'phone'=>'required|min:10|max:15',
-            'address'=>'required|string',
-            'password'=>'required|min:6|confirmed'
+            'name' => ['required', 'string', 'max:255'],
+            'phone' => ['required', 'string', 'max:20'],
+            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
+            'address' => ['required', 'string', 'max:255'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ], [
+            'name.required' => 'Nama lengkap wajib diisi.',
+            'phone.required' => 'Nomor telepon wajib diisi.',
+            'email.required' => 'Email wajib diisi.',
+            'email.email' => 'Format email tidak valid.',
+            'email.unique' => 'Email sudah terdaftar.',
+            'address.required' => 'Alamat domisili wajib diisi.',
+            'password.required' => 'Kata sandi wajib diisi.',
+            'password.min' => 'Kata sandi minimal 8 karakter.',
+            'password.confirmed' => 'Konfirmasi kata sandi tidak sesuai.',
         ]);
 
-        $user=User::create([
-            'name'=>$request->name,
-            'email'=>$request->email,
-            'phone'=>$request->phone,
-            'address'=>$request->address,
-            'password'=>Hash::make($request->password),
-            'role'=>'penghuni'
+        User::create([
+            'name' => $request->name,
+            'phone' => $request->phone,
+            'email' => $request->email,
+            'address' => $request->address,
+            'password' => Hash::make($request->password),
+            'role' => 'penghuni',
         ]);
 
-        Auth::login($user);
-        $request->session()->regenerate();
-
-        return redirect()->route('user.dashboard');
+        return redirect()
+            ->route('login')
+            ->with('success', 'Registrasi berhasil. Silakan login menggunakan akun kamu.');
     }
 
     public function logout(Request $request)
     {
         Auth::logout();
+
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect()->route('login');
+
+        return redirect()
+            ->route('login')
+            ->with('success', 'Kamu berhasil keluar dari akun.');
     }
 }

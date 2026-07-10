@@ -2,13 +2,11 @@
 
 @section('title', 'Pembayaran Saya')
 
-@section('page_header', 'Pembayaran Saya')
-
-@section('page_subtitle', 'Riwayat bukti pembayaran dan status verifikasi kamu')
+@section('hide_page_header', true)
 
 @section('content')
 
-<div class="section">
+<div class="section" style="padding-top: 140px;">
     <div class="container">
 
         <div class="row mb-5 align-items-center">
@@ -36,7 +34,7 @@
                 <div class="col-12 col-lg-6 mb-4">
                     <div class="box-feature h-100">
 
-                        <div class="d-flex justify-content-between align-items-start mb-4">
+                        <div class="d-flex justify-content-between align-items-start gap-3 mb-4 flex-wrap">
                             <div>
                                 <span class="d-block text-black-50 mb-1">
                                     Kode Booking
@@ -179,11 +177,11 @@
                             Kamu belum mengupload bukti pembayaran. Setelah melakukan booking kamar, silakan upload bukti pembayaran melalui menu ini.
                         </p>
 
-                        <a href="{{ route('user.rooms.index') }}" class="btn btn-primary text-white py-3 px-4">
+                        <a href="{{ route('user.rooms.index') }}" class="btn btn-primary text-white py-3 px-4 mb-2">
                             Cari Kamar
                         </a>
 
-                        <a href="{{ route('user.payments.create') }}" class="btn btn-outline-primary py-3 px-4">
+                        <a href="{{ route('user.payments.create') }}" class="btn btn-outline-primary py-3 px-4 mb-2">
                             Upload Bukti
                         </a>
                     </div>

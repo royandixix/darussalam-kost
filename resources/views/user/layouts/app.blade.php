@@ -25,7 +25,9 @@
 @else
     @include('user.partials.header')
 @endif
+
 @yield('content')
+
 @include('user.partials.footer')
 
 <div id="overlayer"></div>

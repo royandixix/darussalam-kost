@@ -2,13 +2,11 @@
 
 @section('title', 'Laporan Perbaikan')
 
-@section('page_header', 'Laporan Perbaikan')
-
-@section('page_subtitle', 'Daftar laporan kerusakan yang pernah kamu kirim')
+@section('hide_page_header', true)
 
 @section('content')
 
-<div class="section">
+<div class="section" style="padding-top: 140px;">
     <div class="container">
 
         <div class="row mb-5 align-items-center">
@@ -48,7 +46,7 @@
                             <span class="flaticon-house-3"></span>
                         @endif
 
-                        <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="d-flex justify-content-between align-items-start gap-3 mb-3 flex-wrap">
                             <div>
                                 <span class="d-block text-black-50 mb-1">
                                     Laporan #{{ $report->id }}
