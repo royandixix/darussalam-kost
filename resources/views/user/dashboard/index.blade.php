@@ -2,234 +2,365 @@
 
 @section('title', 'Dashboard Penghuni')
 
+@section('hide_page_header', true)
+
 @section('content')
 
-<section class="py-5">
+<div class="section" style="padding-top: 140px;">
     <div class="container">
 
-        <div class="bg-info p-5 mb-5 text-white" style="border-radius:16px;">
-            <div class="row align-items-center">
-                <div class="col-lg-8">
-                    <h1 class="fw-bold mb-3">
-                        Selamat Datang, {{ $user->name ?? auth()->user()->name }}
-                    </h1>
+        <div class="row mb-5 align-items-center">
+            <div class="col-12 col-lg-7 mb-4 mb-lg-0">
+                <h2 class="font-weight-bold text-primary heading mb-3">
+                    Selamat Datang, {{ $user->name ?? auth()->user()->name }}
+                </h2>
 
-                    <p class="mb-4">
-                        Kelola kamar, booking, pembayaran, laporan perbaikan, dan feedback penghuni melalui Dashboard Darussalam Kost.
+                <p class="text-dark mb-0">
+                    Kelola kamar, booking, pembayaran, laporan perbaikan, dan feedback penghuni melalui Dashboard Darussalam Kost.
+                </p>
+            </div>
+
+            <div class="col-12 col-lg-5 text-lg-end">
+                <a href="{{ route('user.rooms.index') }}" class="btn btn-primary text-white py-3 px-4 mb-2">
+                    Lihat Kamar Tersedia
+                </a>
+
+                <a href="{{ route('user.bookings.index') }}" class="btn btn-outline-primary py-3 px-4 mb-2">
+                    Lihat Sewa Saya
+                </a>
+            </div>
+        </div>
+
+        <div class="row">
+
+            <div class="col-12 col-sm-6 col-lg-3 mb-4">
+                <div class="box-feature h-100">
+                    <span class="flaticon-house"></span>
+
+                    <h3 class="mb-3">
+                        {{ $totalBookings ?? 0 }}
+                    </h3>
+
+                    <p class="mb-2">
+                        Total Booking
                     </p>
 
-                    <div class="d-flex flex-wrap gap-2">
-                        <a href="{{ route('user.rooms.index') }}" class="btn btn-dark px-4">
-                            Lihat Kamar Tersedia
+                    <p class="text-dark">
+                        {{ $pendingBookings ?? 0 }} booking menunggu konfirmasi.
+                    </p>
+
+                    <p>
+                        <a href="{{ route('user.bookings.index') }}" class="learn-more">
+                            Lihat Booking
                         </a>
+                    </p>
+                </div>
+            </div>
 
-                        <a href="{{ route('user.bookings.index') }}" class="btn btn-light px-4">
-                            Lihat Sewa Saya
+            <div class="col-12 col-sm-6 col-lg-3 mb-4">
+                <div class="box-feature h-100">
+                    <span class="flaticon-building"></span>
+
+                    <h3 class="mb-3">
+                        {{ $totalPayments ?? 0 }}
+                    </h3>
+
+                    <p class="mb-2">
+                        Pembayaran
+                    </p>
+
+                    <p class="text-dark">
+                        {{ $verifiedPayments ?? 0 }} pembayaran sudah terverifikasi.
+                    </p>
+
+                    <p>
+                        <a href="{{ route('user.payments.index') }}" class="learn-more">
+                            Lihat Pembayaran
                         </a>
-                    </div>
-                </div>
-
-                <div class="col-lg-4 text-center mt-4 mt-lg-0">
-                    <svg xmlns="http://www.w3.org/2000/svg"
-                        width="150"
-                        height="150"
-                        fill="currentColor"
-                        class="text-dark opacity-75"
-                        viewBox="0 0 16 16">
-                        <path d="M8.354 1.146a.5.5 0 0 0-.708 0l-6 6A.5.5 0 0 0 2 8h1v6a1 1 0 0 0 1 1h3V9h2v6h3a1 1 0 0 0 1-1V8h1a.5.5 0 0 0 .354-.854z"/>
-                    </svg>
-                </div>
-            </div>
-        </div>
-
-        <div class="row g-4 mb-4">
-
-            <div class="col-md-6 col-lg-3">
-                <div class="card border h-100" style="border-radius:12px;border-color:#e9ecef;">
-                    <div class="card-body p-3">
-                        <div class="d-flex align-items-center">
-                            <div class="me-3">
-                                <div class="bg-warning bg-opacity-10 rounded-3 p-3">
-                                    <i class="bi bi-calendar-check fs-3 text-warning"></i>
-                                </div>
-                            </div>
-                            <div>
-                                <h4 class="fw-bold mb-0">{{ $totalBookings ?? 0 }}</h4>
-                                <small class="text-muted">Total Booking</small>
-                                <div class="small text-muted">
-                                    {{ $pendingBookings ?? 0 }} menunggu
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    </p>
                 </div>
             </div>
 
-            <div class="col-md-6 col-lg-3">
-                <div class="card border h-100" style="border-radius:12px;border-color:#e9ecef;">
-                    <div class="card-body p-3">
-                        <div class="d-flex align-items-center">
-                            <div class="me-3">
-                                <div class="bg-success bg-opacity-10 rounded-3 p-3">
-                                    <i class="bi bi-credit-card fs-3 text-success"></i>
-                                </div>
-                            </div>
-                            <div>
-                                <h4 class="fw-bold mb-0">{{ $totalPayments ?? 0 }}</h4>
-                                <small class="text-muted">Pembayaran</small>
-                                <div class="small text-muted">
-                                    {{ $verifiedPayments ?? 0 }} terverifikasi
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+            <div class="col-12 col-sm-6 col-lg-3 mb-4">
+                <div class="box-feature h-100">
+                    <span class="flaticon-house-3"></span>
+
+                    <h3 class="mb-3">
+                        {{ $totalMaintenance ?? 0 }}
+                    </h3>
+
+                    <p class="mb-2">
+                        Laporan Perbaikan
+                    </p>
+
+                    <p class="text-dark">
+                        {{ $completedMaintenance ?? 0 }} laporan perbaikan selesai.
+                    </p>
+
+                    <p>
+                        <a href="{{ route('user.maintenance.index') }}" class="learn-more">
+                            Lihat Perbaikan
+                        </a>
+                    </p>
                 </div>
             </div>
 
-            <div class="col-md-6 col-lg-3">
-                <div class="card border h-100" style="border-radius:12px;border-color:#e9ecef;">
-                    <div class="card-body p-3">
-                        <div class="d-flex align-items-center">
-                            <div class="me-3">
-                                <div class="bg-danger bg-opacity-10 rounded-3 p-3">
-                                    <i class="bi bi-tools fs-3 text-danger"></i>
-                                </div>
-                            </div>
-                            <div>
-                                <h4 class="fw-bold mb-0">{{ $totalMaintenance ?? 0 }}</h4>
-                                <small class="text-muted">Laporan Perbaikan</small>
-                                <div class="small text-muted">
-                                    {{ $completedMaintenance ?? 0 }} selesai
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <div class="col-12 col-sm-6 col-lg-3 mb-4">
+                <div class="box-feature h-100">
+                    <span class="flaticon-house-1"></span>
 
-            <div class="col-md-6 col-lg-3">
-                <div class="card border h-100" style="border-radius:12px;border-color:#e9ecef;">
-                    <div class="card-body p-3">
-                        <div class="d-flex align-items-center">
-                            <div class="me-3">
-                                <div class="bg-primary bg-opacity-10 rounded-3 p-3">
-                                    <i class="bi bi-chat-left-text fs-3 text-primary"></i>
-                                </div>
-                            </div>
-                            <div>
-                                <h4 class="fw-bold mb-0">{{ $totalFeedback ?? 0 }}</h4>
-                                <small class="text-muted">Feedback</small>
-                                <div class="small text-muted">
-                                    Masukan terkirim
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                    <h3 class="mb-3">
+                        {{ $totalFeedback ?? 0 }}
+                    </h3>
 
-        </div>
+                    <p class="mb-2">
+                        Feedback
+                    </p>
 
-        <div class="row g-4">
+                    <p class="text-dark">
+                        Masukan dan penilaian yang sudah kamu kirim.
+                    </p>
 
-            <div class="col-lg-8">
-                <div class="card border h-100" style="border-radius:12px;border-color:#e9ecef;">
-                    <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
-                        <h5 class="fw-bold mb-0">Aktivitas Terbaru</h5>
-                        <span class="badge bg-light text-dark">
-                            {{ count($activities ?? []) }} aktivitas
-                        </span>
-                    </div>
-
-                    <div class="card-body">
-
-                        @forelse($activities ?? [] as $activity)
-                            <div class="d-flex justify-content-between align-items-start border-bottom py-3">
-                                <div class="d-flex align-items-start">
-                                    <div class="me-3">
-                                        <div class="bg-{{ $activity['color'] }} bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center"
-                                            style="width:42px;height:42px;">
-                                            <i class="bi {{ $activity['icon'] }} text-{{ $activity['color'] }}"></i>
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <div class="fw-semibold">
-                                            {{ $activity['title'] }}
-                                        </div>
-
-                                        <small class="text-muted">
-                                            {{ $activity['description'] }}
-                                        </small>
-                                    </div>
-                                </div>
-
-                                <small class="text-muted text-nowrap ms-3">
-                                    {{ $activity['date']->format('d M Y') }}
-                                </small>
-                            </div>
-                        @empty
-                            <div class="text-center py-5">
-                                <i class="bi bi-inbox fs-1 text-muted"></i>
-                                <h6 class="text-muted mt-3">Belum ada aktivitas terbaru</h6>
-                            </div>
-                        @endforelse
-
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-lg-4">
-                <div class="card border h-100" style="border-radius:12px;border-color:#e9ecef;">
-                    <div class="card-header bg-white border-0 py-3">
-                        <h5 class="fw-bold mb-0">Ringkasan Status</h5>
-                    </div>
-
-                    <div class="card-body">
-
-                        <div class="mb-4">
-                            <div class="d-flex justify-content-between mb-1">
-                                <span class="fw-semibold">Booking Disetujui</span>
-                                <span>{{ $approvedBookings ?? 0 }}</span>
-                            </div>
-                            <div class="progress" style="height:8px;">
-                                <div class="progress-bar bg-success"
-                                    style="width: {{ ($totalBookings ?? 0) > 0 ? (($approvedBookings ?? 0) / $totalBookings) * 100 : 0 }}%">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="mb-4">
-                            <div class="d-flex justify-content-between mb-1">
-                                <span class="fw-semibold">Pembayaran Terverifikasi</span>
-                                <span>{{ $verifiedPayments ?? 0 }}</span>
-                            </div>
-                            <div class="progress" style="height:8px;">
-                                <div class="progress-bar bg-primary"
-                                    style="width: {{ ($totalPayments ?? 0) > 0 ? (($verifiedPayments ?? 0) / $totalPayments) * 100 : 0 }}%">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div>
-                            <div class="d-flex justify-content-between mb-1">
-                                <span class="fw-semibold">Maintenance Selesai</span>
-                                <span>{{ $completedMaintenance ?? 0 }}</span>
-                            </div>
-                            <div class="progress" style="height:8px;">
-                                <div class="progress-bar bg-warning"
-                                    style="width: {{ ($totalMaintenance ?? 0) > 0 ? (($completedMaintenance ?? 0) / $totalMaintenance) * 100 : 0 }}%">
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
+                    <p>
+                        <a href="{{ route('user.feedback.index') }}" class="learn-more">
+                            Lihat Feedback
+                        </a>
+                    </p>
                 </div>
             </div>
 
         </div>
 
     </div>
-</section>
+</div>
+
+<div class="section bg-light">
+    <div class="container">
+
+        <div class="row justify-content-center text-center mb-5">
+            <div class="col-12 col-lg-8">
+                <h2 class="font-weight-bold heading text-primary mb-4">
+                    Diagram Status Penghuni
+                </h2>
+
+                <p class="text-dark mb-0">
+                    Pantau alur booking, pembayaran, dan laporan perbaikan kamu secara mudah melalui dashboard ini.
+                </p>
+            </div>
+        </div>
+
+        <div class="row">
+
+            <div class="col-12 col-lg-4 mb-4">
+                <div class="box-feature h-100">
+                    <span class="flaticon-house"></span>
+
+                    <h3 class="mb-3">
+                        Booking
+                    </h3>
+
+                    <div class="mb-3">
+                        <strong>1. Booking Diajukan</strong>
+                        <p class="text-dark mb-0">
+                            Penghuni memilih kamar dan mengajukan sewa.
+                        </p>
+                    </div>
+
+                    <div class="mb-3">
+                        <strong>2. Dicek Admin</strong>
+                        <p class="text-dark mb-0">
+                            Admin memeriksa data booking penghuni.
+                        </p>
+                    </div>
+
+                    <div class="mb-4">
+                        <strong>3. Disetujui</strong>
+                        <p class="text-dark mb-0">
+                            {{ $approvedBookings ?? 0 }} dari {{ $totalBookings ?? 0 }} booking disetujui.
+                        </p>
+                    </div>
+
+                    <a href="{{ route('user.bookings.index') }}" class="btn btn-primary py-2 px-3">
+                        Lihat Booking
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-12 col-lg-4 mb-4">
+                <div class="box-feature h-100">
+                    <span class="flaticon-building"></span>
+
+                    <h3 class="mb-3">
+                        Pembayaran
+                    </h3>
+
+                    <div class="mb-3">
+                        <strong>1. Pilih Metode</strong>
+                        <p class="text-dark mb-0">
+                            Penghuni memilih Transfer Bank, QRIS, atau COD.
+                        </p>
+                    </div>
+
+                    <div class="mb-3">
+                        <strong>2. Kirim Pembayaran</strong>
+                        <p class="text-dark mb-0">
+                            Transfer dan QRIS wajib upload bukti.
+                        </p>
+                    </div>
+
+                    <div class="mb-4">
+                        <strong>3. Terverifikasi</strong>
+                        <p class="text-dark mb-0">
+                            {{ $verifiedPayments ?? 0 }} dari {{ $totalPayments ?? 0 }} pembayaran terverifikasi.
+                        </p>
+                    </div>
+
+                    <a href="{{ route('user.payments.index') }}" class="btn btn-primary py-2 px-3">
+                        Lihat Pembayaran
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-12 col-lg-4 mb-4">
+                <div class="box-feature h-100">
+                    <span class="flaticon-house-3"></span>
+
+                    <h3 class="mb-3">
+                        Perbaikan
+                    </h3>
+
+                    <div class="mb-3">
+                        <strong>1. Laporan Dibuat</strong>
+                        <p class="text-dark mb-0">
+                            Penghuni membuat laporan kerusakan kamar.
+                        </p>
+                    </div>
+
+                    <div class="mb-3">
+                        <strong>2. Ditangani Teknisi</strong>
+                        <p class="text-dark mb-0">
+                            Teknisi melakukan pengecekan dan perbaikan.
+                        </p>
+                    </div>
+
+                    <div class="mb-4">
+                        <strong>3. Selesai</strong>
+                        <p class="text-dark mb-0">
+                            {{ $completedMaintenance ?? 0 }} dari {{ $totalMaintenance ?? 0 }} laporan selesai.
+                        </p>
+                    </div>
+
+                    <a href="{{ route('user.maintenance.index') }}" class="btn btn-primary py-2 px-3">
+                        Lihat Perbaikan
+                    </a>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+<div class="section">
+    <div class="container">
+
+        <div class="row">
+
+            <div class="col-12 col-lg-8 mb-5 mb-lg-0">
+                <div class="box-feature h-100">
+                    <div class="row align-items-center mb-4">
+                        <div class="col-12 col-md-8 mb-3 mb-md-0">
+                            <h2 class="font-weight-bold text-primary heading mb-2">
+                                Aktivitas Terbaru
+                            </h2>
+
+                            <p class="text-dark mb-0">
+                                Riwayat aktivitas terbaru dari akun penghuni kamu.
+                            </p>
+                        </div>
+
+                        <div class="col-12 col-md-4 text-md-end">
+                            <span class="badge bg-primary rounded-0">
+                                {{ count($activities ?? []) }} aktivitas
+                            </span>
+                        </div>
+                    </div>
+
+                    @forelse($activities ?? [] as $activity)
+                        <div class="mb-4">
+                            <h3 class="mb-1">
+                                {{ $activity['title'] }}
+                            </h3>
+
+                            <p class="text-dark mb-1">
+                                {{ $activity['description'] }}
+                            </p>
+
+                            <small class="text-black-50">
+                                {{ isset($activity['date']) ? $activity['date']->format('d M Y') : '-' }}
+                            </small>
+                        </div>
+                    @empty
+                        <div class="text-center">
+                            <h4 class="text-primary mb-3">
+                                Belum Ada Aktivitas
+                            </h4>
+
+                            <p class="text-dark mb-4">
+                                Aktivitas booking, pembayaran, perbaikan, dan feedback akan muncul di sini.
+                            </p>
+
+                            <a href="{{ route('user.rooms.index') }}" class="btn btn-primary py-3 px-4">
+                                Mulai Cari Kamar
+                            </a>
+                        </div>
+                    @endforelse
+                </div>
+            </div>
+
+            <div class="col-12 col-lg-4">
+
+                <div class="box-feature mb-4">
+                    <span class="flaticon-house"></span>
+
+                    <h3 class="mb-3">
+                        {{ $approvedBookings ?? 0 }} Booking Disetujui
+                    </h3>
+
+                    <p class="text-dark mb-0">
+                        Booking yang sudah disetujui oleh admin.
+                    </p>
+                </div>
+
+                <div class="box-feature mb-4">
+                    <span class="flaticon-building"></span>
+
+                    <h3 class="mb-3">
+                        {{ $verifiedPayments ?? 0 }} Pembayaran Terverifikasi
+                    </h3>
+
+                    <p class="text-dark mb-0">
+                        Pembayaran yang sudah dicek dan diterima oleh admin.
+                    </p>
+                </div>
+
+                <div class="box-feature">
+                    <span class="flaticon-house-3"></span>
+
+                    <h3 class="mb-3">
+                        {{ $completedMaintenance ?? 0 }} Perbaikan Selesai
+                    </h3>
+
+                    <p class="text-dark mb-0">
+                        Laporan kerusakan yang sudah selesai ditangani.
+                    </p>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+</div>
 
 @endsection

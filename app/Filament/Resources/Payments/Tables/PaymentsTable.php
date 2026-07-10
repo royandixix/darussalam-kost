@@ -20,7 +20,32 @@ class PaymentsTable
                     ->rowIndex(),
 
                 TextColumn::make('booking.id')
-                    ->label('Pemesanan')
+                    ->label('Kode Booking')
+                    ->searchable(),
+
+                TextColumn::make('booking.user.name')
+                    ->label('Penghuni')
+                    ->searchable(),
+
+                TextColumn::make('booking.room.room_number')
+                    ->label('Kamar')
+                    ->searchable(),
+
+                TextColumn::make('payment_method')
+                    ->label('Metode')
+                    ->badge()
+                    ->formatStateUsing(fn (?string $state): string => match ($state) {
+                        'bank_transfer' => 'Transfer Bank',
+                        'qris' => 'QRIS',
+                        default => '-',
+                    }),
+
+                TextColumn::make('sender_name')
+                    ->label('Nama Pengirim')
+                    ->searchable(),
+
+                TextColumn::make('sender_bank')
+                    ->label('Bank/Aplikasi')
                     ->searchable(),
 
                 TextColumn::make('amount')
@@ -62,7 +87,7 @@ class PaymentsTable
             ])
             ->recordActions([
                 EditAction::make()
-                    ->label('Edit'),
+                    ->label('Verifikasi / Edit'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

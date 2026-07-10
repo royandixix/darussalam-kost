@@ -3,47 +3,69 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title','Darussalam Kost')</title>
+    <title>@yield('title', 'Darussalam Kost')</title>
 
-    <link href="{{ asset('assets/css/theme.css') }}" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Volkhov:wght@700&display=swap" rel="stylesheet">
-    <link rel="stylesheet"
-href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="shortcut icon" href="{{ asset('property-1.0.0/favicon.png') }}">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="{{ asset('property-1.0.0/fonts/icomoon/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('property-1.0.0/fonts/flaticon/font/flaticon.css') }}">
+    <link rel="stylesheet" href="{{ asset('property-1.0.0/css/tiny-slider.css') }}">
+    <link rel="stylesheet" href="{{ asset('property-1.0.0/css/aos.css') }}">
+    <link rel="stylesheet" href="{{ asset('property-1.0.0/css/style.css') }}">
 </head>
 <body>
 
-@if(!View::hasSection('hide_navbar'))
-    @include('user.partials.navbar')
+@include('user.partials.navbar')
+
+@hasSection('hide_page_header')
+@else
+    @include('user.partials.header')
 @endif
+@yield('content')
+@include('user.partials.footer')
 
-{{-- PAGE HEADER --}}
-@if(View::hasSection('page_header'))
-    <div class="bg-white border-bottom py-3">
-        <div class="container">
-
-            <h4 class="mb-0 fw-bold">
-                @yield('page_header')
-            </h4>
-
-            @if(View::hasSection('page_subtitle'))
-                <small class="text-muted">
-                    @yield('page_subtitle')
-                </small>
-            @endif
-
-        </div>
+<div id="overlayer"></div>
+<div class="loader">
+    <div class="spinner-border" role="status">
+        <span class="visually-hidden">Loading...</span>
     </div>
-@endif
-
-<div class="container py-5">
-    @yield('content')
 </div>
 
-@if(!View::hasSection('hide_navbar'))
-    @include('user.partials.footer')
+<script src="{{ asset('property-1.0.0/js/bootstrap.bundle.min.js') }}"></script>
+<script src="{{ asset('property-1.0.0/js/tiny-slider.js') }}"></script>
+<script src="{{ asset('property-1.0.0/js/aos.js') }}"></script>
+<script src="{{ asset('property-1.0.0/js/navbar.js') }}"></script>
+<script src="{{ asset('property-1.0.0/js/counter.js') }}"></script>
+<script src="{{ asset('property-1.0.0/js/custom.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+@if(session('success'))
+    <script>
+        Swal.fire({
+            icon: 'success',
+            title: 'Berhasil',
+            text: @json(session('success')),
+            confirmButtonText: 'Oke'
+        });
+    </script>
 @endif
 
-@include('user.partials.scripts')
+@if($errors->any())
+    <script>
+        Swal.fire({
+            icon: 'error',
+            title: 'Terjadi Kesalahan',
+            html: `{!! implode('<br>', $errors->all()) !!}`,
+            confirmButtonText: 'Periksa Lagi'
+        });
+    </script>
+@endif
+
+@stack('scripts')
 
 </body>
 </html>

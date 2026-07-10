@@ -12,12 +12,27 @@ class FeedbackController extends Controller
 {
     public function index()
     {
-        $feedbacks = Feedback::with('booking.room')
+        $feedbacks = Feedback::with(['booking.room'])
             ->where('user_id', Auth::id())
             ->latest()
             ->get();
 
-        return view('user.feedback.index', compact('feedbacks'));
+        $totalFeedback = $feedbacks->count();
+
+        $averageRating = $totalFeedback > 0
+            ? round($feedbacks->avg('rating'), 1)
+            : 0;
+
+        $publishedFeedback = $feedbacks
+            ->where('is_published', true)
+            ->count();
+
+        return view('user.feedback.index', compact(
+            'feedbacks',
+            'totalFeedback',
+            'averageRating',
+            'publishedFeedback'
+        ));
     }
 
     public function create()
@@ -43,6 +58,7 @@ class FeedbackController extends Controller
         $booking = Booking::where('id', $request->booking_id)
             ->where('user_id', Auth::id())
             ->whereIn('status', ['approved', 'completed'])
+            ->whereDoesntHave('feedback')
             ->firstOrFail();
 
         Feedback::create([

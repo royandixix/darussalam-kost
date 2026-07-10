@@ -2,70 +2,182 @@
 
 @section('title', 'Laporan Perbaikan')
 
-@section('page_header')
-    Laporan Perbaikan
-@endsection
+@section('page_header', 'Laporan Perbaikan')
 
-@section('page_subtitle')
-    Daftar laporan kerusakan yang pernah Anda kirim
-@endsection
+@section('page_subtitle', 'Daftar laporan kerusakan yang pernah kamu kirim')
 
 @section('content')
-    <div class="mb-4 text-end">
-        <a href="{{ route('user.maintenance.create') }}" class="btn btn-primary">
-            + Buat Laporan
-        </a>
-    </div>
 
-    <div class="card border-0 shadow-sm">
-        <div class="card-body">
-            @if (session('success'))
-                <div class="alert alert-success">
-                    {{ session('success') }}
-                </div>
-            @endif
+<div class="section">
+    <div class="container">
 
-            @if ($reports->count())
-                <div class="table-responsive">
-                    <table class="table align-middle">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Judul</th>
-                                <th>Kamar</th>
-                                <th>Status</th>
-                                <th>Tanggal</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($reports as $report)
-                                <tr>
-                                    <td>{{ $loop->iteration }}</td>
-                                    <td>{{ $report->title }}</td>
-                                    <td>{{ $report->room?->room_number ?? '-' }}</td>
-                                    <td>
-                                        @if ($report->status === 'completed')
-                                            <span class="badge bg-success">Selesai</span>
-                                        @elseif($report->status === 'in_progress')
-                                            <span class="badge bg-info">Diproses</span>
-                                        @elseif($report->status === 'assigned')
-                                            <span class="badge bg-primary">Ditugaskan</span>
-                                        @else
-                                            <span class="badge bg-warning text-dark">Menunggu</span>
-                                        @endif
-                                    </td>
-                                    <td>{{ $report->created_at->format('d M Y') }}</td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            @else
-                <div class="text-center py-5">
-                    <h5>Belum ada laporan</h5>
-                    <p class="text-muted mb-0">Anda belum pernah mengirim laporan perbaikan.</p>
-                </div>
-            @endif
+        <div class="row mb-5 align-items-center">
+            <div class="col-12 col-lg-7 mb-4 mb-lg-0">
+                <h2 class="font-weight-bold text-primary heading">
+                    Riwayat Laporan Perbaikan
+                </h2>
+
+                <p class="text-dark mb-0">
+                    Pantau laporan kerusakan kamar yang sudah kamu kirim, mulai dari status menunggu, ditugaskan, diproses, sampai selesai.
+                </p>
+            </div>
+
+            <div class="col-12 col-lg-5 text-lg-end">
+                <a href="{{ route('user.maintenance.create') }}" class="btn btn-primary text-white py-3 px-4">
+                    Buat Laporan Baru
+                </a>
+            </div>
         </div>
+
+        <div class="row">
+
+            @forelse ($reports as $report)
+
+                <div class="col-12 col-md-6 col-xl-4 mb-4">
+                    <div class="box-feature h-100">
+
+                        @if ($report->photo)
+                            <div class="mb-4">
+                                <img 
+                                    src="{{ asset('storage/' . $report->photo) }}" 
+                                    alt="{{ $report->title }}"
+                                    class="img-fluid w-100"
+                                >
+                            </div>
+                        @else
+                            <span class="flaticon-house-3"></span>
+                        @endif
+
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <span class="d-block text-black-50 mb-1">
+                                    Laporan #{{ $report->id }}
+                                </span>
+
+                                <h3 class="mb-0">
+                                    {{ $report->title }}
+                                </h3>
+                            </div>
+
+                            <div>
+                                @if ($report->status === 'completed')
+                                    <span class="badge bg-success rounded-0">
+                                        Selesai
+                                    </span>
+                                @elseif ($report->status === 'in_progress')
+                                    <span class="badge bg-info rounded-0">
+                                        Diproses
+                                    </span>
+                                @elseif ($report->status === 'assigned')
+                                    <span class="badge bg-primary rounded-0">
+                                        Ditugaskan
+                                    </span>
+                                @else
+                                    <span class="badge bg-warning text-dark rounded-0">
+                                        Menunggu
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <span class="d-block text-black-50">
+                                Kamar
+                            </span>
+
+                            <strong>
+                                Kamar {{ $report->room?->room_number ?? '-' }}
+                            </strong>
+                        </div>
+
+                        <div class="mb-3">
+                            <span class="d-block text-black-50">
+                                Prioritas
+                            </span>
+
+                            @if ($report->priority === 'high')
+                                <span class="badge bg-danger rounded-0">
+                                    Tinggi
+                                </span>
+                            @elseif ($report->priority === 'medium')
+                                <span class="badge bg-warning text-dark rounded-0">
+                                    Sedang
+                                </span>
+                            @else
+                                <span class="badge bg-secondary rounded-0">
+                                    Rendah
+                                </span>
+                            @endif
+                        </div>
+
+                        <div class="mb-3">
+                            <span class="d-block text-black-50">
+                                Deskripsi
+                            </span>
+
+                            <p class="text-dark mb-0">
+                                {{ \Illuminate\Support\Str::limit($report->description, 120) }}
+                            </p>
+                        </div>
+
+                        <div class="mb-4">
+                            <span class="d-block text-black-50">
+                                Tanggal Laporan
+                            </span>
+
+                            <strong>
+                                {{ $report->created_at->format('d M Y') }}
+                            </strong>
+                        </div>
+
+                        <div>
+                            @if ($report->status === 'pending')
+                                <p class="text-dark mb-0">
+                                    Laporan kamu sedang menunggu pengecekan admin.
+                                </p>
+                            @elseif ($report->status === 'assigned')
+                                <p class="text-dark mb-0">
+                                    Laporan sudah ditugaskan ke teknisi.
+                                </p>
+                            @elseif ($report->status === 'in_progress')
+                                <p class="text-dark mb-0">
+                                    Laporan sedang dalam proses perbaikan.
+                                </p>
+                            @elseif ($report->status === 'completed')
+                                <p class="text-dark mb-0">
+                                    Laporan perbaikan sudah selesai ditangani.
+                                </p>
+                            @endif
+                        </div>
+
+                    </div>
+                </div>
+
+            @empty
+
+                <div class="col-12">
+                    <div class="box-feature text-center">
+                        <span class="flaticon-house-3"></span>
+
+                        <h3 class="mb-3">
+                            Belum Ada Laporan
+                        </h3>
+
+                        <p class="text-dark mb-4">
+                            Kamu belum pernah mengirim laporan perbaikan. Jika ada kerusakan kamar, silakan buat laporan baru.
+                        </p>
+
+                        <a href="{{ route('user.maintenance.create') }}" class="btn btn-primary text-white py-3 px-4">
+                            Buat Laporan Sekarang
+                        </a>
+                    </div>
+                </div>
+
+            @endforelse
+
+        </div>
+
     </div>
+</div>
+
 @endsection

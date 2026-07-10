@@ -20,6 +20,27 @@ class EditPayment extends EditRecord
         return 'Pembayaran berhasil diperbarui';
     }
 
+    protected function afterSave(): void
+    {
+        $this->record->loadMissing('booking.room');
+
+        if ($this->record->status === 'verified') {
+            $this->record->booking?->update([
+                'status' => 'approved',
+            ]);
+
+            $this->record->booking?->room?->update([
+                'status' => 'occupied',
+            ]);
+        }
+
+        if ($this->record->status === 'rejected') {
+            $this->record->booking?->update([
+                'status' => 'pending',
+            ]);
+        }
+    }
+
     protected function getHeaderActions(): array
     {
         return [

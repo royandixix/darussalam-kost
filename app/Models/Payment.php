@@ -10,9 +10,13 @@ class Payment extends Model
     protected $fillable = [
         'booking_id',
         'amount',
+        'payment_method',
+        'sender_name',
+        'sender_bank',
         'payment_proof',
         'payment_date',
         'status',
+        'note',
     ];
 
     protected $casts = [

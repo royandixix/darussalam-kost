@@ -1,64 +1,206 @@
 @extends('user.layouts.app')
 
+@section('title', 'Profil Saya')
+
+@section('page_header', 'Profil Saya')
+
+@section('page_subtitle', 'Informasi akun penghuni Darussalam Kost')
+
 @section('content')
-<div class="container py-5">
-    <div class="row g-4">
-        
-        <div class="col-lg-4">
-            <div class="card border-0 shadow-sm text-center p-4">
-                <div class="card-body">
-                    <div class="position-relative d-inline-block mb-3">
-                        <div class="rounded-circle bg-light d-flex align-items-center justify-content-center text-primary font-weight-bold shadow-sm mx-auto" style="width: 100px; height: 100px; font-size: 2.5rem; background: linear-gradient(135deg, #e0e7ff 0%, #e0f2fe 100%);">
-                            {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
-                        </div>
-                    </div>
-                    <h5 class="fw-bold mb-1 text-dark">{{ auth()->user()->name }}</h5>
-                    <p class="text-muted small mb-3">{{ auth()->user()->email }}</p>
-                    <span class="badge bg-light text-primary px-3 py-2 rounded-pill font-semibold small">Sesi Aktif</span>
-                </div>
+
+<div class="section">
+    <div class="container">
+
+        <div class="row mb-5 align-items-center">
+            <div class="col-12 col-lg-7 mb-4 mb-lg-0">
+                <h2 class="font-weight-bold text-primary heading">
+                    Profil Penghuni
+                </h2>
+
+                <p class="text-dark mb-0">
+                    Kelola informasi akun, kontak, dan data pribadi yang digunakan di aplikasi Darussalam Kost.
+                </p>
+            </div>
+
+            <div class="col-12 col-lg-5 text-lg-end">
+                <a href="{{ route('user.dashboard') }}" class="btn btn-outline-primary py-3 px-4">
+                    Kembali ke Dashboard
+                </a>
             </div>
         </div>
 
-        <div class="col-lg-8">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-transparent border-0 pt-4 px-4">
-                    <ul class="nav nav-tabs card-header-tabs border-bottom-0" id="profileTab" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active fw-semibold text-dark border-0 pb-3" id="info-tab" data-bs-toggle="tab" data-bs-target="#info-content" type="button" role="tab" aria-controls="info-content" aria-selected="true">
-                                Informasi Akun
-                            </button>
-                        </li>
-                    </ul>
-                </div>
-                
-                <div class="card-body p-4">
-                    <div class="tab-content" id="profileTabContent">
-                        <div class="tab-pane fade show active" id="info-content" role="tabpanel" aria-labelledby="info-tab">
-                            <form>
-                                <div class="row g-3">
-                                    <div class="col-md-12">
-                                        <label class="form-label small text-muted text-uppercase font-weight-bold tracking-wider">Nama Lengkap</label>
-                                        <div class="input-group">
-                                            <span class="input-group-text bg-light border-0 text-muted px-3"><i class="bi bi-person"></i></span>
-                                            <input type="text" class="form-control bg-light border-0 py-2.5 px-3" value="{{ auth()->user()->name }}" readonly>
-                                        </div>
-                                    </div>
+        <div class="row">
 
-                                    <div class="col-md-12">
-                                        <label class="form-label small text-muted text-uppercase font-weight-bold tracking-wider">Alamat Email</label>
-                                        <div class="input-group">
-                                            <span class="input-group-text bg-light border-0 text-muted px-3"><i class="bi bi-envelope"></i></span>
-                                            <input type="email" class="form-control bg-light border-0 py-2.5 px-3" value="{{ auth()->user()->email }}" readonly>
-                                        </div>
-                                    </div>
-                                </div>
-                            </form>
+            <div class="col-12 col-lg-4 mb-4 mb-lg-0">
+                <div class="box-feature h-100 text-center">
+
+                    @if(auth()->user()->photo)
+                        <img 
+                            src="{{ asset('storage/' . auth()->user()->photo) }}" 
+                            alt="{{ auth()->user()->name }}"
+                            class="img-fluid mb-4"
+                        >
+                    @else
+                        <span class="flaticon-house"></span>
+                    @endif
+
+                    <h3 class="mb-2">
+                        {{ auth()->user()->name }}
+                    </h3>
+
+                    <p class="text-dark mb-3">
+                        {{ auth()->user()->email }}
+                    </p>
+
+                    <span class="badge bg-primary rounded-0 mb-4">
+                        {{ auth()->user()->role_label ?? 'Penghuni' }}
+                    </span>
+
+                    <div class="text-start mt-4">
+                        <div class="mb-3">
+                            <span class="d-block text-black-50">
+                                Status Akun
+                            </span>
+
+                            <strong>
+                                Aktif
+                            </strong>
+                        </div>
+
+                        <div class="mb-3">
+                            <span class="d-block text-black-50">
+                                Nomor Telepon
+                            </span>
+
+                            <strong>
+                                {{ auth()->user()->phone ?? '-' }}
+                            </strong>
+                        </div>
+
+                        <div>
+                            <span class="d-block text-black-50">
+                                Alamat
+                            </span>
+
+                            <strong>
+                                {{ auth()->user()->address ?? '-' }}
+                            </strong>
                         </div>
                     </div>
+
                 </div>
             </div>
+
+            <div class="col-12 col-lg-8">
+                <div class="box-feature h-100">
+
+                    <span class="flaticon-building"></span>
+
+                    <h3 class="mb-4">
+                        Informasi Akun
+                    </h3>
+
+                    <form action="{{ route('user.profile.update') }}" method="POST" enctype="multipart/form-data">
+                        @csrf
+                        @method('PUT')
+
+                        <div class="row">
+
+                            <div class="col-12 mb-4">
+                                <label class="form-label fw-semibold">
+                                    Nama Lengkap
+                                </label>
+
+                                <input 
+                                    type="text" 
+                                    name="name" 
+                                    class="form-control" 
+                                    value="{{ old('name', auth()->user()->name) }}"
+                                    required
+                                >
+                            </div>
+
+                            <div class="col-12 mb-4">
+                                <label class="form-label fw-semibold">
+                                    Alamat Email
+                                </label>
+
+                                <input 
+                                    type="email" 
+                                    class="form-control" 
+                                    value="{{ auth()->user()->email }}"
+                                    readonly
+                                >
+
+                                <small class="text-black-50">
+                                    Email digunakan untuk login dan tidak dapat diubah dari halaman ini.
+                                </small>
+                            </div>
+
+                            <div class="col-12 mb-4">
+                                <label class="form-label fw-semibold">
+                                    Nomor Telepon
+                                </label>
+
+                                <input 
+                                    type="text" 
+                                    name="phone" 
+                                    class="form-control" 
+                                    value="{{ old('phone', auth()->user()->phone) }}"
+                                    placeholder="Contoh: 081234567890"
+                                >
+                            </div>
+
+                            <div class="col-12 mb-4">
+                                <label class="form-label fw-semibold">
+                                    Alamat
+                                </label>
+
+                                <textarea 
+                                    name="address" 
+                                    class="form-control" 
+                                    rows="4"
+                                    placeholder="Masukkan alamat lengkap"
+                                >{{ old('address', auth()->user()->address) }}</textarea>
+                            </div>
+
+                            <div class="col-12 mb-4">
+                                <label class="form-label fw-semibold">
+                                    Foto Profil
+                                </label>
+
+                                <input 
+                                    type="file" 
+                                    name="photo" 
+                                    class="form-control" 
+                                    accept="image/*"
+                                >
+
+                                <small class="text-black-50">
+                                    Format: JPG, JPEG, PNG, WEBP. Maksimal 2MB.
+                                </small>
+                            </div>
+
+                        </div>
+
+                        <div class="d-flex flex-column flex-sm-row gap-2">
+                            <button type="submit" class="btn btn-primary text-white py-3 px-4">
+                                Simpan Perubahan
+                            </button>
+
+                            <a href="{{ route('user.dashboard') }}" class="btn btn-outline-primary py-3 px-4">
+                                Batal
+                            </a>
+                        </div>
+
+                    </form>
+
+                </div>
+            </div>
+
         </div>
 
     </div>
 </div>
+
 @endsection

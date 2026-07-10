@@ -1,51 +1,66 @@
-<!-- Footer Atas -->
-<section class="pb-2 pb-lg-5">
-  <div class="container">
-    <div class="row border-top border-top-secondary pt-7">
-      <div class="col-lg-3 col-md-6 mb-4 mb-md-6 mb-lg-0 mb-sm-2 order-1 order-md-1 order-lg-1">
-        <img class="mb-4" src="{{ asset('assets/img/logo.svg') }}" width="184" alt="" />
-      </div>
-      <div class="col-lg-3 col-md-6 mb-4 mb-lg-0 order-3 order-md-3 order-lg-2">
-        <p class="fs-2 mb-lg-4">Quick Links</p>
-        <ul class="list-unstyled mb-0">
-          <li class="mb-1"><a class="link-900 text-secondary text-decoration-none" href="#!">About us</a></li>
-          <li class="mb-1"><a class="link-900 text-secondary text-decoration-none" href="#!">Blog</a></li>
-          <li class="mb-1"><a class="link-900 text-secondary text-decoration-none" href="#!">Contact</a></li>
-          <li class="mb-1"><a class="link-900 text-secondary text-decoration-none" href="#!">FAQ</a></li>
-        </ul>
-      </div>
-      <div class="col-lg-3 col-md-6 mb-4 mb-lg-0 order-4 order-md-4 order-lg-3">
-        <p class="fs-2 mb-lg-4">Legal stuff</p>
-        <ul class="list-unstyled mb-0">
-          <li class="mb-1"><a class="link-900 text-secondary text-decoration-none" href="#!">Disclaimer</a></li>
-          <li class="mb-1"><a class="link-900 text-secondary text-decoration-none" href="#!">Financing</a></li>
-          <li class="mb-1"><a class="link-900 text-secondary text-decoration-none" href="#!">Privacy Policy</a></li>
-          <li class="mb-1"><a class="link-900 text-secondary text-decoration-none" href="#!">Terms of Service</a></li>
-        </ul>
-      </div>
-      <div class="col-lg-3 col-md-6 col-6 mb-4 mb-lg-0 order-2 order-md-2 order-lg-4">
-        <p class="fs-2 mb-lg-4">knowing you're always on the best energy deal.</p>
-        <form class="mb-3">
-          <input class="form-control" type="email" placeholder="Enter your phone Number" aria-label="phone" />
-        </form>
-        <button class="btn btn-warning fw-medium py-1">Sign up Now</button>
-      </div>
-    </div>
-  </div>
-</section>
+<div class="site-footer">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-4">
+                <div class="widget">
+                    <h3>Darussalam Kost</h3>
+                    <address>
+                        Platform pemesanan kamar kost berbasis website.
+                    </address>
 
-<!-- Footer Bawah (Copyright) -->
-<section class="text-center py-0">
-  <div class="container">
-    <div class="container border-top py-3">
-      <div class="row justify-content-between">
-        <div class="col-12 col-md-auto mb-1 mb-md-0">
-          <p class="mb-0">&copy; 2022 Your Company Inc </p>
+                    <ul class="list-unstyled links">
+                        <li><a href="#">Makassar, Indonesia</a></li>
+                        <li><a href="tel://081234567890">0812-3456-7890</a></li>
+                        <li><a href="mailto:darussalamkost@gmail.com">darussalamkost@gmail.com</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="widget">
+                    <h3>Menu</h3>
+
+                    <ul class="list-unstyled float-start links">
+                        <li><a href="{{ route('user.dashboard') }}">Dashboard</a></li>
+                        <li><a href="{{ route('user.rooms.index') }}">Cari Kamar</a></li>
+                        <li><a href="{{ route('user.bookings.index') }}">Sewa Saya</a></li>
+                        <li><a href="{{ route('user.payments.index') }}">Pembayaran</a></li>
+                    </ul>
+
+                    <ul class="list-unstyled float-start links">
+                        <li><a href="{{ route('user.maintenance.index') }}">Perbaikan</a></li>
+                        <li><a href="{{ route('user.feedback.index') }}">Feedback</a></li>
+                        <li><a href="{{ route('user.profile.index') }}">Profil</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="widget">
+                    <h3>Layanan</h3>
+
+                    <ul class="list-unstyled links">
+                        <li><a href="{{ route('user.rooms.index') }}">Pemesanan Kamar</a></li>
+                        <li><a href="{{ route('user.payments.index') }}">Upload Bukti Pembayaran</a></li>
+                        <li><a href="{{ route('user.maintenance.index') }}">Laporan Kerusakan</a></li>
+                        <li><a href="{{ route('user.feedback.index') }}">Feedback Penghuni</a></li>
+                    </ul>
+
+                    <ul class="list-unstyled social">
+                        <li><a href="#"><span class="icon-instagram"></span></a></li>
+                        <li><a href="#"><span class="icon-facebook"></span></a></li>
+                        <li><a href="#"><span class="icon-whatsapp"></span></a></li>
+                    </ul>
+                </div>
+            </div>
         </div>
-        <div class="col-12 col-md-auto">
-          <p class="mb-0">Made with<span class="fas fa-heart mx-1 text-danger"> </span>by <a class="text-decoration-none ms-1" href="https://themewagon.com/" target="_blank">ThemeWagon</a></p>
+
+        <div class="row mt-5">
+            <div class="col-12 text-center">
+                <p>
+                    Copyright &copy; {{ date('Y') }} Darussalam Kost. All Rights Reserved.
+                </p>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
-</section>
+</div>
