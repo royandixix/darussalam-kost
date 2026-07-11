@@ -33,17 +33,23 @@ class PaymentForm
                     ->options([
                         'bank_transfer' => 'Transfer Bank',
                         'qris' => 'QRIS',
+                        'cod' => 'COD / Bayar di Tempat',
                     ])
                     ->default('bank_transfer')
+                    ->live()
                     ->required(),
 
                 TextInput::make('sender_name')
                     ->label('Nama Pengirim')
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->visible(fn ($get): bool => $get('payment_method') === 'bank_transfer')
+                    ->required(fn ($get): bool => $get('payment_method') === 'bank_transfer'),
 
                 TextInput::make('sender_bank')
                     ->label('Bank / Aplikasi Pengirim')
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->visible(fn ($get): bool => $get('payment_method') === 'bank_transfer')
+                    ->required(fn ($get): bool => $get('payment_method') === 'bank_transfer'),
 
                 FileUpload::make('payment_proof')
                     ->label('Bukti Pembayaran')
@@ -52,7 +58,8 @@ class PaymentForm
                     ->directory('payment-proofs')
                     ->visibility('public')
                     ->maxSize(2048)
-                    ->required(),
+                    ->visible(fn ($get): bool => in_array($get('payment_method'), ['bank_transfer', 'qris']))
+                    ->required(fn ($get): bool => in_array($get('payment_method'), ['bank_transfer', 'qris'])),
 
                 DateTimePicker::make('payment_date')
                     ->label('Tanggal Pembayaran'),

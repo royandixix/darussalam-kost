@@ -22,13 +22,15 @@ class EditBooking extends EditRecord
 
     protected function afterSave(): void
     {
+        $this->record->loadMissing('room');
+
         if ($this->record->status === 'approved') {
             $this->record->room?->update([
                 'status' => 'occupied',
             ]);
         }
 
-        if (in_array($this->record->status, ['rejected', 'completed'])) {
+        if (in_array($this->record->status, ['pending', 'rejected', 'completed'])) {
             $this->record->room?->update([
                 'status' => 'available',
             ]);

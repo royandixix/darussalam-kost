@@ -55,6 +55,7 @@
                     <span class="badge bg-primary rounded-0 mb-4">
                         {{ auth()->user()->role_label ?? 'Penghuni' }}
                     </span>
+                
 
                     <div class="text-start mt-4">
                         <div class="mb-3">

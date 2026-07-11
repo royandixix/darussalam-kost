@@ -31,6 +31,7 @@ class MaintenanceReportForm
                 Textarea::make('description')
                     ->label('Deskripsi Kerusakan')
                     ->disabled()
+                    ->rows(4)
                     ->columnSpanFull(),
 
                 FileUpload::make('photo')
@@ -58,6 +59,13 @@ class MaintenanceReportForm
                         'completed' => 'Selesai',
                     ])
                     ->required(),
+
+                Textarea::make('technician_note')
+                    ->label('Catatan Teknisi')
+                    ->placeholder('Contoh: Area plafon sudah dicek, ditemukan sarang tikus dan akan dilakukan pembersihan.')
+                    ->rows(4)
+                    ->dehydrated(false)
+                    ->columnSpanFull(),
             ]);
     }
 }

@@ -21,15 +21,18 @@ class PaymentsTable
 
                 TextColumn::make('booking.id')
                     ->label('Kode Booking')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
 
                 TextColumn::make('booking.user.name')
                     ->label('Penghuni')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
 
                 TextColumn::make('booking.room.room_number')
                     ->label('Kamar')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
 
                 TextColumn::make('payment_method')
                     ->label('Metode')
@@ -37,15 +40,18 @@ class PaymentsTable
                     ->formatStateUsing(fn (?string $state): string => match ($state) {
                         'bank_transfer' => 'Transfer Bank',
                         'qris' => 'QRIS',
+                        'cod' => 'COD',
                         default => '-',
                     }),
 
                 TextColumn::make('sender_name')
                     ->label('Nama Pengirim')
+                    ->placeholder('-')
                     ->searchable(),
 
                 TextColumn::make('sender_bank')
                     ->label('Bank/Aplikasi')
+                    ->placeholder('-')
                     ->searchable(),
 
                 TextColumn::make('amount')

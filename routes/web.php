@@ -42,9 +42,11 @@ Route::middleware('auth')->prefix('user')->name('user.')->group(function () {
     Route::get('/payments/create', [PaymentController::class, 'create'])->name('payments.create');
     Route::post('/payments', [PaymentController::class, 'store'])->name('payments.store');
 
-    Route::get('/maintenance', [MaintenanceController::class, 'index'])->name('maintenance.index');
-    Route::get('/maintenance/create', [MaintenanceController::class, 'create'])->name('maintenance.create');
-    Route::post('/maintenance', [MaintenanceController::class, 'store'])->name('maintenance.store');
+Route::get('/maintenance', [MaintenanceController::class, 'index'])->name('maintenance.index');
+Route::get('/maintenance/create', [MaintenanceController::class, 'create'])->name('maintenance.create');
+Route::post('/maintenance', [MaintenanceController::class, 'store'])->name('maintenance.store');
+Route::get('/maintenance/{maintenanceReport}/edit', [MaintenanceController::class, 'edit'])->name('maintenance.edit');
+Route::put('/maintenance/{maintenanceReport}', [MaintenanceController::class, 'update'])->name('maintenance.update');
 
     Route::get('/feedback', [FeedbackController::class, 'index'])->name('feedback.index');
     Route::get('/feedback/create', [FeedbackController::class, 'create'])->name('feedback.create');

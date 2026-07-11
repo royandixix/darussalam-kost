@@ -18,7 +18,12 @@ class MaintenanceUpdatesTable
                     ->rowIndex(),
 
                 TextColumn::make('report.title')
-                    ->label('Laporan Kerusakan')
+                    ->label('Judul Kerusakan')
+                    ->searchable()
+                    ->sortable(),
+
+                TextColumn::make('report.user.name')
+                    ->label('Penghuni')
                     ->searchable()
                     ->sortable(),
 
@@ -33,8 +38,8 @@ class MaintenanceUpdatesTable
                     ->sortable(),
 
                 TextColumn::make('note')
-                    ->label('Catatan')
-                    ->limit(50)
+                    ->label('Catatan Teknisi')
+                    ->limit(80)
                     ->searchable(),
 
                 TextColumn::make('status')

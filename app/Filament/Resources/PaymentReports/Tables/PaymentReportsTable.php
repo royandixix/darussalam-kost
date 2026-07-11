@@ -32,6 +32,16 @@ class PaymentReportsTable
                     ->searchable()
                     ->sortable(),
 
+                TextColumn::make('payment_method')
+                    ->label('Metode')
+                    ->badge()
+                    ->formatStateUsing(fn (?string $state): string => match ($state) {
+                        'bank_transfer' => 'Transfer Bank',
+                        'qris' => 'QRIS',
+                        'cod' => 'COD',
+                        default => '-',
+                    }),
+
                 TextColumn::make('amount')
                     ->label('Jumlah Pembayaran')
                     ->money('IDR')
@@ -70,6 +80,14 @@ class PaymentReportsTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
+                SelectFilter::make('payment_method')
+                    ->label('Filter Metode')
+                    ->options([
+                        'bank_transfer' => 'Transfer Bank',
+                        'qris' => 'QRIS',
+                        'cod' => 'COD',
+                    ]),
+
                 SelectFilter::make('status')
                     ->label('Filter Status')
                     ->options([

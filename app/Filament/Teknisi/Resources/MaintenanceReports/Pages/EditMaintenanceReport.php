@@ -23,14 +23,18 @@ class EditMaintenanceReport extends EditRecord
 
     protected function afterSave(): void
     {
-        if ($this->record->wasChanged('status')) {
-            MaintenanceUpdate::create([
-                'maintenance_report_id' => $this->record->id,
-                'technician_id' => Auth::id(),
-                'note' => 'Status laporan diperbarui menjadi ' . $this->getStatusLabel($this->record->status) . '.',
-                'status' => $this->record->status,
-            ]);
+        $note = $this->data['technician_note'] ?? null;
+
+        if (! $note) {
+            $note = 'Status laporan diperbarui menjadi ' . $this->getStatusLabel($this->record->status) . '.';
         }
+
+        MaintenanceUpdate::create([
+            'maintenance_report_id' => $this->record->id,
+            'technician_id' => Auth::id(),
+            'note' => $note,
+            'status' => $this->record->status,
+        ]);
     }
 
     protected function getHeaderActions(): array

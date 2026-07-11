@@ -16,17 +16,11 @@ class MaintenanceUpdate extends Model
 
     public function report(): BelongsTo
     {
-        return $this->belongsTo(
-            MaintenanceReport::class,
-            'maintenance_report_id'
-        );
+        return $this->belongsTo(MaintenanceReport::class, 'maintenance_report_id');
     }
 
     public function technician(): BelongsTo
     {
-        return $this->belongsTo(
-            User::class,
-            'technician_id'
-        );
+        return $this->belongsTo(User::class, 'technician_id');
     }
 }

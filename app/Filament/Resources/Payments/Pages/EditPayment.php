@@ -38,6 +38,20 @@ class EditPayment extends EditRecord
             $this->record->booking?->update([
                 'status' => 'pending',
             ]);
+
+            $this->record->booking?->room?->update([
+                'status' => 'available',
+            ]);
+        }
+
+        if ($this->record->status === 'pending') {
+            $this->record->booking?->update([
+                'status' => 'pending',
+            ]);
+
+            $this->record->booking?->room?->update([
+                'status' => 'available',
+            ]);
         }
     }
 
