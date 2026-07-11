@@ -42,8 +42,8 @@ class PaymentForm
                 TextInput::make('sender_name')
                     ->label('Nama Pengirim')
                     ->maxLength(255)
-                    ->visible(fn ($get): bool => $get('payment_method') === 'bank_transfer')
-                    ->required(fn ($get): bool => $get('payment_method') === 'bank_transfer'),
+                    ->visible(fn ($get): bool => in_array($get('payment_method'), ['bank_transfer', 'qris']))
+                    ->required(fn ($get): bool => in_array($get('payment_method'), ['bank_transfer', 'qris'])),
 
                 TextInput::make('sender_bank')
                     ->label('Bank / Aplikasi Pengirim')

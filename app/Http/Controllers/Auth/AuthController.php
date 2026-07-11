@@ -69,6 +69,7 @@ class AuthController extends Controller
             'phone' => ['required', 'string', 'max:20'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'address' => ['required', 'string', 'max:255'],
+            'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ], [
             'name.required' => 'Nama lengkap wajib diisi.',
@@ -77,16 +78,26 @@ class AuthController extends Controller
             'email.email' => 'Format email tidak valid.',
             'email.unique' => 'Email sudah terdaftar.',
             'address.required' => 'Alamat domisili wajib diisi.',
+            'photo.image' => 'Foto profil harus berupa gambar.',
+            'photo.mimes' => 'Format foto profil harus JPG, JPEG, PNG, atau WEBP.',
+            'photo.max' => 'Ukuran foto profil maksimal 2MB.',
             'password.required' => 'Kata sandi wajib diisi.',
             'password.min' => 'Kata sandi minimal 8 karakter.',
             'password.confirmed' => 'Konfirmasi kata sandi tidak sesuai.',
         ]);
+
+        $photoPath = null;
+
+        if ($request->hasFile('photo')) {
+            $photoPath = $request->file('photo')->store('profile-photos', 'public');
+        }
 
         User::create([
             'name' => $request->name,
             'phone' => $request->phone,
             'email' => $request->email,
             'address' => $request->address,
+            'photo' => $photoPath,
             'password' => Hash::make($request->password),
             'role' => 'penghuni',
         ]);

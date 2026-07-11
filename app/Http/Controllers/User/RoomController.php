@@ -9,7 +9,8 @@ class RoomController extends Controller
 {
     public function index()
     {
-        $rooms = Room::where('status', 'available')->get();
+        $rooms = Room::latest()->get();
+
         return view('user.rooms.index', compact('rooms'));
     }
 

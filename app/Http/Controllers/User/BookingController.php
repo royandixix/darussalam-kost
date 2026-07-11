@@ -66,8 +66,10 @@ class BookingController extends Controller
 
         if ($request->payment_method === 'qris') {
             $request->validate([
+                'sender_name' => ['required', 'string', 'max:255'],
                 'payment_proof' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             ], [
+                'sender_name.required' => 'Nama pengirim wajib diisi untuk pembayaran QRIS.',
                 'payment_proof.required' => 'Bukti pembayaran QRIS wajib diupload.',
             ]);
         }
@@ -76,14 +78,14 @@ class BookingController extends Controller
             ->where('status', 'available')
             ->firstOrFail();
 
-        $totalPrice = $room->price * $request->duration_month;
+        $initialPayment = $room->price;
 
         $booking = Booking::create([
             'user_id' => Auth::id(),
             'room_id' => $room->id,
             'check_in_date' => $request->check_in_date,
             'duration_month' => $request->duration_month,
-            'total_price' => $totalPrice,
+            'total_price' => $initialPayment,
             'status' => 'pending',
         ]);
 
@@ -95,9 +97,9 @@ class BookingController extends Controller
 
         Payment::create([
             'booking_id' => $booking->id,
-            'amount' => $totalPrice,
+            'amount' => $initialPayment,
             'payment_method' => $request->payment_method,
-            'sender_name' => $request->payment_method === 'bank_transfer' ? $request->sender_name : null,
+            'sender_name' => in_array($request->payment_method, ['bank_transfer', 'qris']) ? $request->sender_name : null,
             'sender_bank' => $request->payment_method === 'bank_transfer' ? $request->sender_bank : null,
             'payment_proof' => $proofPath,
             'payment_date' => now(),
@@ -107,7 +109,7 @@ class BookingController extends Controller
 
         return redirect()
             ->route('user.rooms.index')
-            ->with('success', 'Booking berhasil diajukan. Silakan tunggu konfirmasi admin.');
+            ->with('success', 'Booking berhasil diajukan. Pembayaran awal adalah biaya bulan pertama. Silakan tunggu konfirmasi admin.');
     }
 
     public function show(Booking $booking)

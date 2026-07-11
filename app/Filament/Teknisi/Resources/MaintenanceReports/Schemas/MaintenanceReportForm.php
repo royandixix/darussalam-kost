@@ -62,7 +62,7 @@ class MaintenanceReportForm
 
                 Textarea::make('technician_note')
                     ->label('Catatan Teknisi')
-                    ->placeholder('Contoh: Area plafon sudah dicek, ditemukan sarang tikus dan akan dilakukan pembersihan.')
+                    ->placeholder('Contoh: Area kamar sudah dicek, ditemukan banyak sarang laba-laba dan akan dilakukan pembersihan.')
                     ->rows(4)
                     ->dehydrated(false)
                     ->columnSpanFull(),

@@ -14,7 +14,12 @@ class MaintenanceController extends Controller
 {
     public function index()
     {
-        $reports = MaintenanceReport::with(['room', 'user'])
+        $reports = MaintenanceReport::with([
+                'room',
+                'user',
+                'updates.technician',
+                'latestUpdate.technician',
+            ])
             ->where('user_id', Auth::id())
             ->latest()
             ->get();
@@ -43,14 +48,6 @@ class MaintenanceController extends Controller
             'title' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string'],
             'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
-        ], [
-            'room_id.required' => 'Kamar wajib dipilih.',
-            'room_id.exists' => 'Kamar yang dipilih tidak valid.',
-            'title.required' => 'Judul kerusakan wajib diisi.',
-            'description.required' => 'Deskripsi kerusakan wajib diisi.',
-            'photo.image' => 'Foto kerusakan harus berupa gambar.',
-            'photo.mimes' => 'Format foto harus JPG, JPEG, PNG, atau WEBP.',
-            'photo.max' => 'Ukuran foto maksimal 2MB.',
         ]);
 
         $hasBooking = Booking::where('user_id', Auth::id())
@@ -128,14 +125,6 @@ class MaintenanceController extends Controller
             'title' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string'],
             'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
-        ], [
-            'room_id.required' => 'Kamar wajib dipilih.',
-            'room_id.exists' => 'Kamar yang dipilih tidak valid.',
-            'title.required' => 'Judul kerusakan wajib diisi.',
-            'description.required' => 'Deskripsi kerusakan wajib diisi.',
-            'photo.image' => 'Foto kerusakan harus berupa gambar.',
-            'photo.mimes' => 'Format foto harus JPG, JPEG, PNG, atau WEBP.',
-            'photo.max' => 'Ukuran foto maksimal 2MB.',
         ]);
 
         $hasBooking = Booking::where('user_id', Auth::id())

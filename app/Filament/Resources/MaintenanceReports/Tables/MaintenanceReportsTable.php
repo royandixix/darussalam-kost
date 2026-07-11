@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\MaintenanceReports\Tables;
 
+use App\Models\MaintenanceReport;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -21,15 +22,18 @@ class MaintenanceReportsTable
 
                 TextColumn::make('user.name')
                     ->label('Penghuni')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
 
                 TextColumn::make('room.room_number')
                     ->label('Kamar')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
 
                 TextColumn::make('title')
                     ->label('Judul Laporan')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
 
                 ImageColumn::make('photo')
                     ->label('Foto')
@@ -57,6 +61,57 @@ class MaintenanceReportsTable
                         default => $state,
                     }),
 
+                TextColumn::make('technician_name')
+                    ->label('Teknisi')
+                    ->state(function (MaintenanceReport $record): string {
+                        $latestUpdate = $record->updates()
+                            ->with('technician')
+                            ->latest()
+                            ->first();
+
+                        return $latestUpdate?->technician?->name ?? '-';
+                    }),
+
+                TextColumn::make('latest_technician_note')
+                    ->label('Catatan Teknisi Terakhir')
+                    ->state(function (MaintenanceReport $record): string {
+                        $latestUpdate = $record->updates()
+                            ->latest()
+                            ->first();
+
+                        return $latestUpdate?->note ?? '-';
+                    })
+                    ->limit(60)
+                    ->searchable(false),
+
+                TextColumn::make('latest_update_status')
+                    ->label('Status Update')
+                    ->state(function (MaintenanceReport $record): string {
+                        $latestUpdate = $record->updates()
+                            ->latest()
+                            ->first();
+
+                        return match ($latestUpdate?->status) {
+                            'assigned' => 'Ditugaskan',
+                            'in_progress' => 'Sedang Dikerjakan',
+                            'completed' => 'Selesai',
+                            default => '-',
+                        };
+                    })
+                    ->badge(),
+
+                TextColumn::make('latest_update_date')
+                    ->label('Update Terakhir')
+                    ->state(function (MaintenanceReport $record): string {
+                        $latestUpdate = $record->updates()
+                            ->latest()
+                            ->first();
+
+                        return $latestUpdate?->created_at
+                            ? $latestUpdate->created_at->format('d M Y H:i')
+                            : '-';
+                    }),
+
                 TextColumn::make('created_at')
                     ->label('Tanggal Dibuat')
                     ->dateTime('d M Y H:i')
@@ -82,6 +137,7 @@ class MaintenanceReportsTable
                         ->modalDescription('Apakah Anda yakin ingin menghapus data laporan perbaikan yang dipilih?')
                         ->modalSubmitActionLabel('Ya, Hapus'),
                 ]),
-            ]);
+            ])
+            ->defaultSort('created_at', 'desc');
     }
 }

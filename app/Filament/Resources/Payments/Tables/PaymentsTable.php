@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Payments\Tables;
 
+use App\Models\Payment;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -44,15 +45,27 @@ class PaymentsTable
                         default => '-',
                     }),
 
-                TextColumn::make('sender_name')
+                TextColumn::make('sender_name_display')
                     ->label('Nama Pengirim')
-                    ->placeholder('-')
-                    ->searchable(),
+                    ->state(function (Payment $record): string {
+                        return match ($record->payment_method) {
+                            'bank_transfer' => $record->sender_name ?: '-',
+                            'qris' => $record->sender_name ?: '-',
+                            'cod' => 'Bayar di Tempat',
+                            default => '-',
+                        };
+                    }),
 
-                TextColumn::make('sender_bank')
+                TextColumn::make('sender_bank_display')
                     ->label('Bank/Aplikasi')
-                    ->placeholder('-')
-                    ->searchable(),
+                    ->state(function (Payment $record): string {
+                        return match ($record->payment_method) {
+                            'bank_transfer' => $record->sender_bank ?: '-',
+                            'qris' => 'QRIS',
+                            'cod' => 'Tidak Perlu',
+                            default => '-',
+                        };
+                    }),
 
                 TextColumn::make('amount')
                     ->label('Jumlah Pembayaran')
@@ -63,6 +76,24 @@ class PaymentsTable
                     ->label('Bukti')
                     ->disk('public')
                     ->size(60),
+
+                TextColumn::make('proof_status')
+                    ->label('Status Bukti')
+                    ->state(function (Payment $record): string {
+                        if ($record->payment_method === 'cod') {
+                            return 'Tidak Perlu Bukti';
+                        }
+
+                        return $record->payment_proof ? 'Bukti Ada' : 'Bukti Kosong';
+                    })
+                    ->badge()
+                    ->color(function (Payment $record): string {
+                        if ($record->payment_method === 'cod') {
+                            return 'gray';
+                        }
+
+                        return $record->payment_proof ? 'success' : 'danger';
+                    }),
 
                 TextColumn::make('payment_date')
                     ->label('Tanggal Pembayaran')
@@ -91,6 +122,7 @@ class PaymentsTable
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->defaultSort('created_at', 'desc')
             ->recordActions([
                 EditAction::make()
                     ->label('Verifikasi / Edit'),

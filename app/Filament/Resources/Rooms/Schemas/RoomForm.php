@@ -2,10 +2,10 @@
 
 namespace App\Filament\Resources\Rooms\Schemas;
 
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\FileUpload;
 use Filament\Schemas\Schema;
 
 class RoomForm
@@ -20,8 +20,42 @@ class RoomForm
 
                 TextInput::make('price')
                     ->label('Harga Sewa')
-                    ->numeric()
                     ->prefix('Rp')
+                    ->placeholder('Contoh: 900.000')
+                    ->live(debounce: 300)
+                    ->afterStateUpdated(function ($state, callable $set) {
+                        if ($state === null || $state === '') {
+                            return;
+                        }
+
+                        $number = preg_replace('/[^0-9]/', '', (string) $state);
+
+                        if ($number === '') {
+                            $set('price', null);
+                            return;
+                        }
+
+                        $set('price', number_format((float) $number, 0, ',', '.'));
+                    })
+                    ->dehydrateStateUsing(function ($state) {
+                        if ($state === null || $state === '') {
+                            return null;
+                        }
+
+                        return preg_replace('/[^0-9]/', '', (string) $state);
+                    })
+                    ->formatStateUsing(function ($state) {
+                        if ($state === null || $state === '') {
+                            return null;
+                        }
+
+                        $number = preg_replace('/[^0-9]/', '', (string) $state);
+
+                        return number_format((float) $number, 0, ',', '.');
+                    })
+                    ->extraInputAttributes([
+                        'inputmode' => 'numeric',
+                    ])
                     ->required(),
 
                 TextInput::make('capacity')

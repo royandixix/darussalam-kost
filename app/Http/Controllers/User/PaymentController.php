@@ -50,7 +50,15 @@ class PaymentController extends Controller
             'payment_proof' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ]);
 
-        if (in_array($request->payment_method, ['bank_transfer', 'qris'])) {
+        if ($request->payment_method === 'bank_transfer') {
+            $request->validate([
+                'sender_name' => ['required', 'string', 'max:255'],
+                'sender_bank' => ['required', 'string', 'max:255'],
+                'payment_proof' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            ]);
+        }
+
+        if ($request->payment_method === 'qris') {
             $request->validate([
                 'sender_name' => ['required', 'string', 'max:255'],
                 'payment_proof' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
@@ -85,8 +93,8 @@ class PaymentController extends Controller
             $booking->payment->update([
                 'amount' => $booking->total_price,
                 'payment_method' => $request->payment_method,
-                'sender_name' => $request->payment_method === 'cod' ? null : $request->sender_name,
-                'sender_bank' => $request->payment_method === 'cod' ? null : $request->sender_bank,
+                'sender_name' => in_array($request->payment_method, ['bank_transfer', 'qris']) ? $request->sender_name : null,
+                'sender_bank' => $request->payment_method === 'bank_transfer' ? $request->sender_bank : null,
                 'payment_proof' => $proofPath,
                 'payment_date' => now(),
                 'status' => 'pending',
@@ -97,8 +105,8 @@ class PaymentController extends Controller
                 'booking_id' => $booking->id,
                 'amount' => $booking->total_price,
                 'payment_method' => $request->payment_method,
-                'sender_name' => $request->payment_method === 'cod' ? null : $request->sender_name,
-                'sender_bank' => $request->payment_method === 'cod' ? null : $request->sender_bank,
+                'sender_name' => in_array($request->payment_method, ['bank_transfer', 'qris']) ? $request->sender_name : null,
+                'sender_bank' => $request->payment_method === 'bank_transfer' ? $request->sender_bank : null,
                 'payment_proof' => $proofPath,
                 'payment_date' => now(),
                 'status' => 'pending',

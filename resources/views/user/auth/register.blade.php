@@ -66,6 +66,25 @@
             height: auto;
         }
 
+        .profile-preview-box {
+            width: 110px;
+            height: 110px;
+            border: 1px solid #dfe5e5;
+            background: #f8f9fa;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+            margin-bottom: 12px;
+        }
+
+        .profile-preview-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
         @media (max-width: 991px) {
             .auth-wrapper {
                 padding: 24px 0;
@@ -133,7 +152,7 @@
                                 Lengkapi data berikut untuk mendaftar sebagai penghuni.
                             </p>
 
-                            <form id="registerForm" action="{{ route('register.post') }}" method="POST">
+                            <form id="registerForm" action="{{ route('register.post') }}" method="POST" enctype="multipart/form-data">
                                 @csrf
 
                                 <div class="row">
@@ -199,6 +218,32 @@
                                             placeholder="Masukkan alamat domisili"
                                             required
                                         >{{ old('address') }}</textarea>
+                                    </div>
+
+                                    <div class="col-12 mb-4">
+                                        <label class="form-label fw-semibold">
+                                            Foto Profil
+                                        </label>
+
+                                        <div class="profile-preview-box" id="photoPreviewBox">
+                                            <span id="photoPreviewText">
+                                                Preview
+                                            </span>
+
+                                            <img src="" alt="Preview Foto Profil" id="photoPreviewImage" class="d-none">
+                                        </div>
+
+                                        <input 
+                                            type="file" 
+                                            name="photo" 
+                                            id="photo"
+                                            class="form-control rounded-0"
+                                            accept="image/*"
+                                        >
+
+                                        <small class="text-black-50">
+                                            Opsional. Format JPG, JPEG, PNG, atau WEBP. Maksimal 2MB.
+                                        </small>
                                     </div>
 
                                     <div class="col-12 col-md-6 mb-4">
@@ -317,6 +362,25 @@
             field.type = 'password';
         }
     }
+
+    const photoInput = document.getElementById('photo');
+    const photoPreviewText = document.getElementById('photoPreviewText');
+    const photoPreviewImage = document.getElementById('photoPreviewImage');
+
+    photoInput.addEventListener('change', function () {
+        const file = this.files[0];
+
+        if (!file) {
+            photoPreviewImage.src = '';
+            photoPreviewImage.classList.add('d-none');
+            photoPreviewText.classList.remove('d-none');
+            return;
+        }
+
+        photoPreviewImage.src = URL.createObjectURL(file);
+        photoPreviewImage.classList.remove('d-none');
+        photoPreviewText.classList.add('d-none');
+    });
 
     document.getElementById('registerForm').addEventListener('submit', function () {
         const button = document.getElementById('submitBtn');

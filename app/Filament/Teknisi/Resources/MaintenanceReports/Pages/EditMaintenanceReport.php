@@ -11,6 +11,8 @@ class EditMaintenanceReport extends EditRecord
 {
     protected static string $resource = MaintenanceReportResource::class;
 
+    protected ?string $oldStatus = null;
+
     public function getTitle(): string
     {
         return 'Update Laporan Kerusakan';
@@ -21,12 +23,37 @@ class EditMaintenanceReport extends EditRecord
         return 'Status laporan berhasil diperbarui';
     }
 
+    protected function beforeSave(): void
+    {
+        $this->oldStatus = $this->record->getOriginal('status');
+    }
+
     protected function afterSave(): void
     {
-        $note = $this->data['technician_note'] ?? null;
+        $technicianNote = trim($this->data['technician_note'] ?? '');
 
-        if (! $note) {
-            $note = 'Status laporan diperbarui menjadi ' . $this->getStatusLabel($this->record->status) . '.';
+        $statusChanged = $this->oldStatus !== $this->record->status;
+
+        if (! $statusChanged && $technicianNote === '') {
+            return;
+        }
+
+        $note = $technicianNote !== ''
+            ? $technicianNote
+            : 'Status laporan diperbarui menjadi ' . $this->getStatusLabel($this->record->status) . '.';
+
+        $lastUpdate = MaintenanceUpdate::query()
+            ->where('maintenance_report_id', $this->record->id)
+            ->where('technician_id', Auth::id())
+            ->latest()
+            ->first();
+
+        if (
+            $lastUpdate &&
+            $lastUpdate->status === $this->record->status &&
+            $lastUpdate->note === $note
+        ) {
+            return;
         }
 
         MaintenanceUpdate::create([
