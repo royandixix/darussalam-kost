@@ -9,6 +9,7 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Filament\Actions\Action;
 
 class FeedbackTable
 {
@@ -27,7 +28,11 @@ class FeedbackTable
             ])
             ->filters([
                 SelectFilter::make('rating')->options([
-                    1 => '1', 2 => '2', 3 => '3', 4 => '4', 5 => '5',
+                    1 => '1',
+                    2 => '2',
+                    3 => '3',
+                    4 => '4',
+                    5 => '5',
                 ]),
                 SelectFilter::make('is_published')->options([
                     1 => 'Dipublikasikan',
@@ -35,8 +40,16 @@ class FeedbackTable
                 ]),
             ])
             ->headerActions([
+                Action::make('exportPdf')
+                    ->label('Export PDF')
+                    ->icon('heroicon-o-document-arrow-down')
+                    ->color('danger')
+                    ->url(route('admin.reports.pdf.feedback'))
+                    ->openUrlInNewTab(),
+
                 ExportAction::make('export')
-                    ->label('Export Feedback')
+                    ->label('Export Excel/CSV')
+                    ->icon('heroicon-o-table-cells')
                     ->exporter(FeedbackExporter::class),
             ])
             ->recordActions([

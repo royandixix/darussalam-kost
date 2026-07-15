@@ -7,6 +7,7 @@ use Filament\Actions\ExportAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Filament\Actions\Action;
 
 class PaymentReportsTable
 {
@@ -22,7 +23,7 @@ class PaymentReportsTable
                 TextColumn::make('payment_method')
                     ->label('Metode')
                     ->badge()
-                    ->formatStateUsing(fn (?string $state): string => match ($state) {
+                    ->formatStateUsing(fn(?string $state): string => match ($state) {
                         'bank_transfer' => 'Transfer Bank',
                         'qris' => 'QRIS',
                         'cod' => 'COD',
@@ -33,7 +34,7 @@ class PaymentReportsTable
                 TextColumn::make('status')
                     ->label('Status')
                     ->badge()
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                    ->formatStateUsing(fn(string $state): string => match ($state) {
                         'pending' => 'Menunggu Verifikasi',
                         'verified' => 'Terverifikasi',
                         'rejected' => 'Ditolak',
@@ -53,8 +54,16 @@ class PaymentReportsTable
                 ]),
             ])
             ->headerActions([
+                Action::make('exportPdf')
+                    ->label('Export PDF')
+                    ->icon('heroicon-o-document-arrow-down')
+                    ->color('danger')
+                    ->url(route('admin.reports.pdf.payments'))
+                    ->openUrlInNewTab(),
+
                 ExportAction::make('export')
-                    ->label('Export Pembayaran')
+                    ->label('Export Excel/CSV')
+                    ->icon('heroicon-o-table-cells')
                     ->exporter(PaymentExporter::class),
             ])
             ->recordActions([])

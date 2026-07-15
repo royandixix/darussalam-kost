@@ -7,6 +7,7 @@ use Filament\Actions\ExportAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Filament\Actions\Action;
 
 class TenantReportsTable
 {
@@ -25,7 +26,7 @@ class TenantReportsTable
                 TextColumn::make('status')
                     ->label('Status')
                     ->badge()
-                    ->formatStateUsing(fn (string $state): string => $state === 'active' ? 'Aktif' : 'Tidak Aktif'),
+                    ->formatStateUsing(fn(string $state): string => $state === 'active' ? 'Aktif' : 'Tidak Aktif'),
             ])
             ->filters([
                 SelectFilter::make('status')->options([
@@ -34,8 +35,16 @@ class TenantReportsTable
                 ]),
             ])
             ->headerActions([
+                Action::make('exportPdf')
+                    ->label('Export PDF')
+                    ->icon('heroicon-o-document-arrow-down')
+                    ->color('danger')
+                    ->url(route('admin.reports.pdf.tenants'))
+                    ->openUrlInNewTab(),
+
                 ExportAction::make('export')
-                    ->label('Export Penghuni')
+                    ->label('Export Excel/CSV')
+                    ->icon('heroicon-o-table-cells')
                     ->exporter(TenantExporter::class),
             ])
             ->recordActions([])

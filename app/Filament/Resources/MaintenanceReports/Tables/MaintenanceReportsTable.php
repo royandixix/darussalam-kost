@@ -9,6 +9,7 @@ use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Filament\Actions\Action;
 
 class MaintenanceReportsTable
 {
@@ -26,7 +27,7 @@ class MaintenanceReportsTable
                 TextColumn::make('priority')
                     ->label('Prioritas')
                     ->badge()
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                    ->formatStateUsing(fn(string $state): string => match ($state) {
                         'low' => 'Rendah',
                         'medium' => 'Sedang',
                         'high' => 'Tinggi',
@@ -35,7 +36,7 @@ class MaintenanceReportsTable
                 TextColumn::make('status')
                     ->label('Status')
                     ->badge()
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                    ->formatStateUsing(fn(string $state): string => match ($state) {
                         'pending' => 'Menunggu',
                         'assigned' => 'Ditugaskan',
                         'in_progress' => 'Sedang Dikerjakan',
@@ -58,8 +59,16 @@ class MaintenanceReportsTable
                 ]),
             ])
             ->headerActions([
+                Action::make('exportPdf')
+                    ->label('Export PDF')
+                    ->icon('heroicon-o-document-arrow-down')
+                    ->color('danger')
+                    ->url(route('admin.reports.pdf.maintenance'))
+                    ->openUrlInNewTab(),
+
                 ExportAction::make('export')
-                    ->label('Export Maintenance')
+                    ->label('Export Excel/CSV')
+                    ->icon('heroicon-o-table-cells')
                     ->exporter(MaintenanceReportExporter::class),
             ])
             ->recordActions([
