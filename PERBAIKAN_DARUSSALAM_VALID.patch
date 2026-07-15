@@ -1,0 +1,4743 @@
+diff -ruN a/app/Filament/Exports/BookingExporter.php b/app/Filament/Exports/BookingExporter.php
+--- a/app/Filament/Exports/BookingExporter.php	1970-01-01 00:00:00.000000000 +0000
++++ b/app/Filament/Exports/BookingExporter.php	2026-07-14 13:53:47.203526956 +0000
+@@ -0,0 +1,53 @@
++<?php
++
++namespace App\Filament\Exports;
++
++use App\Models\Booking;
++use Filament\Actions\Exports\ExportColumn;
++use Filament\Actions\Exports\Exporter;
++use Filament\Actions\Exports\Models\Export;
++use Illuminate\Support\Number;
++
++class BookingExporter extends Exporter
++{
++    protected static ?string $model = Booking::class;
++
++    public static function getColumns(): array
++    {
++        return [
++            ExportColumn::make('id')->label('Kode Booking'),
++            ExportColumn::make('user.name')->label('Nama Penghuni'),
++            ExportColumn::make('user.email')->label('Email Penghuni'),
++            ExportColumn::make('room.room_number')->label('Nomor Kamar'),
++            ExportColumn::make('check_in_date')->label('Tanggal Masuk'),
++            ExportColumn::make('duration_month')->label('Durasi Bulan'),
++            ExportColumn::make('total_price')->label('Total Kontrak'),
++            ExportColumn::make('status')
++                ->label('Status Booking')
++                ->formatStateUsing(fn (string $state): string => match ($state) {
++                    'pending' => 'Menunggu',
++                    'approved' => 'Disetujui',
++                    'rejected' => 'Ditolak',
++                    'completed' => 'Selesai',
++                    default => $state,
++                }),
++            ExportColumn::make('created_at')->label('Tanggal Dibuat'),
++        ];
++    }
++
++    public static function getCompletedNotificationBody(Export $export): string
++    {
++        return self::message($export, 'booking');
++    }
++
++    private static function message(Export $export, string $label): string
++    {
++        $body = 'Export ' . $label . ' selesai. ' . Number::format($export->successful_rows) . ' baris berhasil diekspor.';
++
++        if ($failed = $export->getFailedRowsCount()) {
++            $body .= ' ' . Number::format($failed) . ' baris gagal.';
++        }
++
++        return $body;
++    }
++}
+diff -ruN a/app/Filament/Exports/FeedbackExporter.php b/app/Filament/Exports/FeedbackExporter.php
+--- a/app/Filament/Exports/FeedbackExporter.php	1970-01-01 00:00:00.000000000 +0000
++++ b/app/Filament/Exports/FeedbackExporter.php	2026-07-14 13:53:47.232784019 +0000
+@@ -0,0 +1,50 @@
++<?php
++
++namespace App\Filament\Exports;
++
++use App\Models\Feedback;
++use Filament\Actions\Exports\ExportColumn;
++use Filament\Actions\Exports\Exporter;
++use Filament\Actions\Exports\Models\Export;
++use Illuminate\Support\Number;
++
++class FeedbackExporter extends Exporter
++{
++    protected static ?string $model = Feedback::class;
++
++    public static function getColumns(): array
++    {
++        return [
++            ExportColumn::make('id')->label('ID Feedback'),
++            ExportColumn::make('user.name')->label('Penghuni'),
++            ExportColumn::make('booking.id')->label('Kode Booking'),
++            ExportColumn::make('booking.room.room_number')->label('Nomor Kamar'),
++            ExportColumn::make('rating')->label('Rating'),
++            ExportColumn::make('comment')
++                ->label('Komentar')
++                ->formatStateUsing(fn (?string $state): string => self::safeText($state)),
++            ExportColumn::make('is_published')
++                ->label('Dipublikasikan')
++                ->formatStateUsing(fn (bool $state): string => $state ? 'Ya' : 'Tidak'),
++            ExportColumn::make('created_at')->label('Tanggal Dibuat'),
++        ];
++    }
++
++    public static function getCompletedNotificationBody(Export $export): string
++    {
++        $body = 'Export feedback selesai. ' . Number::format($export->successful_rows) . ' baris berhasil diekspor.';
++
++        if ($failed = $export->getFailedRowsCount()) {
++            $body .= ' ' . Number::format($failed) . ' baris gagal.';
++        }
++
++        return $body;
++    }
++
++    private static function safeText(?string $value): string
++    {
++        $value = trim((string) $value);
++
++        return preg_match('/^[=+\-@]/', $value) ? "'" . $value : $value;
++    }
++}
+diff -ruN a/app/Filament/Exports/MaintenanceReportExporter.php b/app/Filament/Exports/MaintenanceReportExporter.php
+--- a/app/Filament/Exports/MaintenanceReportExporter.php	1970-01-01 00:00:00.000000000 +0000
++++ b/app/Filament/Exports/MaintenanceReportExporter.php	2026-07-14 13:53:47.225030040 +0000
+@@ -0,0 +1,65 @@
++<?php
++
++namespace App\Filament\Exports;
++
++use App\Models\MaintenanceReport;
++use Filament\Actions\Exports\ExportColumn;
++use Filament\Actions\Exports\Exporter;
++use Filament\Actions\Exports\Models\Export;
++use Illuminate\Support\Number;
++
++class MaintenanceReportExporter extends Exporter
++{
++    protected static ?string $model = MaintenanceReport::class;
++
++    public static function getColumns(): array
++    {
++        return [
++            ExportColumn::make('id')->label('Kode Laporan'),
++            ExportColumn::make('user.name')->label('Penghuni'),
++            ExportColumn::make('room.room_number')->label('Nomor Kamar'),
++            ExportColumn::make('assignedTechnician.name')->label('Teknisi'),
++            ExportColumn::make('title')->label('Judul'),
++            ExportColumn::make('description')
++                ->label('Deskripsi')
++                ->formatStateUsing(fn (?string $state): string => self::safeText($state)),
++            ExportColumn::make('priority')
++                ->label('Prioritas')
++                ->formatStateUsing(fn (string $state): string => match ($state) {
++                    'low' => 'Rendah',
++                    'medium' => 'Sedang',
++                    'high' => 'Tinggi',
++                    default => $state,
++                }),
++            ExportColumn::make('status')
++                ->label('Status')
++                ->formatStateUsing(fn (string $state): string => match ($state) {
++                    'pending' => 'Menunggu',
++                    'assigned' => 'Ditugaskan',
++                    'in_progress' => 'Sedang Dikerjakan',
++                    'completed' => 'Selesai',
++                    default => $state,
++                }),
++            ExportColumn::make('created_at')->label('Tanggal Laporan'),
++            ExportColumn::make('updated_at')->label('Terakhir Diperbarui'),
++        ];
++    }
++
++    public static function getCompletedNotificationBody(Export $export): string
++    {
++        $body = 'Export maintenance selesai. ' . Number::format($export->successful_rows) . ' baris berhasil diekspor.';
++
++        if ($failed = $export->getFailedRowsCount()) {
++            $body .= ' ' . Number::format($failed) . ' baris gagal.';
++        }
++
++        return $body;
++    }
++
++    private static function safeText(?string $value): string
++    {
++        $value = trim((string) $value);
++
++        return preg_match('/^[=+\-@]/', $value) ? "'" . $value : $value;
++    }
++}
+diff -ruN a/app/Filament/Exports/PaymentExporter.php b/app/Filament/Exports/PaymentExporter.php
+--- a/app/Filament/Exports/PaymentExporter.php	1970-01-01 00:00:00.000000000 +0000
++++ b/app/Filament/Exports/PaymentExporter.php	2026-07-14 13:53:47.210427754 +0000
+@@ -0,0 +1,56 @@
++<?php
++
++namespace App\Filament\Exports;
++
++use App\Models\Payment;
++use Filament\Actions\Exports\ExportColumn;
++use Filament\Actions\Exports\Exporter;
++use Filament\Actions\Exports\Models\Export;
++use Illuminate\Support\Number;
++
++class PaymentExporter extends Exporter
++{
++    protected static ?string $model = Payment::class;
++
++    public static function getColumns(): array
++    {
++        return [
++            ExportColumn::make('id')->label('Kode Pembayaran'),
++            ExportColumn::make('booking.id')->label('Kode Booking'),
++            ExportColumn::make('booking.user.name')->label('Nama Penghuni'),
++            ExportColumn::make('booking.room.room_number')->label('Nomor Kamar'),
++            ExportColumn::make('amount')->label('Jumlah'),
++            ExportColumn::make('payment_method')
++                ->label('Metode')
++                ->formatStateUsing(fn (?string $state): string => match ($state) {
++                    'bank_transfer' => 'Transfer Bank',
++                    'qris' => 'QRIS',
++                    'cod' => 'COD',
++                    default => '-',
++                }),
++            ExportColumn::make('sender_name')->label('Nama Pengirim'),
++            ExportColumn::make('sender_bank')->label('Bank/Aplikasi'),
++            ExportColumn::make('payment_date')->label('Tanggal Pembayaran'),
++            ExportColumn::make('status')
++                ->label('Status')
++                ->formatStateUsing(fn (string $state): string => match ($state) {
++                    'pending' => 'Menunggu Verifikasi',
++                    'verified' => 'Terverifikasi',
++                    'rejected' => 'Ditolak',
++                    default => $state,
++                }),
++            ExportColumn::make('note')->label('Catatan Admin'),
++        ];
++    }
++
++    public static function getCompletedNotificationBody(Export $export): string
++    {
++        $body = 'Export pembayaran selesai. ' . Number::format($export->successful_rows) . ' baris berhasil diekspor.';
++
++        if ($failed = $export->getFailedRowsCount()) {
++            $body .= ' ' . Number::format($failed) . ' baris gagal.';
++        }
++
++        return $body;
++    }
++}
+diff -ruN a/app/Filament/Exports/TenantExporter.php b/app/Filament/Exports/TenantExporter.php
+--- a/app/Filament/Exports/TenantExporter.php	1970-01-01 00:00:00.000000000 +0000
++++ b/app/Filament/Exports/TenantExporter.php	2026-07-14 13:53:47.217786905 +0000
+@@ -0,0 +1,41 @@
++<?php
++
++namespace App\Filament\Exports;
++
++use App\Models\Tenant;
++use Filament\Actions\Exports\ExportColumn;
++use Filament\Actions\Exports\Exporter;
++use Filament\Actions\Exports\Models\Export;
++use Illuminate\Support\Number;
++
++class TenantExporter extends Exporter
++{
++    protected static ?string $model = Tenant::class;
++
++    public static function getColumns(): array
++    {
++        return [
++            ExportColumn::make('id')->label('ID Penghuni'),
++            ExportColumn::make('booking_id')->label('Kode Booking'),
++            ExportColumn::make('name')->label('Nama'),
++            ExportColumn::make('phone')->label('Telepon'),
++            ExportColumn::make('email')->label('Email'),
++            ExportColumn::make('room.room_number')->label('Nomor Kamar'),
++            ExportColumn::make('check_in_date')->label('Tanggal Masuk'),
++            ExportColumn::make('status')
++                ->label('Status')
++                ->formatStateUsing(fn (string $state): string => $state === 'active' ? 'Aktif' : 'Tidak Aktif'),
++        ];
++    }
++
++    public static function getCompletedNotificationBody(Export $export): string
++    {
++        $body = 'Export penghuni selesai. ' . Number::format($export->successful_rows) . ' baris berhasil diekspor.';
++
++        if ($failed = $export->getFailedRowsCount()) {
++            $body .= ' ' . Number::format($failed) . ' baris gagal.';
++        }
++
++        return $body;
++    }
++}
+diff -ruN a/app/Filament/Resources/BookingReports/Tables/BookingReportsTable.php b/app/Filament/Resources/BookingReports/Tables/BookingReportsTable.php
+--- a/app/Filament/Resources/BookingReports/Tables/BookingReportsTable.php	2026-06-30 04:50:47.000000000 +0000
++++ b/app/Filament/Resources/BookingReports/Tables/BookingReportsTable.php	2026-07-14 13:54:46.689200546 +0000
+@@ -2,7 +2,8 @@
+ 
+ namespace App\Filament\Resources\BookingReports\Tables;
+ 
+-use Filament\Tables\Columns\ImageColumn;
++use App\Filament\Exports\MaintenanceReportExporter;
++use Filament\Actions\ExportAction;
+ use Filament\Tables\Columns\TextColumn;
+ use Filament\Tables\Filters\SelectFilter;
+ use Filament\Tables\Table;
+@@ -12,87 +13,37 @@
+     public static function configure(Table $table): Table
+     {
+         return $table
++            ->poll('5s')
+             ->columns([
+-                TextColumn::make('no')
+-                    ->label('No')
+-                    ->rowIndex(),
+-
+-                TextColumn::make('user.name')
+-                    ->label('Penghuni')
+-                    ->searchable()
+-                    ->sortable(),
+-
+-                TextColumn::make('room.room_number')
+-                    ->label('Nomor Kamar')
+-                    ->searchable()
+-                    ->sortable(),
+-
+-                TextColumn::make('title')
+-                    ->label('Judul Laporan')
+-                    ->searchable()
+-                    ->sortable(),
+-
+-                TextColumn::make('description')
+-                    ->label('Deskripsi')
+-                    ->limit(50)
+-                    ->searchable(),
+-
+-                ImageColumn::make('photo')
+-                    ->label('Foto')
+-                    ->disk('public')
+-                    ->size(60),
+-
+-                TextColumn::make('priority')
+-                    ->label('Prioritas')
+-                    ->badge()
+-                    ->formatStateUsing(fn (string $state): string => match ($state) {
+-                        'low' => 'Rendah',
+-                        'medium' => 'Sedang',
+-                        'high' => 'Tinggi',
+-                        default => $state,
+-                    }),
+-
+-                TextColumn::make('status')
+-                    ->label('Status')
+-                    ->badge()
+-                    ->formatStateUsing(fn (string $state): string => match ($state) {
+-                        'pending' => 'Menunggu',
+-                        'assigned' => 'Ditugaskan',
+-                        'in_progress' => 'Sedang Dikerjakan',
+-                        'completed' => 'Selesai',
+-                        default => $state,
+-                    }),
+-
+-                TextColumn::make('created_at')
+-                    ->label('Tanggal Laporan')
+-                    ->dateTime('d M Y H:i')
+-                    ->sortable(),
+-
+-                TextColumn::make('updated_at')
+-                    ->label('Terakhir Diperbarui')
+-                    ->dateTime('d M Y H:i')
+-                    ->sortable()
+-                    ->toggleable(isToggledHiddenByDefault: true),
++                TextColumn::make('no')->label('No')->rowIndex(),
++                TextColumn::make('user.name')->label('Penghuni')->searchable()->sortable(),
++                TextColumn::make('room.room_number')->label('Nomor Kamar')->searchable()->sortable(),
++                TextColumn::make('assignedTechnician.name')->label('Teknisi')->placeholder('-'),
++                TextColumn::make('title')->label('Judul Laporan')->searchable()->sortable(),
++                TextColumn::make('description')->label('Deskripsi')->limit(70)->searchable()->wrap(),
++                TextColumn::make('priority')->label('Prioritas')->badge(),
++                TextColumn::make('status')->label('Status')->badge(),
++                TextColumn::make('created_at')->label('Tanggal Laporan')->dateTime('d M Y H:i')->sortable(),
+             ])
+             ->filters([
+-                SelectFilter::make('priority')
+-                    ->label('Filter Prioritas')
+-                    ->options([
+-                        'low' => 'Rendah',
+-                        'medium' => 'Sedang',
+-                        'high' => 'Tinggi',
+-                    ]),
+-
+-                SelectFilter::make('status')
+-                    ->label('Filter Status')
+-                    ->options([
+-                        'pending' => 'Menunggu',
+-                        'assigned' => 'Ditugaskan',
+-                        'in_progress' => 'Sedang Dikerjakan',
+-                        'completed' => 'Selesai',
+-                    ]),
++                SelectFilter::make('priority')->options([
++                    'low' => 'Rendah',
++                    'medium' => 'Sedang',
++                    'high' => 'Tinggi',
++                ]),
++                SelectFilter::make('status')->options([
++                    'pending' => 'Menunggu',
++                    'assigned' => 'Ditugaskan',
++                    'in_progress' => 'Sedang Dikerjakan',
++                    'completed' => 'Selesai',
++                ]),
++            ])
++            ->headerActions([
++                ExportAction::make('export')
++                    ->label('Export Maintenance')
++                    ->exporter(MaintenanceReportExporter::class),
+             ])
+             ->recordActions([])
+-            ->toolbarActions([]);
++            ->defaultSort('created_at', 'desc');
+     }
+-}
+\ No newline at end of file
++}
+diff -ruN a/app/Filament/Resources/Bookings/BookingResource.php b/app/Filament/Resources/Bookings/BookingResource.php
+--- a/app/Filament/Resources/Bookings/BookingResource.php	2026-06-14 18:55:44.000000000 +0000
++++ b/app/Filament/Resources/Bookings/BookingResource.php	2026-07-14 13:55:46.978071727 +0000
+@@ -54,6 +54,11 @@
+         return [];
+     }
+ 
++    public static function canCreate(): bool
++    {
++        return false;
++    }
++
+     public static function getPages(): array
+     {
+         return [
+diff -ruN a/app/Filament/Resources/Bookings/Pages/EditBooking.php b/app/Filament/Resources/Bookings/Pages/EditBooking.php
+--- a/app/Filament/Resources/Bookings/Pages/EditBooking.php	2026-07-10 10:55:59.000000000 +0000
++++ b/app/Filament/Resources/Bookings/Pages/EditBooking.php	2026-07-14 13:55:45.849755225 +0000
+@@ -3,48 +3,40 @@
+ namespace App\Filament\Resources\Bookings\Pages;
+ 
+ use App\Filament\Resources\Bookings\BookingResource;
+-use Filament\Actions\DeleteAction;
++use App\Services\BookingLifecycleService;
+ use Filament\Resources\Pages\EditRecord;
+ 
+ class EditBooking extends EditRecord
+ {
+     protected static string $resource = BookingResource::class;
+ 
++    private ?string $oldStatus = null;
++
+     public function getTitle(): string
+     {
+-        return 'Edit Pemesanan Kamar';
++        return 'Kelola Pemesanan Kamar';
+     }
+ 
+-    protected function getSavedNotificationTitle(): ?string
++    protected function beforeSave(): void
+     {
+-        return 'Pemesanan kamar berhasil diperbarui';
++        $this->oldStatus = $this->record->status;
+     }
+ 
+     protected function afterSave(): void
+     {
+-        $this->record->loadMissing('room');
++        app(BookingLifecycleService::class)->synchronizeBooking(
++            $this->record,
++            notifyUser: $this->oldStatus !== $this->record->status,
++        );
++    }
+ 
+-        if ($this->record->status === 'approved') {
+-            $this->record->room?->update([
+-                'status' => 'occupied',
+-            ]);
+-        }
+-
+-        if (in_array($this->record->status, ['pending', 'rejected', 'completed'])) {
+-            $this->record->room?->update([
+-                'status' => 'available',
+-            ]);
+-        }
++    protected function getSavedNotificationTitle(): ?string
++    {
++        return 'Pemesanan kamar berhasil diperbarui';
+     }
+ 
+     protected function getHeaderActions(): array
+     {
+-        return [
+-            DeleteAction::make()
+-                ->label('Hapus')
+-                ->modalHeading('Hapus Pemesanan Kamar')
+-                ->modalDescription('Apakah Anda yakin ingin menghapus pemesanan kamar ini?')
+-                ->modalSubmitActionLabel('Ya, Hapus'),
+-        ];
++        return [];
+     }
+-}
+\ No newline at end of file
++}
+diff -ruN a/app/Filament/Resources/Bookings/Schemas/BookingForm.php b/app/Filament/Resources/Bookings/Schemas/BookingForm.php
+--- a/app/Filament/Resources/Bookings/Schemas/BookingForm.php	2026-06-29 13:19:50.000000000 +0000
++++ b/app/Filament/Resources/Bookings/Schemas/BookingForm.php	2026-07-14 13:59:58.634398902 +0000
+@@ -18,6 +18,7 @@
+                     ->relationship('user', 'name')
+                     ->searchable()
+                     ->preload()
++                    ->disabledOn('edit')
+                     ->required(),
+ 
+                 Select::make('room_id')
+@@ -25,21 +26,26 @@
+                     ->relationship('room', 'room_number')
+                     ->searchable()
+                     ->preload()
++                    ->disabledOn('edit')
+                     ->required(),
+ 
+                 DatePicker::make('check_in_date')
+                     ->label('Tanggal Masuk')
++                    ->disabledOn('edit')
+                     ->required(),
+ 
+                 TextInput::make('duration_month')
+-                    ->label('Durasi Sewa Bulan')
++                    ->label('Durasi Sewa')
+                     ->numeric()
++                    ->suffix(' bulan')
++                    ->disabledOn('edit')
+                     ->required(),
+ 
+                 TextInput::make('total_price')
+-                    ->label('Total Biaya')
++                    ->label('Total Kontrak')
+                     ->numeric()
+                     ->prefix('Rp')
++                    ->disabledOn('edit')
+                     ->required(),
+ 
+                 Select::make('status')
+@@ -54,4 +60,4 @@
+                     ->required(),
+             ]);
+     }
+-}
+\ No newline at end of file
++}
+diff -ruN a/app/Filament/Resources/Bookings/Tables/BookingsTable.php b/app/Filament/Resources/Bookings/Tables/BookingsTable.php
+--- a/app/Filament/Resources/Bookings/Tables/BookingsTable.php	2026-06-29 13:20:17.000000000 +0000
++++ b/app/Filament/Resources/Bookings/Tables/BookingsTable.php	2026-07-14 13:54:46.658562157 +0000
+@@ -2,10 +2,11 @@
+ 
+ namespace App\Filament\Resources\Bookings\Tables;
+ 
+-use Filament\Actions\BulkActionGroup;
+-use Filament\Actions\DeleteBulkAction;
++use App\Filament\Exports\BookingExporter;
+ use Filament\Actions\EditAction;
++use Filament\Actions\ExportAction;
+ use Filament\Tables\Columns\TextColumn;
++use Filament\Tables\Filters\SelectFilter;
+ use Filament\Tables\Table;
+ 
+ class BookingsTable
+@@ -13,36 +14,26 @@
+     public static function configure(Table $table): Table
+     {
+         return $table
++            ->poll('5s')
+             ->columns([
+-                TextColumn::make('no')
+-                    ->label('No')
+-                    ->rowIndex(),
+-
+-                TextColumn::make('user.name')
+-                    ->label('Penghuni')
+-                    ->searchable(),
+-
+-                TextColumn::make('room.room_number')
+-                    ->label('Kamar')
+-                    ->searchable(),
+-
+-                TextColumn::make('check_in_date')
+-                    ->label('Tanggal Masuk')
+-                    ->date()
+-                    ->sortable(),
+-
+-                TextColumn::make('duration_month')
+-                    ->label('Durasi Sewa')
+-                    ->suffix(' bulan')
+-                    ->sortable(),
+-
+-                TextColumn::make('total_price')
+-                    ->label('Total Biaya')
+-                    ->money('IDR')
+-                    ->sortable(),
+-
++                TextColumn::make('no')->label('No')->rowIndex(),
++                TextColumn::make('id')->label('Kode')->prefix('#')->sortable(),
++                TextColumn::make('user.name')->label('Penghuni')->searchable()->sortable(),
++                TextColumn::make('room.room_number')->label('Kamar')->searchable()->sortable(),
++                TextColumn::make('check_in_date')->label('Tanggal Masuk')->date('d M Y')->sortable(),
++                TextColumn::make('duration_month')->label('Durasi')->suffix(' bulan')->sortable(),
++                TextColumn::make('total_price')->label('Total Kontrak')->money('IDR')->sortable(),
++                TextColumn::make('payment.status')
++                    ->label('Pembayaran')
++                    ->badge()
++                    ->formatStateUsing(fn (?string $state): string => match ($state) {
++                        'pending' => 'Menunggu',
++                        'verified' => 'Terverifikasi',
++                        'rejected' => 'Ditolak',
++                        default => '-',
++                    }),
+                 TextColumn::make('status')
+-                    ->label('Status Pemesanan')
++                    ->label('Status Booking')
+                     ->badge()
+                     ->formatStateUsing(fn (string $state): string => match ($state) {
+                         'pending' => 'Menunggu Persetujuan',
+@@ -51,32 +42,24 @@
+                         'completed' => 'Selesai',
+                         default => $state,
+                     }),
+-
+-                TextColumn::make('created_at')
+-                    ->label('Tanggal Dibuat')
+-                    ->dateTime('d M Y H:i')
+-                    ->sortable()
+-                    ->toggleable(isToggledHiddenByDefault: true),
+-
+-                TextColumn::make('updated_at')
+-                    ->label('Tanggal Diperbarui')
+-                    ->dateTime('d M Y H:i')
+-                    ->sortable()
+-                    ->toggleable(isToggledHiddenByDefault: true),
++                TextColumn::make('created_at')->label('Dibuat')->dateTime('d M Y H:i')->sortable(),
++            ])
++            ->filters([
++                SelectFilter::make('status')->options([
++                    'pending' => 'Menunggu Persetujuan',
++                    'approved' => 'Disetujui',
++                    'rejected' => 'Ditolak',
++                    'completed' => 'Selesai',
++                ]),
++            ])
++            ->headerActions([
++                ExportAction::make('export')
++                    ->label('Export Booking')
++                    ->exporter(BookingExporter::class),
+             ])
+-            ->filters([])
+             ->recordActions([
+-                EditAction::make()
+-                    ->label('Edit'),
++                EditAction::make()->label('Kelola'),
+             ])
+-            ->toolbarActions([
+-                BulkActionGroup::make([
+-                    DeleteBulkAction::make()
+-                        ->label('Hapus Terpilih')
+-                        ->modalHeading('Hapus Data Pemesanan')
+-                        ->modalDescription('Apakah Anda yakin ingin menghapus data pemesanan yang dipilih?')
+-                        ->modalSubmitActionLabel('Ya, Hapus'),
+-                ]),
+-            ]);
++            ->defaultSort('created_at', 'desc');
+     }
+-}
+\ No newline at end of file
++}
+diff -ruN a/app/Filament/Resources/Feedback/Tables/FeedbackTable.php b/app/Filament/Resources/Feedback/Tables/FeedbackTable.php
+--- a/app/Filament/Resources/Feedback/Tables/FeedbackTable.php	2026-06-29 13:19:39.000000000 +0000
++++ b/app/Filament/Resources/Feedback/Tables/FeedbackTable.php	2026-07-14 13:54:46.681494633 +0000
+@@ -2,10 +2,12 @@
+ 
+ namespace App\Filament\Resources\Feedback\Tables;
+ 
+-use Filament\Actions\BulkActionGroup;
+-use Filament\Actions\DeleteBulkAction;
++use App\Filament\Exports\FeedbackExporter;
+ use Filament\Actions\EditAction;
++use Filament\Actions\ExportAction;
++use Filament\Tables\Columns\IconColumn;
+ use Filament\Tables\Columns\TextColumn;
++use Filament\Tables\Filters\SelectFilter;
+ use Filament\Tables\Table;
+ 
+ class FeedbackTable
+@@ -13,51 +15,33 @@
+     public static function configure(Table $table): Table
+     {
+         return $table
++            ->poll('5s')
+             ->columns([
+-                TextColumn::make('no')
+-                    ->label('No')
+-                    ->rowIndex(),
+-
+-                TextColumn::make('user.name')
+-                    ->label('Penghuni')
+-                    ->searchable(),
+-
+-                TextColumn::make('booking.id')
+-                    ->label('Pemesanan')
+-                    ->searchable(),
+-
+-                TextColumn::make('rating')
+-                    ->label('Rating')
+-                    ->sortable(),
+-
+-                TextColumn::make('comment')
+-                    ->label('Komentar')
+-                    ->limit(40)
+-                    ->searchable(),
+-
+-                TextColumn::make('is_published')
+-                    ->label('Publikasi')
+-                    ->formatStateUsing(fn (bool $state): string => $state ? 'Ditampilkan' : 'Disembunyikan')
+-                    ->badge(),
+-
+-                TextColumn::make('created_at')
+-                    ->label('Tanggal')
+-                    ->dateTime('d M Y H:i')
+-                    ->sortable(),
++                TextColumn::make('no')->label('No')->rowIndex(),
++                TextColumn::make('user.name')->label('Penghuni')->searchable()->sortable(),
++                TextColumn::make('booking.room.room_number')->label('Kamar')->searchable()->sortable(),
++                TextColumn::make('rating')->label('Rating')->suffix('/5')->sortable(),
++                TextColumn::make('comment')->label('Komentar')->limit(80)->searchable()->wrap(),
++                IconColumn::make('is_published')->label('Dipublikasikan')->boolean(),
++                TextColumn::make('created_at')->label('Tanggal')->dateTime('d M Y H:i')->sortable(),
++            ])
++            ->filters([
++                SelectFilter::make('rating')->options([
++                    1 => '1', 2 => '2', 3 => '3', 4 => '4', 5 => '5',
++                ]),
++                SelectFilter::make('is_published')->options([
++                    1 => 'Dipublikasikan',
++                    0 => 'Belum Dipublikasikan',
++                ]),
++            ])
++            ->headerActions([
++                ExportAction::make('export')
++                    ->label('Export Feedback')
++                    ->exporter(FeedbackExporter::class),
+             ])
+-            ->filters([])
+             ->recordActions([
+-                EditAction::make()
+-                    ->label('Edit'),
++                EditAction::make()->label('Kelola'),
+             ])
+-            ->toolbarActions([
+-                BulkActionGroup::make([
+-                    DeleteBulkAction::make()
+-                        ->label('Hapus Terpilih')
+-                        ->modalHeading('Hapus Data Feedback')
+-                        ->modalDescription('Apakah Anda yakin ingin menghapus data yang dipilih?')
+-                        ->modalSubmitActionLabel('Ya, Hapus'),
+-                ]),
+-            ]);
++            ->defaultSort('created_at', 'desc');
+     }
+-}
+\ No newline at end of file
++}
+diff -ruN a/app/Filament/Resources/MaintenanceReports/Pages/EditMaintenanceReport.php b/app/Filament/Resources/MaintenanceReports/Pages/EditMaintenanceReport.php
+--- a/app/Filament/Resources/MaintenanceReports/Pages/EditMaintenanceReport.php	2026-06-12 14:44:54.000000000 +0000
++++ b/app/Filament/Resources/MaintenanceReports/Pages/EditMaintenanceReport.php	2026-07-14 14:02:47.009193090 +0000
+@@ -3,16 +3,23 @@
+ namespace App\Filament\Resources\MaintenanceReports\Pages;
+ 
+ use App\Filament\Resources\MaintenanceReports\MaintenanceReportResource;
++use App\Filament\Teknisi\Resources\MaintenanceReports\MaintenanceReportResource as TechnicianMaintenanceReportResource;
++use App\Models\MaintenanceUpdate;
++use App\Services\SystemNotificationService;
+ use Filament\Actions\DeleteAction;
+ use Filament\Resources\Pages\EditRecord;
++use Illuminate\Validation\ValidationException;
+ 
+ class EditMaintenanceReport extends EditRecord
+ {
+     protected static string $resource = MaintenanceReportResource::class;
+ 
++    private ?int $oldTechnicianId = null;
++    private ?string $oldStatus = null;
++
+     public function getTitle(): string
+     {
+-        return 'Edit Laporan Perbaikan';
++        return 'Kelola Laporan Perbaikan';
+     }
+ 
+     protected function getSavedNotificationTitle(): ?string
+@@ -20,14 +27,93 @@
+         return 'Laporan perbaikan berhasil diperbarui';
+     }
+ 
++    protected function beforeSave(): void
++    {
++        $this->oldTechnicianId = $this->record->assigned_technician_id;
++        $this->oldStatus = $this->record->status;
++    }
++
++    protected function mutateFormDataBeforeSave(array $data): array
++    {
++        if (! empty($data['assigned_technician_id']) && ($data['status'] ?? 'pending') === 'pending') {
++            $data['status'] = 'assigned';
++        }
++
++        $status = $data['status'] ?? 'pending';
++        $requiresTechnician = in_array($status, ['assigned', 'in_progress', 'completed'], true);
++
++        if ($requiresTechnician && empty($data['assigned_technician_id'])) {
++            throw ValidationException::withMessages([
++                'assigned_technician_id' => 'Pilih teknisi sebelum mengubah status laporan menjadi ditugaskan, sedang dikerjakan, atau selesai.',
++            ]);
++        }
++
++        return $data;
++    }
++
++    protected function afterSave(): void
++    {
++        $this->record->loadMissing(['user', 'room', 'assignedTechnician']);
++
++        $technicianChanged = $this->oldTechnicianId !== $this->record->assigned_technician_id;
++        $statusChanged = $this->oldStatus !== $this->record->status;
++
++        if ($technicianChanged && $this->record->assignedTechnician) {
++            app(SystemNotificationService::class)->technician(
++                $this->record->assignedTechnician,
++                'Tugas perbaikan baru',
++                'Anda ditugaskan menangani ' . $this->record->title . ' di kamar ' . ($this->record->room?->room_number ?? '-') . '.',
++                TechnicianMaintenanceReportResource::getUrl(
++                    'edit',
++                    ['record' => $this->record],
++                    panel: 'teknisi',
++                ),
++                'warning',
++            );
++        }
++
++        if (($technicianChanged || $statusChanged) && $this->record->status !== 'pending') {
++            MaintenanceUpdate::query()->create([
++                'maintenance_report_id' => $this->record->id,
++                'technician_id' => $this->record->assigned_technician_id,
++                'note' => $technicianChanged
++                    ? 'Admin menugaskan teknisi ' . ($this->record->assignedTechnician?->name ?? '-') . '.'
++                    : 'Admin memperbarui status menjadi ' . $this->statusLabel($this->record->status) . '.',
++                'status' => $this->record->status,
++            ]);
++        }
++
++        if ($technicianChanged || $statusChanged) {
++            app(SystemNotificationService::class)->user(
++                $this->record->user,
++                'Laporan perbaikan diperbarui',
++                'Laporan "' . $this->record->title . '" sekarang berstatus ' . $this->statusLabel($this->record->status) . '.',
++                route('user.maintenance.index'),
++                $this->record->status === 'completed' ? 'success' : 'info',
++            );
++        }
++    }
++
+     protected function getHeaderActions(): array
+     {
+         return [
+             DeleteAction::make()
+                 ->label('Hapus')
++                ->visible(fn (): bool => $this->record->status === 'pending')
+                 ->modalHeading('Hapus Laporan Perbaikan')
+-                ->modalDescription('Apakah Anda yakin ingin menghapus laporan perbaikan ini?')
++                ->modalDescription('Hanya laporan yang belum diproses yang dapat dihapus.')
+                 ->modalSubmitActionLabel('Ya, Hapus'),
+         ];
+     }
+-}
+\ No newline at end of file
++
++    private function statusLabel(string $status): string
++    {
++        return match ($status) {
++            'pending' => 'Menunggu',
++            'assigned' => 'Ditugaskan',
++            'in_progress' => 'Sedang Dikerjakan',
++            'completed' => 'Selesai',
++            default => $status,
++        };
++    }
++}
+diff -ruN a/app/Filament/Resources/MaintenanceReports/Schemas/MaintenanceReportForm.php b/app/Filament/Resources/MaintenanceReports/Schemas/MaintenanceReportForm.php
+--- a/app/Filament/Resources/MaintenanceReports/Schemas/MaintenanceReportForm.php	2026-06-29 13:21:00.000000000 +0000
++++ b/app/Filament/Resources/MaintenanceReports/Schemas/MaintenanceReportForm.php	2026-07-14 13:52:52.329876630 +0000
+@@ -2,6 +2,7 @@
+ 
+ namespace App\Filament\Resources\MaintenanceReports\Schemas;
+ 
++use App\Models\User;
+ use Filament\Forms\Components\FileUpload;
+ use Filament\Forms\Components\Select;
+ use Filament\Forms\Components\TextInput;
+@@ -28,13 +29,26 @@
+                     ->preload()
+                     ->required(),
+ 
++                Select::make('assigned_technician_id')
++                    ->label('Teknisi yang Ditugaskan')
++                    ->options(fn (): array => User::query()
++                        ->where('role', 'teknisi')
++                        ->orderBy('name')
++                        ->pluck('name', 'id')
++                        ->all())
++                    ->searchable()
++                    ->preload()
++                    ->nullable(),
++
+                 TextInput::make('title')
+                     ->label('Judul Laporan')
+-                    ->required(),
++                    ->required()
++                    ->maxLength(255),
+ 
+                 Textarea::make('description')
+                     ->label('Deskripsi Kerusakan')
+                     ->required()
++                    ->rows(5)
+                     ->columnSpanFull(),
+ 
+                 FileUpload::make('photo')
+@@ -67,4 +81,4 @@
+                     ->required(),
+             ]);
+     }
+-}
+\ No newline at end of file
++}
+diff -ruN a/app/Filament/Resources/MaintenanceReports/Tables/MaintenanceReportsTable.php b/app/Filament/Resources/MaintenanceReports/Tables/MaintenanceReportsTable.php
+--- a/app/Filament/Resources/MaintenanceReports/Tables/MaintenanceReportsTable.php	2026-07-11 04:37:32.000000000 +0000
++++ b/app/Filament/Resources/MaintenanceReports/Tables/MaintenanceReportsTable.php	2026-07-14 13:54:46.674035510 +0000
+@@ -2,12 +2,12 @@
+ 
+ namespace App\Filament\Resources\MaintenanceReports\Tables;
+ 
+-use App\Models\MaintenanceReport;
+-use Filament\Actions\BulkActionGroup;
+-use Filament\Actions\DeleteBulkAction;
++use App\Filament\Exports\MaintenanceReportExporter;
+ use Filament\Actions\EditAction;
++use Filament\Actions\ExportAction;
+ use Filament\Tables\Columns\ImageColumn;
+ use Filament\Tables\Columns\TextColumn;
++use Filament\Tables\Filters\SelectFilter;
+ use Filament\Tables\Table;
+ 
+ class MaintenanceReportsTable
+@@ -15,31 +15,14 @@
+     public static function configure(Table $table): Table
+     {
+         return $table
++            ->poll('5s')
+             ->columns([
+-                TextColumn::make('no')
+-                    ->label('No')
+-                    ->rowIndex(),
+-
+-                TextColumn::make('user.name')
+-                    ->label('Penghuni')
+-                    ->searchable()
+-                    ->sortable(),
+-
+-                TextColumn::make('room.room_number')
+-                    ->label('Kamar')
+-                    ->searchable()
+-                    ->sortable(),
+-
+-                TextColumn::make('title')
+-                    ->label('Judul Laporan')
+-                    ->searchable()
+-                    ->sortable(),
+-
+-                ImageColumn::make('photo')
+-                    ->label('Foto')
+-                    ->disk('public')
+-                    ->size(60),
+-
++                TextColumn::make('no')->label('No')->rowIndex(),
++                TextColumn::make('user.name')->label('Penghuni')->searchable()->sortable(),
++                TextColumn::make('room.room_number')->label('Kamar')->searchable()->sortable(),
++                TextColumn::make('assignedTechnician.name')->label('Teknisi')->placeholder('Belum ditugaskan')->searchable(),
++                TextColumn::make('title')->label('Judul')->searchable()->sortable(),
++                ImageColumn::make('photo')->label('Foto')->disk('public')->size(60),
+                 TextColumn::make('priority')
+                     ->label('Prioritas')
+                     ->badge()
+@@ -49,9 +32,8 @@
+                         'high' => 'Tinggi',
+                         default => $state,
+                     }),
+-
+                 TextColumn::make('status')
+-                    ->label('Status Laporan')
++                    ->label('Status')
+                     ->badge()
+                     ->formatStateUsing(fn (string $state): string => match ($state) {
+                         'pending' => 'Menunggu',
+@@ -60,84 +42,29 @@
+                         'completed' => 'Selesai',
+                         default => $state,
+                     }),
+-
+-                TextColumn::make('technician_name')
+-                    ->label('Teknisi')
+-                    ->state(function (MaintenanceReport $record): string {
+-                        $latestUpdate = $record->updates()
+-                            ->with('technician')
+-                            ->latest()
+-                            ->first();
+-
+-                        return $latestUpdate?->technician?->name ?? '-';
+-                    }),
+-
+-                TextColumn::make('latest_technician_note')
+-                    ->label('Catatan Teknisi Terakhir')
+-                    ->state(function (MaintenanceReport $record): string {
+-                        $latestUpdate = $record->updates()
+-                            ->latest()
+-                            ->first();
+-
+-                        return $latestUpdate?->note ?? '-';
+-                    })
+-                    ->limit(60)
+-                    ->searchable(false),
+-
+-                TextColumn::make('latest_update_status')
+-                    ->label('Status Update')
+-                    ->state(function (MaintenanceReport $record): string {
+-                        $latestUpdate = $record->updates()
+-                            ->latest()
+-                            ->first();
+-
+-                        return match ($latestUpdate?->status) {
+-                            'assigned' => 'Ditugaskan',
+-                            'in_progress' => 'Sedang Dikerjakan',
+-                            'completed' => 'Selesai',
+-                            default => '-',
+-                        };
+-                    })
+-                    ->badge(),
+-
+-                TextColumn::make('latest_update_date')
+-                    ->label('Update Terakhir')
+-                    ->state(function (MaintenanceReport $record): string {
+-                        $latestUpdate = $record->updates()
+-                            ->latest()
+-                            ->first();
+-
+-                        return $latestUpdate?->created_at
+-                            ? $latestUpdate->created_at->format('d M Y H:i')
+-                            : '-';
+-                    }),
+-
+-                TextColumn::make('created_at')
+-                    ->label('Tanggal Dibuat')
+-                    ->dateTime('d M Y H:i')
+-                    ->sortable()
+-                    ->toggleable(isToggledHiddenByDefault: true),
+-
+-                TextColumn::make('updated_at')
+-                    ->label('Tanggal Diperbarui')
+-                    ->dateTime('d M Y H:i')
+-                    ->sortable()
+-                    ->toggleable(isToggledHiddenByDefault: true),
++                TextColumn::make('created_at')->label('Tanggal Laporan')->dateTime('d M Y H:i')->sortable(),
+             ])
+-            ->filters([])
+-            ->recordActions([
+-                EditAction::make()
+-                    ->label('Edit'),
+-            ])
+-            ->toolbarActions([
+-                BulkActionGroup::make([
+-                    DeleteBulkAction::make()
+-                        ->label('Hapus Terpilih')
+-                        ->modalHeading('Hapus Data Laporan Perbaikan')
+-                        ->modalDescription('Apakah Anda yakin ingin menghapus data laporan perbaikan yang dipilih?')
+-                        ->modalSubmitActionLabel('Ya, Hapus'),
++            ->filters([
++                SelectFilter::make('priority')->options([
++                    'low' => 'Rendah',
++                    'medium' => 'Sedang',
++                    'high' => 'Tinggi',
++                ]),
++                SelectFilter::make('status')->options([
++                    'pending' => 'Menunggu',
++                    'assigned' => 'Ditugaskan',
++                    'in_progress' => 'Sedang Dikerjakan',
++                    'completed' => 'Selesai',
+                 ]),
+             ])
++            ->headerActions([
++                ExportAction::make('export')
++                    ->label('Export Maintenance')
++                    ->exporter(MaintenanceReportExporter::class),
++            ])
++            ->recordActions([
++                EditAction::make()->label('Kelola'),
++            ])
+             ->defaultSort('created_at', 'desc');
+     }
+-}
+\ No newline at end of file
++}
+diff -ruN a/app/Filament/Resources/PaymentReports/Pages/ListPaymentReports.php b/app/Filament/Resources/PaymentReports/Pages/ListPaymentReports.php
+--- a/app/Filament/Resources/PaymentReports/Pages/ListPaymentReports.php	2026-07-11 03:16:09.000000000 +0000
++++ b/app/Filament/Resources/PaymentReports/Pages/ListPaymentReports.php	2026-07-14 13:55:45.835025967 +0000
+@@ -1 +1,21 @@
+- 
+\ No newline at end of file
++<?php
++
++namespace App\Filament\Resources\PaymentReports\Pages;
++
++use App\Filament\Resources\PaymentReports\PaymentReportResource;
++use Filament\Resources\Pages\ListRecords;
++
++class ListPaymentReports extends ListRecords
++{
++    protected static string $resource = PaymentReportResource::class;
++
++    public function getTitle(): string
++    {
++        return 'Laporan Pembayaran';
++    }
++
++    protected function getHeaderActions(): array
++    {
++        return [];
++    }
++}
+diff -ruN a/app/Filament/Resources/PaymentReports/PaymentReportResource.php b/app/Filament/Resources/PaymentReports/PaymentReportResource.php
+--- a/app/Filament/Resources/PaymentReports/PaymentReportResource.php	2026-07-11 03:16:23.000000000 +0000
++++ b/app/Filament/Resources/PaymentReports/PaymentReportResource.php	2026-07-14 13:55:45.818286928 +0000
+@@ -1 +1,60 @@
+- 
+\ No newline at end of file
++<?php
++
++namespace App\Filament\Resources\PaymentReports;
++
++use App\Filament\Resources\PaymentReports\Pages\ListPaymentReports;
++use App\Filament\Resources\PaymentReports\Tables\PaymentReportsTable;
++use App\Models\Payment;
++use BackedEnum;
++use Filament\Resources\Resource;
++use Filament\Tables\Table;
++use Illuminate\Database\Eloquent\Model;
++use UnitEnum;
++
++class PaymentReportResource extends Resource
++{
++    protected static ?string $model = Payment::class;
++
++    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-banknotes';
++    protected static ?string $navigationLabel = 'Laporan Pembayaran';
++    protected static string|UnitEnum|null $navigationGroup = 'Laporan';
++    protected static ?int $navigationSort = 3;
++    protected static ?string $recordTitleAttribute = 'id';
++
++    public static function getModelLabel(): string
++    {
++        return 'Laporan Pembayaran';
++    }
++
++    public static function getPluralModelLabel(): string
++    {
++        return 'Laporan Pembayaran';
++    }
++
++    public static function table(Table $table): Table
++    {
++        return PaymentReportsTable::configure($table);
++    }
++
++    public static function getPages(): array
++    {
++        return [
++            'index' => ListPaymentReports::route('/'),
++        ];
++    }
++
++    public static function canCreate(): bool
++    {
++        return false;
++    }
++
++    public static function canEdit(Model $record): bool
++    {
++        return false;
++    }
++
++    public static function canDelete(Model $record): bool
++    {
++        return false;
++    }
++}
+diff -ruN a/app/Filament/Resources/PaymentReports/Schemas/PaymentReportForm.php b/app/Filament/Resources/PaymentReports/Schemas/PaymentReportForm.php
+--- a/app/Filament/Resources/PaymentReports/Schemas/PaymentReportForm.php	2026-07-11 03:16:14.000000000 +0000
++++ b/app/Filament/Resources/PaymentReports/Schemas/PaymentReportForm.php	2026-07-14 13:55:45.842705833 +0000
+@@ -1 +1,13 @@
+- 
+\ No newline at end of file
++<?php
++
++namespace App\Filament\Resources\PaymentReports\Schemas;
++
++use Filament\Schemas\Schema;
++
++class PaymentReportForm
++{
++    public static function configure(Schema $schema): Schema
++    {
++        return $schema->components([]);
++    }
++}
+diff -ruN a/app/Filament/Resources/PaymentReports/Tables/PaymentReportsTable.php b/app/Filament/Resources/PaymentReports/Tables/PaymentReportsTable.php
+--- a/app/Filament/Resources/PaymentReports/Tables/PaymentReportsTable.php	2026-07-10 10:56:10.000000000 +0000
++++ b/app/Filament/Resources/PaymentReports/Tables/PaymentReportsTable.php	2026-07-14 13:54:46.703588658 +0000
+@@ -2,7 +2,8 @@
+ 
+ namespace App\Filament\Resources\PaymentReports\Tables;
+ 
+-use Filament\Tables\Columns\ImageColumn;
++use App\Filament\Exports\PaymentExporter;
++use Filament\Actions\ExportAction;
+ use Filament\Tables\Columns\TextColumn;
+ use Filament\Tables\Filters\SelectFilter;
+ use Filament\Tables\Table;
+@@ -12,26 +13,12 @@
+     public static function configure(Table $table): Table
+     {
+         return $table
++            ->poll('5s')
+             ->columns([
+-                TextColumn::make('no')
+-                    ->label('No')
+-                    ->rowIndex(),
+-
+-                TextColumn::make('booking.id')
+-                    ->label('Kode Pemesanan')
+-                    ->searchable()
+-                    ->sortable(),
+-
+-                TextColumn::make('booking.user.name')
+-                    ->label('Penghuni')
+-                    ->searchable()
+-                    ->sortable(),
+-
+-                TextColumn::make('booking.room.room_number')
+-                    ->label('Nomor Kamar')
+-                    ->searchable()
+-                    ->sortable(),
+-
++                TextColumn::make('no')->label('No')->rowIndex(),
++                TextColumn::make('booking.id')->label('Kode Booking')->prefix('#')->sortable(),
++                TextColumn::make('booking.user.name')->label('Penghuni')->searchable()->sortable(),
++                TextColumn::make('booking.room.room_number')->label('Nomor Kamar')->searchable()->sortable(),
+                 TextColumn::make('payment_method')
+                     ->label('Metode')
+                     ->badge()
+@@ -41,24 +28,10 @@
+                         'cod' => 'COD',
+                         default => '-',
+                     }),
+-
+-                TextColumn::make('amount')
+-                    ->label('Jumlah Pembayaran')
+-                    ->money('IDR')
+-                    ->sortable(),
+-
+-                ImageColumn::make('payment_proof')
+-                    ->label('Bukti')
+-                    ->disk('public')
+-                    ->size(60),
+-
+-                TextColumn::make('payment_date')
+-                    ->label('Tanggal Pembayaran')
+-                    ->dateTime('d M Y H:i')
+-                    ->sortable(),
+-
++                TextColumn::make('amount')->label('Jumlah')->money('IDR')->sortable(),
++                TextColumn::make('payment_date')->label('Tanggal')->dateTime('d M Y H:i')->sortable(),
+                 TextColumn::make('status')
+-                    ->label('Status Pembayaran')
++                    ->label('Status')
+                     ->badge()
+                     ->formatStateUsing(fn (string $state): string => match ($state) {
+                         'pending' => 'Menunggu Verifikasi',
+@@ -66,37 +39,25 @@
+                         'rejected' => 'Ditolak',
+                         default => $state,
+                     }),
+-
+-                TextColumn::make('created_at')
+-                    ->label('Tanggal Data Dibuat')
+-                    ->dateTime('d M Y H:i')
+-                    ->sortable()
+-                    ->toggleable(isToggledHiddenByDefault: true),
+-
+-                TextColumn::make('updated_at')
+-                    ->label('Tanggal Data Diperbarui')
+-                    ->dateTime('d M Y H:i')
+-                    ->sortable()
+-                    ->toggleable(isToggledHiddenByDefault: true),
+             ])
+             ->filters([
+-                SelectFilter::make('payment_method')
+-                    ->label('Filter Metode')
+-                    ->options([
+-                        'bank_transfer' => 'Transfer Bank',
+-                        'qris' => 'QRIS',
+-                        'cod' => 'COD',
+-                    ]),
+-
+-                SelectFilter::make('status')
+-                    ->label('Filter Status')
+-                    ->options([
+-                        'pending' => 'Menunggu Verifikasi',
+-                        'verified' => 'Terverifikasi',
+-                        'rejected' => 'Ditolak',
+-                    ]),
++                SelectFilter::make('payment_method')->options([
++                    'bank_transfer' => 'Transfer Bank',
++                    'qris' => 'QRIS',
++                    'cod' => 'COD',
++                ]),
++                SelectFilter::make('status')->options([
++                    'pending' => 'Menunggu Verifikasi',
++                    'verified' => 'Terverifikasi',
++                    'rejected' => 'Ditolak',
++                ]),
++            ])
++            ->headerActions([
++                ExportAction::make('export')
++                    ->label('Export Pembayaran')
++                    ->exporter(PaymentExporter::class),
+             ])
+             ->recordActions([])
+-            ->toolbarActions([]);
++            ->defaultSort('created_at', 'desc');
+     }
+-}
+\ No newline at end of file
++}
+diff -ruN a/app/Filament/Resources/Payments/Pages/EditPayment.php b/app/Filament/Resources/Payments/Pages/EditPayment.php
+--- a/app/Filament/Resources/Payments/Pages/EditPayment.php	2026-07-11 04:41:43.000000000 +0000
++++ b/app/Filament/Resources/Payments/Pages/EditPayment.php	2026-07-14 13:55:45.857187638 +0000
+@@ -3,128 +3,40 @@
+ namespace App\Filament\Resources\Payments\Pages;
+ 
+ use App\Filament\Resources\Payments\PaymentResource;
+-use App\Models\Payment;
+-use App\Models\Tenant;
+-use Filament\Actions\DeleteAction;
++use App\Services\BookingLifecycleService;
+ use Filament\Resources\Pages\EditRecord;
+ 
+ class EditPayment extends EditRecord
+ {
+     protected static string $resource = PaymentResource::class;
+ 
++    private ?string $oldStatus = null;
++
+     public function getTitle(): string
+     {
+-        return 'Edit Pembayaran';
++        return 'Verifikasi Pembayaran';
+     }
+ 
+-    protected function getSavedNotificationTitle(): ?string
++    protected function beforeSave(): void
+     {
+-        return 'Pembayaran berhasil diperbarui';
++        $this->oldStatus = $this->record->status;
+     }
+ 
+     protected function afterSave(): void
+     {
+-        $this->record->loadMissing('booking.user', 'booking.room');
+-
+-        if ($this->record->status === 'verified') {
+-            $this->record->booking?->update([
+-                'status' => 'approved',
+-            ]);
+-
+-            $this->record->booking?->room?->update([
+-                'status' => 'occupied',
+-            ]);
+-
+-            $this->createOrUpdateTenant($this->record);
+-        }
+-
+-        if ($this->record->status === 'rejected') {
+-            $this->record->booking?->update([
+-                'status' => 'pending',
+-            ]);
+-
+-            $this->record->booking?->room?->update([
+-                'status' => 'available',
+-            ]);
+-
+-            $this->deactivateTenantIfNeeded($this->record);
+-        }
+-
+-        if ($this->record->status === 'pending') {
+-            $this->record->booking?->update([
+-                'status' => 'pending',
+-            ]);
+-
+-            $this->record->booking?->room?->update([
+-                'status' => 'available',
+-            ]);
+-
+-            $this->deactivateTenantIfNeeded($this->record);
+-        }
+-    }
+-
+-    protected function getHeaderActions(): array
+-    {
+-        return [
+-            DeleteAction::make()
+-                ->label('Hapus')
+-                ->modalHeading('Hapus Pembayaran')
+-                ->modalDescription('Apakah Anda yakin ingin menghapus pembayaran ini?')
+-                ->modalSubmitActionLabel('Ya, Hapus'),
+-        ];
++        app(BookingLifecycleService::class)->synchronizePayment(
++            $this->record,
++            notifyUser: $this->oldStatus !== $this->record->status,
++        );
+     }
+ 
+-    private function createOrUpdateTenant(Payment $payment): void
++    protected function getSavedNotificationTitle(): ?string
+     {
+-        $booking = $payment->booking;
+-        $user = $booking?->user;
+-
+-        if (! $booking || ! $user) {
+-            return;
+-        }
+-
+-        Tenant::updateOrCreate(
+-            [
+-                'email' => $user->email,
+-                'room_id' => $booking->room_id,
+-            ],
+-            [
+-                'name' => $user->name,
+-                'phone' => $user->phone ?? '-',
+-                'check_in_date' => $booking->check_in_date,
+-                'status' => 'active',
+-            ]
+-        );
++        return 'Pembayaran berhasil diperbarui';
+     }
+ 
+-    private function deactivateTenantIfNeeded(Payment $payment): void
++    protected function getHeaderActions(): array
+     {
+-        $payment->loadMissing('booking.user');
+-
+-        $booking = $payment->booking;
+-        $user = $booking?->user;
+-
+-        if (! $booking || ! $user) {
+-            return;
+-        }
+-
+-        $hasOtherVerifiedPayment = Payment::query()
+-            ->where('id', '!=', $payment->id)
+-            ->where('status', 'verified')
+-            ->whereHas('booking', function ($query) use ($booking, $user) {
+-                $query->where('user_id', $user->id)
+-                    ->where('room_id', $booking->room_id);
+-            })
+-            ->exists();
+-
+-        if ($hasOtherVerifiedPayment) {
+-            return;
+-        }
+-
+-        Tenant::where('email', $user->email)
+-            ->where('room_id', $booking->room_id)
+-            ->update([
+-                'status' => 'inactive',
+-            ]);
++        return [];
+     }
+-}
+\ No newline at end of file
++}
+diff -ruN a/app/Filament/Resources/Payments/PaymentResource.php b/app/Filament/Resources/Payments/PaymentResource.php
+--- a/app/Filament/Resources/Payments/PaymentResource.php	2026-07-11 03:16:56.000000000 +0000
++++ b/app/Filament/Resources/Payments/PaymentResource.php	2026-07-14 13:55:46.978443142 +0000
+@@ -53,6 +53,11 @@
+         return [];
+     }
+ 
++    public static function canCreate(): bool
++    {
++        return false;
++    }
++
+     public static function getPages(): array
+     {
+         return [
+diff -ruN a/app/Filament/Resources/Payments/Schemas/PaymentForm.php b/app/Filament/Resources/Payments/Schemas/PaymentForm.php
+--- a/app/Filament/Resources/Payments/Schemas/PaymentForm.php	2026-07-11 03:50:44.000000000 +0000
++++ b/app/Filament/Resources/Payments/Schemas/PaymentForm.php	2026-07-14 13:59:58.643249901 +0000
+@@ -18,14 +18,14 @@
+                 Select::make('booking_id')
+                     ->label('Pemesanan')
+                     ->relationship('booking', 'id')
+-                    ->searchable()
+-                    ->preload()
++                    ->disabledOn('edit')
+                     ->required(),
+ 
+                 TextInput::make('amount')
+                     ->label('Jumlah Pembayaran')
+                     ->numeric()
+                     ->prefix('Rp')
++                    ->disabledOn('edit')
+                     ->required(),
+ 
+                 Select::make('payment_method')
+@@ -35,34 +35,27 @@
+                         'qris' => 'QRIS',
+                         'cod' => 'COD / Bayar di Tempat',
+                     ])
+-                    ->default('bank_transfer')
+-                    ->live()
++                    ->disabledOn('edit')
+                     ->required(),
+ 
+                 TextInput::make('sender_name')
+                     ->label('Nama Pengirim')
+-                    ->maxLength(255)
+-                    ->visible(fn ($get): bool => in_array($get('payment_method'), ['bank_transfer', 'qris']))
+-                    ->required(fn ($get): bool => in_array($get('payment_method'), ['bank_transfer', 'qris'])),
++                    ->disabledOn('edit'),
+ 
+                 TextInput::make('sender_bank')
+                     ->label('Bank / Aplikasi Pengirim')
+-                    ->maxLength(255)
+-                    ->visible(fn ($get): bool => $get('payment_method') === 'bank_transfer')
+-                    ->required(fn ($get): bool => $get('payment_method') === 'bank_transfer'),
++                    ->disabledOn('edit'),
+ 
+                 FileUpload::make('payment_proof')
+                     ->label('Bukti Pembayaran')
+                     ->image()
+                     ->disk('public')
+-                    ->directory('payment-proofs')
+                     ->visibility('public')
+-                    ->maxSize(2048)
+-                    ->visible(fn ($get): bool => in_array($get('payment_method'), ['bank_transfer', 'qris']))
+-                    ->required(fn ($get): bool => in_array($get('payment_method'), ['bank_transfer', 'qris'])),
++                    ->disabledOn('edit'),
+ 
+                 DateTimePicker::make('payment_date')
+-                    ->label('Tanggal Pembayaran'),
++                    ->label('Tanggal Pembayaran')
++                    ->disabledOn('edit'),
+ 
+                 Select::make('status')
+                     ->label('Status Pembayaran')
+@@ -71,7 +64,6 @@
+                         'verified' => 'Terverifikasi',
+                         'rejected' => 'Ditolak',
+                     ])
+-                    ->default('pending')
+                     ->required(),
+ 
+                 Textarea::make('note')
+@@ -80,4 +72,4 @@
+                     ->columnSpanFull(),
+             ]);
+     }
+-}
+\ No newline at end of file
++}
+diff -ruN a/app/Filament/Resources/Payments/Tables/PaymentsTable.php b/app/Filament/Resources/Payments/Tables/PaymentsTable.php
+--- a/app/Filament/Resources/Payments/Tables/PaymentsTable.php	2026-07-11 03:50:31.000000000 +0000
++++ b/app/Filament/Resources/Payments/Tables/PaymentsTable.php	2026-07-14 13:54:46.666124250 +0000
+@@ -2,12 +2,13 @@
+ 
+ namespace App\Filament\Resources\Payments\Tables;
+ 
++use App\Filament\Exports\PaymentExporter;
+ use App\Models\Payment;
+-use Filament\Actions\BulkActionGroup;
+-use Filament\Actions\DeleteBulkAction;
+ use Filament\Actions\EditAction;
++use Filament\Actions\ExportAction;
+ use Filament\Tables\Columns\ImageColumn;
+ use Filament\Tables\Columns\TextColumn;
++use Filament\Tables\Filters\SelectFilter;
+ use Filament\Tables\Table;
+ 
+ class PaymentsTable
+@@ -15,26 +16,12 @@
+     public static function configure(Table $table): Table
+     {
+         return $table
++            ->poll('5s')
+             ->columns([
+-                TextColumn::make('row_number')
+-                    ->label('No')
+-                    ->rowIndex(),
+-
+-                TextColumn::make('booking.id')
+-                    ->label('Kode Booking')
+-                    ->searchable()
+-                    ->sortable(),
+-
+-                TextColumn::make('booking.user.name')
+-                    ->label('Penghuni')
+-                    ->searchable()
+-                    ->sortable(),
+-
+-                TextColumn::make('booking.room.room_number')
+-                    ->label('Kamar')
+-                    ->searchable()
+-                    ->sortable(),
+-
++                TextColumn::make('no')->label('No')->rowIndex(),
++                TextColumn::make('booking.id')->label('Kode Booking')->prefix('#')->sortable(),
++                TextColumn::make('booking.user.name')->label('Penghuni')->searchable()->sortable(),
++                TextColumn::make('booking.room.room_number')->label('Kamar')->searchable()->sortable(),
+                 TextColumn::make('payment_method')
+                     ->label('Metode')
+                     ->badge()
+@@ -44,64 +31,16 @@
+                         'cod' => 'COD',
+                         default => '-',
+                     }),
+-
+                 TextColumn::make('sender_name_display')
+                     ->label('Nama Pengirim')
+-                    ->state(function (Payment $record): string {
+-                        return match ($record->payment_method) {
+-                            'bank_transfer' => $record->sender_name ?: '-',
+-                            'qris' => $record->sender_name ?: '-',
+-                            'cod' => 'Bayar di Tempat',
+-                            default => '-',
+-                        };
+-                    }),
+-
+-                TextColumn::make('sender_bank_display')
+-                    ->label('Bank/Aplikasi')
+-                    ->state(function (Payment $record): string {
+-                        return match ($record->payment_method) {
+-                            'bank_transfer' => $record->sender_bank ?: '-',
+-                            'qris' => 'QRIS',
+-                            'cod' => 'Tidak Perlu',
+-                            default => '-',
+-                        };
+-                    }),
+-
+-                TextColumn::make('amount')
+-                    ->label('Jumlah Pembayaran')
+-                    ->money('IDR')
+-                    ->sortable(),
+-
+-                ImageColumn::make('payment_proof')
+-                    ->label('Bukti')
+-                    ->disk('public')
+-                    ->size(60),
+-
+-                TextColumn::make('proof_status')
+-                    ->label('Status Bukti')
+-                    ->state(function (Payment $record): string {
+-                        if ($record->payment_method === 'cod') {
+-                            return 'Tidak Perlu Bukti';
+-                        }
+-
+-                        return $record->payment_proof ? 'Bukti Ada' : 'Bukti Kosong';
+-                    })
+-                    ->badge()
+-                    ->color(function (Payment $record): string {
+-                        if ($record->payment_method === 'cod') {
+-                            return 'gray';
+-                        }
+-
+-                        return $record->payment_proof ? 'success' : 'danger';
+-                    }),
+-
+-                TextColumn::make('payment_date')
+-                    ->label('Tanggal Pembayaran')
+-                    ->dateTime('d M Y H:i')
+-                    ->sortable(),
+-
++                    ->state(fn (Payment $record): string => $record->payment_method === 'cod'
++                        ? 'Bayar di Tempat'
++                        : ($record->sender_name ?: '-')),
++                TextColumn::make('amount')->label('Jumlah')->money('IDR')->sortable(),
++                ImageColumn::make('payment_proof')->label('Bukti')->disk('public')->size(60),
++                TextColumn::make('payment_date')->label('Tanggal')->dateTime('d M Y H:i')->sortable(),
+                 TextColumn::make('status')
+-                    ->label('Status Pembayaran')
++                    ->label('Status')
+                     ->badge()
+                     ->formatStateUsing(fn (string $state): string => match ($state) {
+                         'pending' => 'Menunggu Verifikasi',
+@@ -109,32 +48,28 @@
+                         'rejected' => 'Ditolak',
+                         default => $state,
+                     }),
+-
+-                TextColumn::make('created_at')
+-                    ->label('Tanggal Dibuat')
+-                    ->dateTime('d M Y H:i')
+-                    ->sortable()
+-                    ->toggleable(isToggledHiddenByDefault: true),
+-
+-                TextColumn::make('updated_at')
+-                    ->label('Tanggal Diperbarui')
+-                    ->dateTime('d M Y H:i')
+-                    ->sortable()
+-                    ->toggleable(isToggledHiddenByDefault: true),
++                TextColumn::make('note')->label('Catatan')->limit(40)->toggleable(),
++            ])
++            ->filters([
++                SelectFilter::make('payment_method')->options([
++                    'bank_transfer' => 'Transfer Bank',
++                    'qris' => 'QRIS',
++                    'cod' => 'COD',
++                ]),
++                SelectFilter::make('status')->options([
++                    'pending' => 'Menunggu Verifikasi',
++                    'verified' => 'Terverifikasi',
++                    'rejected' => 'Ditolak',
++                ]),
++            ])
++            ->headerActions([
++                ExportAction::make('export')
++                    ->label('Export Pembayaran')
++                    ->exporter(PaymentExporter::class),
+             ])
+-            ->defaultSort('created_at', 'desc')
+             ->recordActions([
+-                EditAction::make()
+-                    ->label('Verifikasi / Edit'),
++                EditAction::make()->label('Verifikasi'),
+             ])
+-            ->toolbarActions([
+-                BulkActionGroup::make([
+-                    DeleteBulkAction::make()
+-                        ->label('Hapus Terpilih')
+-                        ->modalHeading('Hapus Data Pembayaran')
+-                        ->modalDescription('Apakah Anda yakin ingin menghapus data pembayaran yang dipilih?')
+-                        ->modalSubmitActionLabel('Ya, Hapus'),
+-                ]),
+-            ]);
++            ->defaultSort('created_at', 'desc');
+     }
+-}
+\ No newline at end of file
++}
+diff -ruN a/app/Filament/Resources/TenantReports/Tables/TenantReportsTable.php b/app/Filament/Resources/TenantReports/Tables/TenantReportsTable.php
+--- a/app/Filament/Resources/TenantReports/Tables/TenantReportsTable.php	2026-07-11 04:39:35.000000000 +0000
++++ b/app/Filament/Resources/TenantReports/Tables/TenantReportsTable.php	2026-07-14 13:54:46.696755659 +0000
+@@ -2,6 +2,8 @@
+ 
+ namespace App\Filament\Resources\TenantReports\Tables;
+ 
++use App\Filament\Exports\TenantExporter;
++use Filament\Actions\ExportAction;
+ use Filament\Tables\Columns\TextColumn;
+ use Filament\Tables\Filters\SelectFilter;
+ use Filament\Tables\Table;
+@@ -11,64 +13,32 @@
+     public static function configure(Table $table): Table
+     {
+         return $table
++            ->poll('5s')
+             ->columns([
+-                TextColumn::make('no')
+-                    ->label('No')
+-                    ->rowIndex(),
+-
+-                TextColumn::make('name')
+-                    ->label('Nama Penghuni')
+-                    ->searchable()
+-                    ->sortable(),
+-
+-                TextColumn::make('phone')
+-                    ->label('Nomor Telepon')
+-                    ->searchable(),
+-
+-                TextColumn::make('email')
+-                    ->label('Email')
+-                    ->searchable(),
+-
+-                TextColumn::make('room.room_number')
+-                    ->label('Nomor Kamar')
+-                    ->searchable()
+-                    ->sortable(),
+-
+-                TextColumn::make('check_in_date')
+-                    ->label('Tanggal Masuk')
+-                    ->date('d M Y')
+-                    ->sortable(),
+-
++                TextColumn::make('no')->label('No')->rowIndex(),
++                TextColumn::make('booking_id')->label('Kode Booking')->prefix('#')->sortable(),
++                TextColumn::make('name')->label('Nama Penghuni')->searchable()->sortable(),
++                TextColumn::make('phone')->label('Nomor Telepon')->searchable(),
++                TextColumn::make('email')->label('Email')->searchable(),
++                TextColumn::make('room.room_number')->label('Nomor Kamar')->searchable()->sortable(),
++                TextColumn::make('check_in_date')->label('Tanggal Masuk')->date('d M Y')->sortable(),
+                 TextColumn::make('status')
+                     ->label('Status')
+                     ->badge()
+-                    ->formatStateUsing(fn (string $state): string => match ($state) {
+-                        'active' => 'Aktif',
+-                        'inactive' => 'Tidak Aktif',
+-                        default => $state,
+-                    }),
+-
+-                TextColumn::make('created_at')
+-                    ->label('Tanggal Data Dibuat')
+-                    ->dateTime('d M Y H:i')
+-                    ->sortable()
+-                    ->toggleable(isToggledHiddenByDefault: true),
+-
+-                TextColumn::make('updated_at')
+-                    ->label('Tanggal Data Diperbarui')
+-                    ->dateTime('d M Y H:i')
+-                    ->sortable()
+-                    ->toggleable(isToggledHiddenByDefault: true),
++                    ->formatStateUsing(fn (string $state): string => $state === 'active' ? 'Aktif' : 'Tidak Aktif'),
+             ])
+             ->filters([
+-                SelectFilter::make('status')
+-                    ->label('Filter Status')
+-                    ->options([
+-                        'active' => 'Aktif',
+-                        'inactive' => 'Tidak Aktif',
+-                    ]),
++                SelectFilter::make('status')->options([
++                    'active' => 'Aktif',
++                    'inactive' => 'Tidak Aktif',
++                ]),
++            ])
++            ->headerActions([
++                ExportAction::make('export')
++                    ->label('Export Penghuni')
++                    ->exporter(TenantExporter::class),
+             ])
+             ->recordActions([])
+-            ->toolbarActions([]);
++            ->defaultSort('created_at', 'desc');
+     }
+-}
+\ No newline at end of file
++}
+diff -ruN a/app/Filament/Resources/Tenants/TenantResource.php b/app/Filament/Resources/Tenants/TenantResource.php
+--- a/app/Filament/Resources/Tenants/TenantResource.php	2026-06-14 14:44:21.000000000 +0000
++++ b/app/Filament/Resources/Tenants/TenantResource.php	2026-07-14 13:59:59.779787591 +0000
+@@ -54,6 +54,21 @@
+         return [];
+     }
+ 
++    public static function canCreate(): bool
++    {
++        return false;
++    }
++
++    public static function canEdit($record): bool
++    {
++        return false;
++    }
++
++    public static function canDelete($record): bool
++    {
++        return false;
++    }
++
+     public static function getPages(): array
+     {
+         return [
+diff -ruN a/app/Filament/Teknisi/Resources/MaintenanceReports/MaintenanceReportResource.php b/app/Filament/Teknisi/Resources/MaintenanceReports/MaintenanceReportResource.php
+--- a/app/Filament/Teknisi/Resources/MaintenanceReports/MaintenanceReportResource.php	2026-07-11 03:19:13.000000000 +0000
++++ b/app/Filament/Teknisi/Resources/MaintenanceReports/MaintenanceReportResource.php	2026-07-14 13:52:52.349805272 +0000
+@@ -1 +1,77 @@
+- 
+\ No newline at end of file
++<?php
++
++namespace App\Filament\Teknisi\Resources\MaintenanceReports;
++
++use App\Filament\Teknisi\Resources\MaintenanceReports\Pages\EditMaintenanceReport;
++use App\Filament\Teknisi\Resources\MaintenanceReports\Pages\ListMaintenanceReports;
++use App\Filament\Teknisi\Resources\MaintenanceReports\Schemas\MaintenanceReportForm;
++use App\Filament\Teknisi\Resources\MaintenanceReports\Tables\MaintenanceReportsTable;
++use App\Models\MaintenanceReport;
++use BackedEnum;
++use Filament\Resources\Resource;
++use Filament\Schemas\Schema;
++use Filament\Tables\Table;
++use Illuminate\Database\Eloquent\Builder;
++use Illuminate\Database\Eloquent\Model;
++use Illuminate\Support\Facades\Auth;
++use UnitEnum;
++
++class MaintenanceReportResource extends Resource
++{
++    protected static ?string $model = MaintenanceReport::class;
++
++    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-wrench-screwdriver';
++    protected static ?string $navigationLabel = 'Tugas Perbaikan';
++    protected static string|UnitEnum|null $navigationGroup = 'Layanan Perbaikan';
++    protected static ?int $navigationSort = 1;
++    protected static ?string $recordTitleAttribute = 'title';
++
++    public static function getModelLabel(): string
++    {
++        return 'Tugas Perbaikan';
++    }
++
++    public static function getPluralModelLabel(): string
++    {
++        return 'Tugas Perbaikan';
++    }
++
++    public static function form(Schema $schema): Schema
++    {
++        return MaintenanceReportForm::configure($schema);
++    }
++
++    public static function table(Table $table): Table
++    {
++        return MaintenanceReportsTable::configure($table);
++    }
++
++    public static function getEloquentQuery(): Builder
++    {
++        return parent::getEloquentQuery()
++            ->where('assigned_technician_id', Auth::id());
++    }
++
++    public static function canCreate(): bool
++    {
++        return false;
++    }
++
++    public static function canEdit(Model $record): bool
++    {
++        return (int) $record->assigned_technician_id === (int) Auth::id();
++    }
++
++    public static function canDelete(Model $record): bool
++    {
++        return false;
++    }
++
++    public static function getPages(): array
++    {
++        return [
++            'index' => ListMaintenanceReports::route('/'),
++            'edit' => EditMaintenanceReport::route('/{record}/edit'),
++        ];
++    }
++}
+diff -ruN a/app/Filament/Teknisi/Resources/MaintenanceReports/Pages/EditMaintenanceReport.php b/app/Filament/Teknisi/Resources/MaintenanceReports/Pages/EditMaintenanceReport.php
+--- a/app/Filament/Teknisi/Resources/MaintenanceReports/Pages/EditMaintenanceReport.php	2026-07-11 03:30:01.000000000 +0000
++++ b/app/Filament/Teknisi/Resources/MaintenanceReports/Pages/EditMaintenanceReport.php	2026-07-14 13:52:52.366002563 +0000
+@@ -4,6 +4,7 @@
+ 
+ use App\Filament\Teknisi\Resources\MaintenanceReports\MaintenanceReportResource;
+ use App\Models\MaintenanceUpdate;
++use App\Services\SystemNotificationService;
+ use Filament\Resources\Pages\EditRecord;
+ use Illuminate\Support\Facades\Auth;
+ 
+@@ -11,57 +12,51 @@
+ {
+     protected static string $resource = MaintenanceReportResource::class;
+ 
+-    protected ?string $oldStatus = null;
++    private ?string $oldStatus = null;
+ 
+     public function getTitle(): string
+     {
+-        return 'Update Laporan Kerusakan';
++        return 'Update Tugas Perbaikan';
+     }
+ 
+     protected function getSavedNotificationTitle(): ?string
+     {
+-        return 'Status laporan berhasil diperbarui';
++        return 'Status tugas berhasil diperbarui';
+     }
+ 
+     protected function beforeSave(): void
+     {
+-        $this->oldStatus = $this->record->getOriginal('status');
++        abort_unless((int) $this->record->assigned_technician_id === (int) Auth::id(), 403);
++        $this->oldStatus = $this->record->status;
+     }
+ 
+     protected function afterSave(): void
+     {
+-        $technicianNote = trim($this->data['technician_note'] ?? '');
+-
++        $note = trim((string) ($this->data['technician_note'] ?? ''));
+         $statusChanged = $this->oldStatus !== $this->record->status;
+ 
+-        if (! $statusChanged && $technicianNote === '') {
+-            return;
++        if ($statusChanged || $note !== '') {
++            MaintenanceUpdate::query()->create([
++                'maintenance_report_id' => $this->record->id,
++                'technician_id' => Auth::id(),
++                'note' => $note !== ''
++                    ? $note
++                    : 'Status perbaikan diperbarui menjadi ' . $this->statusLabel($this->record->status) . '.',
++                'status' => $this->record->status,
++            ]);
+         }
+ 
+-        $note = $technicianNote !== ''
+-            ? $technicianNote
+-            : 'Status laporan diperbarui menjadi ' . $this->getStatusLabel($this->record->status) . '.';
+-
+-        $lastUpdate = MaintenanceUpdate::query()
+-            ->where('maintenance_report_id', $this->record->id)
+-            ->where('technician_id', Auth::id())
+-            ->latest()
+-            ->first();
+-
+-        if (
+-            $lastUpdate &&
+-            $lastUpdate->status === $this->record->status &&
+-            $lastUpdate->note === $note
+-        ) {
+-            return;
+-        }
++        if ($statusChanged || $note !== '') {
++            $this->record->loadMissing(['user', 'room']);
+ 
+-        MaintenanceUpdate::create([
+-            'maintenance_report_id' => $this->record->id,
+-            'technician_id' => Auth::id(),
+-            'note' => $note,
+-            'status' => $this->record->status,
+-        ]);
++            app(SystemNotificationService::class)->user(
++                $this->record->user,
++                'Perkembangan perbaikan kamar',
++                'Laporan "' . $this->record->title . '" berstatus ' . $this->statusLabel($this->record->status) . ($note !== '' ? '. Catatan: ' . $note : '.'),
++                route('user.maintenance.index'),
++                $this->record->status === 'completed' ? 'success' : 'info',
++            );
++        }
+     }
+ 
+     protected function getHeaderActions(): array
+@@ -69,14 +64,13 @@
+         return [];
+     }
+ 
+-    private function getStatusLabel(string $status): string
++    private function statusLabel(string $status): string
+     {
+         return match ($status) {
+-            'pending' => 'Menunggu',
+             'assigned' => 'Ditugaskan',
+             'in_progress' => 'Sedang Dikerjakan',
+             'completed' => 'Selesai',
+             default => $status,
+         };
+     }
+-}
+\ No newline at end of file
++}
+diff -ruN a/app/Filament/Teknisi/Resources/MaintenanceReports/Schemas/MaintenanceReportForm.php b/app/Filament/Teknisi/Resources/MaintenanceReports/Schemas/MaintenanceReportForm.php
+--- a/app/Filament/Teknisi/Resources/MaintenanceReports/Schemas/MaintenanceReportForm.php	2026-07-11 03:04:10.000000000 +0000
++++ b/app/Filament/Teknisi/Resources/MaintenanceReports/Schemas/MaintenanceReportForm.php	2026-07-14 13:52:52.358560460 +0000
+@@ -17,20 +17,24 @@
+                 Select::make('user_id')
+                     ->label('Nama Penghuni')
+                     ->relationship('user', 'name')
+-                    ->disabled(),
++                    ->disabled()
++                    ->dehydrated(false),
+ 
+                 Select::make('room_id')
+                     ->label('Kamar')
+                     ->relationship('room', 'room_number')
+-                    ->disabled(),
++                    ->disabled()
++                    ->dehydrated(false),
+ 
+                 TextInput::make('title')
+                     ->label('Judul Kerusakan')
+-                    ->disabled(),
++                    ->disabled()
++                    ->dehydrated(false),
+ 
+                 Textarea::make('description')
+                     ->label('Deskripsi Kerusakan')
+                     ->disabled()
++                    ->dehydrated(false)
+                     ->rows(4)
+                     ->columnSpanFull(),
+ 
+@@ -38,9 +42,9 @@
+                     ->label('Foto Kerusakan')
+                     ->image()
+                     ->disk('public')
+-                    ->directory('maintenance-reports')
+                     ->visibility('public')
+-                    ->disabled(),
++                    ->disabled()
++                    ->dehydrated(false),
+ 
+                 Select::make('priority')
+                     ->label('Prioritas')
+@@ -49,7 +53,8 @@
+                         'medium' => 'Sedang',
+                         'high' => 'Tinggi',
+                     ])
+-                    ->disabled(),
++                    ->disabled()
++                    ->dehydrated(false),
+ 
+                 Select::make('status')
+                     ->label('Status Pengerjaan')
+@@ -62,10 +67,10 @@
+ 
+                 Textarea::make('technician_note')
+                     ->label('Catatan Teknisi')
+-                    ->placeholder('Contoh: Area kamar sudah dicek, ditemukan banyak sarang laba-laba dan akan dilakukan pembersihan.')
++                    ->placeholder('Tuliskan hasil pemeriksaan atau pekerjaan yang sudah dilakukan.')
+                     ->rows(4)
+                     ->dehydrated(false)
+                     ->columnSpanFull(),
+             ]);
+     }
+-}
+\ No newline at end of file
++}
+diff -ruN a/app/Filament/Teknisi/Resources/MaintenanceReports/Tables/MaintenanceReportsTable.php b/app/Filament/Teknisi/Resources/MaintenanceReports/Tables/MaintenanceReportsTable.php
+--- a/app/Filament/Teknisi/Resources/MaintenanceReports/Tables/MaintenanceReportsTable.php	2026-06-30 05:14:12.000000000 +0000
++++ b/app/Filament/Teknisi/Resources/MaintenanceReports/Tables/MaintenanceReportsTable.php	2026-07-14 13:52:52.374596615 +0000
+@@ -13,31 +13,13 @@
+     public static function configure(Table $table): Table
+     {
+         return $table
++            ->poll('5s')
+             ->columns([
+-                TextColumn::make('no')
+-                    ->label('No')
+-                    ->rowIndex(),
+-
+-                TextColumn::make('user.name')
+-                    ->label('Penghuni')
+-                    ->searchable()
+-                    ->sortable(),
+-
+-                TextColumn::make('room.room_number')
+-                    ->label('Kamar')
+-                    ->searchable()
+-                    ->sortable(),
+-
+-                TextColumn::make('title')
+-                    ->label('Judul Kerusakan')
+-                    ->searchable()
+-                    ->sortable(),
+-
+-                ImageColumn::make('photo')
+-                    ->label('Foto')
+-                    ->disk('public')
+-                    ->size(60),
+-
++                TextColumn::make('no')->label('No')->rowIndex(),
++                TextColumn::make('user.name')->label('Penghuni')->searchable()->sortable(),
++                TextColumn::make('room.room_number')->label('Kamar')->searchable()->sortable(),
++                TextColumn::make('title')->label('Judul Kerusakan')->searchable()->sortable(),
++                ImageColumn::make('photo')->label('Foto')->disk('public')->size(60),
+                 TextColumn::make('priority')
+                     ->label('Prioritas')
+                     ->badge()
+@@ -47,45 +29,32 @@
+                         'high' => 'Tinggi',
+                         default => $state,
+                     }),
+-
+                 TextColumn::make('status')
+                     ->label('Status')
+                     ->badge()
+                     ->formatStateUsing(fn (string $state): string => match ($state) {
+-                        'pending' => 'Menunggu',
+                         'assigned' => 'Ditugaskan',
+                         'in_progress' => 'Sedang Dikerjakan',
+                         'completed' => 'Selesai',
+                         default => $state,
+                     }),
+-
+-                TextColumn::make('created_at')
+-                    ->label('Tanggal Laporan')
+-                    ->dateTime('d M Y H:i')
+-                    ->sortable(),
++                TextColumn::make('created_at')->label('Tanggal Laporan')->dateTime('d M Y H:i')->sortable(),
+             ])
+             ->filters([
+-                SelectFilter::make('priority')
+-                    ->label('Filter Prioritas')
+-                    ->options([
+-                        'low' => 'Rendah',
+-                        'medium' => 'Sedang',
+-                        'high' => 'Tinggi',
+-                    ]),
+-
+-                SelectFilter::make('status')
+-                    ->label('Filter Status')
+-                    ->options([
+-                        'pending' => 'Menunggu',
+-                        'assigned' => 'Ditugaskan',
+-                        'in_progress' => 'Sedang Dikerjakan',
+-                        'completed' => 'Selesai',
+-                    ]),
++                SelectFilter::make('priority')->options([
++                    'low' => 'Rendah',
++                    'medium' => 'Sedang',
++                    'high' => 'Tinggi',
++                ]),
++                SelectFilter::make('status')->options([
++                    'assigned' => 'Ditugaskan',
++                    'in_progress' => 'Sedang Dikerjakan',
++                    'completed' => 'Selesai',
++                ]),
+             ])
+             ->recordActions([
+-                EditAction::make()
+-                    ->label('Update Status'),
++                EditAction::make()->label('Update Status'),
+             ])
+             ->defaultSort('created_at', 'desc');
+     }
+-}
+\ No newline at end of file
++}
+diff -ruN a/app/Filament/Teknisi/Resources/MaintenanceUpdates/MaintenanceUpdateResource.php b/app/Filament/Teknisi/Resources/MaintenanceUpdates/MaintenanceUpdateResource.php
+--- a/app/Filament/Teknisi/Resources/MaintenanceUpdates/MaintenanceUpdateResource.php	2026-06-14 15:36:42.000000000 +0000
++++ b/app/Filament/Teknisi/Resources/MaintenanceUpdates/MaintenanceUpdateResource.php	2026-07-14 13:55:47.127065212 +0000
+@@ -11,22 +11,19 @@
+ use BackedEnum;
+ use Filament\Resources\Resource;
+ use Filament\Schemas\Schema;
+-use Filament\Support\Icons\Heroicon;
+ use Filament\Tables\Table;
++use Illuminate\Database\Eloquent\Builder;
++use Illuminate\Database\Eloquent\Model;
++use Illuminate\Support\Facades\Auth;
+ use UnitEnum;
+ 
+ class MaintenanceUpdateResource extends Resource
+ {
+     protected static ?string $model = MaintenanceUpdate::class;
+-
+     protected static ?string $navigationLabel = 'Catatan Perbaikan';
+-
+     protected static string|UnitEnum|null $navigationGroup = 'Layanan Perbaikan';
+-
+     protected static ?int $navigationSort = 2;
+-
+-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedWrenchScrewdriver;
+-
++    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-clipboard-document-check';
+     protected static ?string $recordTitleAttribute = 'note';
+ 
+     public static function getModelLabel(): string
+@@ -49,9 +46,19 @@
+         return MaintenanceUpdatesTable::configure($table);
+     }
+ 
+-    public static function getRelations(): array
++    public static function getEloquentQuery(): Builder
++    {
++        return parent::getEloquentQuery()->where('technician_id', Auth::id());
++    }
++
++    public static function canEdit(Model $record): bool
++    {
++        return (int) $record->technician_id === (int) Auth::id();
++    }
++
++    public static function canDelete(Model $record): bool
+     {
+-        return [];
++        return false;
+     }
+ 
+     public static function getPages(): array
+@@ -62,4 +69,4 @@
+             'edit' => EditMaintenanceUpdate::route('/{record}/edit'),
+         ];
+     }
+-}
+\ No newline at end of file
++}
+diff -ruN a/app/Filament/Teknisi/Resources/MaintenanceUpdates/Pages/CreateMaintenanceUpdate.php b/app/Filament/Teknisi/Resources/MaintenanceUpdates/Pages/CreateMaintenanceUpdate.php
+--- a/app/Filament/Teknisi/Resources/MaintenanceUpdates/Pages/CreateMaintenanceUpdate.php	2026-06-29 13:21:18.000000000 +0000
++++ b/app/Filament/Teknisi/Resources/MaintenanceUpdates/Pages/CreateMaintenanceUpdate.php	2026-07-14 13:55:47.134427903 +0000
+@@ -3,7 +3,10 @@
+ namespace App\Filament\Teknisi\Resources\MaintenanceUpdates\Pages;
+ 
+ use App\Filament\Teknisi\Resources\MaintenanceUpdates\MaintenanceUpdateResource;
++use App\Models\MaintenanceReport;
++use App\Services\SystemNotificationService;
+ use Filament\Resources\Pages\CreateRecord;
++use Illuminate\Support\Facades\Auth;
+ 
+ class CreateMaintenanceUpdate extends CreateRecord
+ {
+@@ -14,15 +17,35 @@
+         return 'Tambah Catatan Perbaikan';
+     }
+ 
+-    protected function getCreatedNotificationTitle(): ?string
++    protected function mutateFormDataBeforeCreate(array $data): array
+     {
+-        return 'Catatan perbaikan berhasil ditambahkan';
++        $report = MaintenanceReport::query()
++            ->whereKey($data['maintenance_report_id'])
++            ->where('assigned_technician_id', Auth::id())
++            ->firstOrFail();
++
++        $data['technician_id'] = Auth::id();
++
++        return $data;
+     }
+ 
+     protected function afterCreate(): void
+     {
+-        $this->record->report?->update([
+-            'status' => $this->record->status,
+-        ]);
++        $report = $this->record->report;
++        $report?->update(['status' => $this->record->status]);
++        $report?->loadMissing(['user', 'room']);
++
++        app(SystemNotificationService::class)->user(
++            $report?->user,
++            'Perkembangan perbaikan kamar',
++            'Laporan "' . ($report?->title ?? '-') . '" diperbarui: ' . $this->record->note,
++            route('user.maintenance.index'),
++            $this->record->status === 'completed' ? 'success' : 'info',
++        );
++    }
++
++    protected function getCreatedNotificationTitle(): ?string
++    {
++        return 'Catatan perbaikan berhasil ditambahkan';
+     }
+-}
+\ No newline at end of file
++}
+diff -ruN a/app/Filament/Teknisi/Resources/MaintenanceUpdates/Pages/EditMaintenanceUpdate.php b/app/Filament/Teknisi/Resources/MaintenanceUpdates/Pages/EditMaintenanceUpdate.php
+--- a/app/Filament/Teknisi/Resources/MaintenanceUpdates/Pages/EditMaintenanceUpdate.php	2026-06-29 13:21:25.000000000 +0000
++++ b/app/Filament/Teknisi/Resources/MaintenanceUpdates/Pages/EditMaintenanceUpdate.php	2026-07-14 13:55:47.141154105 +0000
+@@ -3,38 +3,41 @@
+ namespace App\Filament\Teknisi\Resources\MaintenanceUpdates\Pages;
+ 
+ use App\Filament\Teknisi\Resources\MaintenanceUpdates\MaintenanceUpdateResource;
+-use Filament\Actions\DeleteAction;
++use App\Services\SystemNotificationService;
+ use Filament\Resources\Pages\EditRecord;
++use Illuminate\Support\Facades\Auth;
+ 
+ class EditMaintenanceUpdate extends EditRecord
+ {
+     protected static string $resource = MaintenanceUpdateResource::class;
+ 
+-    public function getTitle(): string
++    protected function beforeSave(): void
+     {
+-        return 'Edit Catatan Perbaikan';
++        abort_unless((int) $this->record->technician_id === (int) Auth::id(), 403);
+     }
+ 
+-    protected function getSavedNotificationTitle(): ?string
++    protected function afterSave(): void
+     {
+-        return 'Catatan perbaikan berhasil diperbarui';
++        $report = $this->record->report;
++        $report?->update(['status' => $this->record->status]);
++        $report?->loadMissing('user');
++
++        app(SystemNotificationService::class)->user(
++            $report?->user,
++            'Catatan perbaikan diperbarui',
++            $this->record->note,
++            route('user.maintenance.index'),
++            $this->record->status === 'completed' ? 'success' : 'info',
++        );
+     }
+ 
+-    protected function afterSave(): void
++    protected function getSavedNotificationTitle(): ?string
+     {
+-        $this->record->report?->update([
+-            'status' => $this->record->status,
+-        ]);
++        return 'Catatan perbaikan berhasil diperbarui';
+     }
+ 
+     protected function getHeaderActions(): array
+     {
+-        return [
+-            DeleteAction::make()
+-                ->label('Hapus')
+-                ->modalHeading('Hapus Catatan Perbaikan')
+-                ->modalDescription('Apakah Anda yakin ingin menghapus data ini?')
+-                ->modalSubmitActionLabel('Ya, Hapus'),
+-        ];
++        return [];
+     }
+-}
+\ No newline at end of file
++}
+diff -ruN a/app/Filament/Teknisi/Resources/MaintenanceUpdates/Schemas/MaintenanceUpdateForm.php b/app/Filament/Teknisi/Resources/MaintenanceUpdates/Schemas/MaintenanceUpdateForm.php
+--- a/app/Filament/Teknisi/Resources/MaintenanceUpdates/Schemas/MaintenanceUpdateForm.php	2026-06-30 05:14:24.000000000 +0000
++++ b/app/Filament/Teknisi/Resources/MaintenanceUpdates/Schemas/MaintenanceUpdateForm.php	2026-07-14 13:55:47.118793328 +0000
+@@ -17,19 +17,21 @@
+             ->components([
+                 Select::make('maintenance_report_id')
+                     ->label('Laporan Kerusakan')
+-                    ->options(fn () => MaintenanceReport::query()
++                    ->options(fn (): array => MaintenanceReport::query()
+                         ->with(['user', 'room'])
++                        ->where('assigned_technician_id', Auth::id())
++                        ->whereIn('status', ['assigned', 'in_progress'])
+                         ->latest()
+                         ->get()
+                         ->mapWithKeys(fn (MaintenanceReport $report): array => [
+                             $report->id => $report->title . ' - ' . ($report->user?->name ?? 'Penghuni') . ' - Kamar ' . ($report->room?->room_number ?? '-'),
+                         ])
+-                        ->toArray())
++                        ->all())
+                     ->searchable()
+                     ->required(),
+ 
+                 Hidden::make('technician_id')
+-                    ->default(fn () => Auth::id()),
++                    ->default(fn (): ?int => Auth::id()),
+ 
+                 Textarea::make('note')
+                     ->label('Catatan Perbaikan')
+@@ -47,4 +49,4 @@
+                     ->required(),
+             ]);
+     }
+-}
+\ No newline at end of file
++}
+diff -ruN a/app/Filament/Teknisi/Resources/MaintenanceUpdates/Tables/MaintenanceUpdatesTable.php b/app/Filament/Teknisi/Resources/MaintenanceUpdates/Tables/MaintenanceUpdatesTable.php
+--- a/app/Filament/Teknisi/Resources/MaintenanceUpdates/Tables/MaintenanceUpdatesTable.php	2026-07-11 02:53:38.000000000 +0000
++++ b/app/Filament/Teknisi/Resources/MaintenanceUpdates/Tables/MaintenanceUpdatesTable.php	2026-07-14 13:55:48.251672161 +0000
+@@ -12,6 +12,7 @@
+     public static function configure(Table $table): Table
+     {
+         return $table
++            ->poll('5s')
+             ->columns([
+                 TextColumn::make('no')
+                     ->label('No')
+diff -ruN a/app/Http/Controllers/User/BookingController.php b/app/Http/Controllers/User/BookingController.php
+--- a/app/Http/Controllers/User/BookingController.php	2026-07-11 06:05:11.000000000 +0000
++++ b/app/Http/Controllers/User/BookingController.php	2026-07-14 13:50:33.790412407 +0000
+@@ -2,12 +2,18 @@
+ 
+ namespace App\Http\Controllers\User;
+ 
++use App\Filament\Resources\Bookings\BookingResource;
+ use App\Http\Controllers\Controller;
+ use App\Models\Booking;
+ use App\Models\Payment;
+ use App\Models\Room;
++use App\Services\BookingLifecycleService;
++use App\Services\SystemNotificationService;
+ use Illuminate\Http\Request;
+ use Illuminate\Support\Facades\Auth;
++use Illuminate\Support\Facades\DB;
++use Illuminate\Support\Facades\Storage;
++use Throwable;
+ 
+ class BookingController extends Controller
+ {
+@@ -23,7 +29,9 @@
+ 
+     public function create(Request $request)
+     {
+-        $rooms = Room::where('status', 'available')
++        $rooms = Room::query()
++            ->where('status', 'available')
++            ->whereDoesntHave('activeBookings')
+             ->latest()
+             ->get();
+ 
+@@ -32,84 +40,115 @@
+         return view('user.bookings.create', compact('rooms', 'selectedRoomId'));
+     }
+ 
+-    public function store(Request $request)
+-    {
+-        $request->validate([
+-            'room_id' => ['required', 'exists:rooms,id'],
+-            'check_in_date' => ['required', 'date'],
+-            'duration_month' => ['required', 'integer', 'min:1'],
++    public function store(
++        Request $request,
++        BookingLifecycleService $bookingLifecycle,
++        SystemNotificationService $notifications,
++    ) {
++        $validated = $request->validate([
++            'room_id' => ['required', 'integer', 'exists:rooms,id'],
++            'check_in_date' => ['required', 'date', 'after_or_equal:today'],
++            'duration_month' => ['required', 'integer', 'min:1', 'max:36'],
+             'payment_method' => ['required', 'in:bank_transfer,qris,cod'],
+             'sender_name' => ['nullable', 'string', 'max:255'],
+             'sender_bank' => ['nullable', 'string', 'max:255'],
+             'payment_proof' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+         ], [
+             'room_id.required' => 'Kamar wajib dipilih.',
++            'room_id.exists' => 'Kamar tidak ditemukan.',
+             'check_in_date.required' => 'Tanggal masuk wajib diisi.',
++            'check_in_date.after_or_equal' => 'Tanggal masuk tidak boleh sebelum hari ini.',
+             'duration_month.required' => 'Lama sewa wajib diisi.',
++            'duration_month.min' => 'Lama sewa minimal 1 bulan.',
++            'duration_month.max' => 'Lama sewa maksimal 36 bulan.',
+             'payment_method.required' => 'Metode pembayaran wajib dipilih.',
+             'payment_proof.image' => 'Bukti pembayaran harus berupa gambar.',
+             'payment_proof.mimes' => 'Format bukti pembayaran harus JPG, JPEG, PNG, atau WEBP.',
+-            'payment_proof.max' => 'Ukuran bukti pembayaran maksimal 2MB.',
++            'payment_proof.max' => 'Ukuran bukti pembayaran maksimal 2 MB.',
+         ]);
+ 
+-        if ($request->payment_method === 'bank_transfer') {
++        if ($validated['payment_method'] === 'bank_transfer') {
+             $request->validate([
+                 'sender_name' => ['required', 'string', 'max:255'],
+                 'sender_bank' => ['required', 'string', 'max:255'],
+                 'payment_proof' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+             ], [
+                 'sender_name.required' => 'Nama pengirim wajib diisi untuk transfer bank.',
+-                'sender_bank.required' => 'Bank atau rekening pengirim wajib diisi untuk transfer bank.',
+-                'payment_proof.required' => 'Bukti pembayaran wajib diupload untuk transfer bank.',
++                'sender_bank.required' => 'Bank pengirim wajib diisi untuk transfer bank.',
++                'payment_proof.required' => 'Bukti transfer wajib diunggah.',
+             ]);
+         }
+ 
+-        if ($request->payment_method === 'qris') {
++        if ($validated['payment_method'] === 'qris') {
+             $request->validate([
+                 'sender_name' => ['required', 'string', 'max:255'],
+                 'payment_proof' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+             ], [
+                 'sender_name.required' => 'Nama pengirim wajib diisi untuk pembayaran QRIS.',
+-                'payment_proof.required' => 'Bukti pembayaran QRIS wajib diupload.',
++                'payment_proof.required' => 'Bukti pembayaran QRIS wajib diunggah.',
+             ]);
+         }
+ 
+-        $room = Room::where('id', $request->room_id)
+-            ->where('status', 'available')
+-            ->firstOrFail();
+-
+-        $initialPayment = $room->price;
++        $proofPath = $request->hasFile('payment_proof')
++            ? $request->file('payment_proof')->store('payment-proofs', 'public')
++            : null;
++
++        try {
++            $booking = DB::transaction(function () use ($validated, $proofPath, $bookingLifecycle): Booking {
++                $room = Room::query()
++                    ->lockForUpdate()
++                    ->findOrFail($validated['room_id']);
++
++                $bookingLifecycle->assertRoomCanBeBooked($room);
++
++                $totalContractPrice = (float) $room->price * (int) $validated['duration_month'];
++                $initialPayment = (float) $room->price;
++
++                $booking = Booking::query()->create([
++                    'user_id' => Auth::id(),
++                    'room_id' => $room->id,
++                    'check_in_date' => $validated['check_in_date'],
++                    'duration_month' => $validated['duration_month'],
++                    'total_price' => $totalContractPrice,
++                    'status' => 'pending',
++                ]);
++
++                Payment::query()->create([
++                    'booking_id' => $booking->id,
++                    'amount' => $initialPayment,
++                    'payment_method' => $validated['payment_method'],
++                    'sender_name' => in_array($validated['payment_method'], ['bank_transfer', 'qris'], true)
++                        ? ($validated['sender_name'] ?? null)
++                        : null,
++                    'sender_bank' => $validated['payment_method'] === 'bank_transfer'
++                        ? ($validated['sender_bank'] ?? null)
++                        : null,
++                    'payment_proof' => $proofPath,
++                    'payment_date' => now(),
++                    'status' => 'pending',
++                    'note' => null,
++                ]);
++
++                return $booking->load(['user', 'room', 'payment']);
++            }, attempts: 3);
++        } catch (Throwable $exception) {
++            if ($proofPath) {
++                Storage::disk('public')->delete($proofPath);
++            }
+ 
+-        $booking = Booking::create([
+-            'user_id' => Auth::id(),
+-            'room_id' => $room->id,
+-            'check_in_date' => $request->check_in_date,
+-            'duration_month' => $request->duration_month,
+-            'total_price' => $initialPayment,
+-            'status' => 'pending',
+-        ]);
+-
+-        $proofPath = null;
+-
+-        if ($request->hasFile('payment_proof')) {
+-            $proofPath = $request->file('payment_proof')->store('payment-proofs', 'public');
++            throw $exception;
+         }
+ 
+-        Payment::create([
+-            'booking_id' => $booking->id,
+-            'amount' => $initialPayment,
+-            'payment_method' => $request->payment_method,
+-            'sender_name' => in_array($request->payment_method, ['bank_transfer', 'qris']) ? $request->sender_name : null,
+-            'sender_bank' => $request->payment_method === 'bank_transfer' ? $request->sender_bank : null,
+-            'payment_proof' => $proofPath,
+-            'payment_date' => now(),
+-            'status' => 'pending',
+-            'note' => null,
+-        ]);
++        $notifications->admins(
++            'Pemesanan kamar baru',
++            $booking->user->name . ' mengajukan pemesanan kamar ' . $booking->room->room_number . '.',
++            BookingResource::getUrl('edit', ['record' => $booking]),
++            'warning',
++        );
+ 
+         return redirect()
+-            ->route('user.rooms.index')
+-            ->with('success', 'Booking berhasil diajukan. Pembayaran awal adalah biaya bulan pertama. Silakan tunggu konfirmasi admin.');
++            ->route('user.bookings.show', $booking)
++            ->with('success', 'Booking berhasil diajukan. Kamar otomatis dikunci dari pemesanan lain sampai admin memprosesnya.');
+     }
+ 
+     public function show(Booking $booking)
+@@ -120,4 +159,4 @@
+ 
+         return view('user.bookings.show', compact('booking'));
+     }
+-}
+\ No newline at end of file
++}
+diff -ruN a/app/Http/Controllers/User/FeedbackController.php b/app/Http/Controllers/User/FeedbackController.php
+--- a/app/Http/Controllers/User/FeedbackController.php	2026-07-10 09:29:45.000000000 +0000
++++ b/app/Http/Controllers/User/FeedbackController.php	2026-07-14 13:50:33.811526936 +0000
+@@ -5,6 +5,7 @@
+ use App\Http\Controllers\Controller;
+ use App\Models\Booking;
+ use App\Models\Feedback;
++use App\Services\SystemNotificationService;
+ use Illuminate\Http\Request;
+ use Illuminate\Support\Facades\Auth;
+ 
+@@ -18,20 +19,14 @@
+             ->get();
+ 
+         $totalFeedback = $feedbacks->count();
+-
+-        $averageRating = $totalFeedback > 0
+-            ? round($feedbacks->avg('rating'), 1)
+-            : 0;
+-
+-        $publishedFeedback = $feedbacks
+-            ->where('is_published', true)
+-            ->count();
++        $averageRating = $totalFeedback > 0 ? round((float) $feedbacks->avg('rating'), 1) : 0;
++        $publishedFeedback = $feedbacks->where('is_published', true)->count();
+ 
+         return view('user.feedback.index', compact(
+             'feedbacks',
+             'totalFeedback',
+             'averageRating',
+-            'publishedFeedback'
++            'publishedFeedback',
+         ));
+     }
+ 
+@@ -47,39 +42,38 @@
+         return view('user.feedback.create', compact('bookings'));
+     }
+ 
+-    public function store(Request $request)
++    public function store(Request $request, SystemNotificationService $notifications)
+     {
+-        $request->validate([
+-            'booking_id' => ['required', 'exists:bookings,id'],
+-            'rating' => ['required', 'integer', 'min:1', 'max:5'],
++        $validated = $request->validate([
++            'booking_id' => ['required', 'integer', 'exists:bookings,id'],
++            'rating' => ['required', 'integer', 'between:1,5'],
+             'comment' => ['required', 'string', 'max:1000'],
+-        ], [
+-            'booking_id.required' => 'Booking wajib dipilih.',
+-            'booking_id.exists' => 'Booking yang dipilih tidak valid.',
+-            'rating.required' => 'Rating wajib dipilih.',
+-            'rating.integer' => 'Rating tidak valid.',
+-            'rating.min' => 'Rating minimal 1.',
+-            'rating.max' => 'Rating maksimal 5.',
+-            'comment.required' => 'Komentar wajib diisi.',
+-            'comment.max' => 'Komentar maksimal 1000 karakter.',
+         ]);
+ 
+-        $booking = Booking::where('id', $request->booking_id)
++        $booking = Booking::with('room')
++            ->whereKey($validated['booking_id'])
+             ->where('user_id', Auth::id())
+             ->whereIn('status', ['approved', 'completed'])
+             ->whereDoesntHave('feedback')
+             ->firstOrFail();
+ 
+-        Feedback::create([
++        $feedback = Feedback::query()->create([
+             'user_id' => Auth::id(),
+             'booking_id' => $booking->id,
+-            'rating' => $request->rating,
+-            'comment' => $request->comment,
++            'rating' => $validated['rating'],
++            'comment' => $validated['comment'],
+             'is_published' => false,
+         ]);
+ 
++        $notifications->admins(
++            'Feedback penghuni baru',
++            Auth::user()->name . ' memberi rating ' . $feedback->rating . '/5 untuk kamar ' . ($booking->room?->room_number ?? '-') . '.',
++            url('/admin/feedback'),
++            'info',
++        );
++
+         return redirect()
+             ->route('user.feedback.index')
+-            ->with('success', 'Feedback berhasil dikirim.');
++            ->with('success', 'Feedback berhasil dikirim dan menunggu publikasi admin.');
+     }
+-}
+\ No newline at end of file
++}
+diff -ruN a/app/Http/Controllers/User/MaintenanceController.php b/app/Http/Controllers/User/MaintenanceController.php
+--- a/app/Http/Controllers/User/MaintenanceController.php	2026-07-11 03:30:22.000000000 +0000
++++ b/app/Http/Controllers/User/MaintenanceController.php	2026-07-14 13:50:33.803896588 +0000
+@@ -2,10 +2,12 @@
+ 
+ namespace App\Http\Controllers\User;
+ 
++use App\Filament\Resources\MaintenanceReports\MaintenanceReportResource;
+ use App\Http\Controllers\Controller;
+ use App\Models\Booking;
+ use App\Models\MaintenanceReport;
+ use App\Models\Room;
++use App\Services\SystemNotificationService;
+ use Illuminate\Http\Request;
+ use Illuminate\Support\Facades\Auth;
+ use Illuminate\Support\Facades\Storage;
+@@ -15,11 +17,11 @@
+     public function index()
+     {
+         $reports = MaintenanceReport::with([
+-                'room',
+-                'user',
+-                'updates.technician',
+-                'latestUpdate.technician',
+-            ])
++            'room',
++            'assignedTechnician',
++            'updates.technician',
++            'latestUpdate.technician',
++        ])
+             ->where('user_id', Auth::id())
+             ->latest()
+             ->get();
+@@ -29,59 +31,65 @@
+ 
+     public function create()
+     {
+-        $roomIds = Booking::where('user_id', Auth::id())
+-            ->whereIn('status', ['pending', 'approved'])
+-            ->pluck('room_id')
+-            ->unique();
++        $roomIds = Booking::query()
++            ->where('user_id', Auth::id())
++            ->where('status', 'approved')
++            ->pluck('room_id');
+ 
+-        $rooms = Room::whereIn('id', $roomIds)
++        $rooms = Room::query()
++            ->whereIn('id', $roomIds)
+             ->orderBy('room_number')
+             ->get();
+ 
+         return view('user.maintenance.create', compact('rooms'));
+     }
+ 
+-    public function store(Request $request)
++    public function store(Request $request, SystemNotificationService $notifications)
+     {
+-        $request->validate([
+-            'room_id' => ['required', 'exists:rooms,id'],
++        $validated = $request->validate([
++            'room_id' => ['required', 'integer', 'exists:rooms,id'],
+             'title' => ['required', 'string', 'max:255'],
+-            'description' => ['required', 'string'],
++            'description' => ['required', 'string', 'max:3000'],
+             'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+         ]);
+ 
+-        $hasBooking = Booking::where('user_id', Auth::id())
+-            ->where('room_id', $request->room_id)
+-            ->whereIn('status', ['pending', 'approved'])
++        $hasActiveBooking = Booking::query()
++            ->where('user_id', Auth::id())
++            ->where('room_id', $validated['room_id'])
++            ->where('status', 'approved')
+             ->exists();
+ 
+-        if (! $hasBooking) {
+-            return back()
+-                ->withInput()
+-                ->withErrors([
+-                    'room_id' => 'Kamar ini bukan kamar yang kamu booking.',
+-                ]);
++        if (! $hasActiveBooking) {
++            return back()->withInput()->withErrors([
++                'room_id' => 'Laporan hanya dapat dibuat untuk kamar yang sedang Anda tempati.',
++            ]);
+         }
+ 
+-        $photoPath = null;
+-
+-        if ($request->hasFile('photo')) {
+-            $photoPath = $request->file('photo')->store('maintenance-reports', 'public');
+-        }
++        $photoPath = $request->hasFile('photo')
++            ? $request->file('photo')->store('maintenance-reports', 'public')
++            : null;
+ 
+-        MaintenanceReport::create([
++        $report = MaintenanceReport::query()->create([
+             'user_id' => Auth::id(),
+-            'room_id' => $request->room_id,
+-            'title' => $request->title,
+-            'description' => $request->description,
++            'room_id' => $validated['room_id'],
++            'assigned_technician_id' => null,
++            'title' => $validated['title'],
++            'description' => $validated['description'],
+             'photo' => $photoPath,
+             'priority' => 'medium',
+             'status' => 'pending',
+-        ]);
++        ])->load(['user', 'room']);
++
++        $notifications->admins(
++            'Laporan kerusakan baru',
++            $report->user->name . ' melaporkan kerusakan di kamar ' . $report->room->room_number . ': ' . $report->title,
++            MaintenanceReportResource::getUrl('edit', ['record' => $report]),
++            'danger',
++        );
+ 
+         return redirect()
+             ->route('user.maintenance.index')
+-            ->with('success', 'Laporan perbaikan berhasil dikirim.');
++            ->with('success', 'Laporan perbaikan berhasil dikirim kepada admin.');
+     }
+ 
+     public function edit(MaintenanceReport $maintenanceReport)
+@@ -89,21 +97,17 @@
+         abort_if($maintenanceReport->user_id !== Auth::id(), 403);
+ 
+         if ($maintenanceReport->status !== 'pending') {
+-            return redirect()
+-                ->route('user.maintenance.index')
+-                ->withErrors([
+-                    'maintenance' => 'Laporan yang sudah diproses tidak dapat diedit.',
+-                ]);
++            return redirect()->route('user.maintenance.index')->withErrors([
++                'maintenance' => 'Laporan yang sudah diproses tidak dapat diedit.',
++            ]);
+         }
+ 
+-        $roomIds = Booking::where('user_id', Auth::id())
+-            ->whereIn('status', ['pending', 'approved'])
+-            ->pluck('room_id')
+-            ->unique();
++        $roomIds = Booking::query()
++            ->where('user_id', Auth::id())
++            ->where('status', 'approved')
++            ->pluck('room_id');
+ 
+-        $rooms = Room::whereIn('id', $roomIds)
+-            ->orderBy('room_number')
+-            ->get();
++        $rooms = Room::query()->whereIn('id', $roomIds)->orderBy('room_number')->get();
+ 
+         return view('user.maintenance.edit', compact('maintenanceReport', 'rooms'));
+     }
+@@ -111,49 +115,41 @@
+     public function update(Request $request, MaintenanceReport $maintenanceReport)
+     {
+         abort_if($maintenanceReport->user_id !== Auth::id(), 403);
++        abort_if($maintenanceReport->status !== 'pending', 422, 'Laporan yang sudah diproses tidak dapat diedit.');
+ 
+-        if ($maintenanceReport->status !== 'pending') {
+-            return redirect()
+-                ->route('user.maintenance.index')
+-                ->withErrors([
+-                    'maintenance' => 'Laporan yang sudah diproses tidak dapat diedit.',
+-                ]);
+-        }
+-
+-        $request->validate([
+-            'room_id' => ['required', 'exists:rooms,id'],
++        $validated = $request->validate([
++            'room_id' => ['required', 'integer', 'exists:rooms,id'],
+             'title' => ['required', 'string', 'max:255'],
+-            'description' => ['required', 'string'],
++            'description' => ['required', 'string', 'max:3000'],
+             'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+         ]);
+ 
+-        $hasBooking = Booking::where('user_id', Auth::id())
+-            ->where('room_id', $request->room_id)
+-            ->whereIn('status', ['pending', 'approved'])
++        $hasActiveBooking = Booking::query()
++            ->where('user_id', Auth::id())
++            ->where('room_id', $validated['room_id'])
++            ->where('status', 'approved')
+             ->exists();
+ 
+-        if (! $hasBooking) {
+-            return back()
+-                ->withInput()
+-                ->withErrors([
+-                    'room_id' => 'Kamar ini bukan kamar yang kamu booking.',
+-                ]);
++        if (! $hasActiveBooking) {
++            return back()->withInput()->withErrors([
++                'room_id' => 'Kamar ini bukan kamar yang sedang Anda tempati.',
++            ]);
+         }
+ 
+         $photoPath = $maintenanceReport->photo;
+ 
+         if ($request->hasFile('photo')) {
+-            if ($maintenanceReport->photo) {
+-                Storage::disk('public')->delete($maintenanceReport->photo);
++            if ($photoPath) {
++                Storage::disk('public')->delete($photoPath);
+             }
+ 
+             $photoPath = $request->file('photo')->store('maintenance-reports', 'public');
+         }
+ 
+         $maintenanceReport->update([
+-            'room_id' => $request->room_id,
+-            'title' => $request->title,
+-            'description' => $request->description,
++            'room_id' => $validated['room_id'],
++            'title' => $validated['title'],
++            'description' => $validated['description'],
+             'photo' => $photoPath,
+         ]);
+ 
+@@ -161,4 +157,4 @@
+             ->route('user.maintenance.index')
+             ->with('success', 'Laporan perbaikan berhasil diperbarui.');
+     }
+-}
+\ No newline at end of file
++}
+diff -ruN a/app/Http/Controllers/User/NotificationController.php b/app/Http/Controllers/User/NotificationController.php
+--- a/app/Http/Controllers/User/NotificationController.php	1970-01-01 00:00:00.000000000 +0000
++++ b/app/Http/Controllers/User/NotificationController.php	2026-07-14 13:50:33.825714555 +0000
+@@ -0,0 +1,43 @@
++<?php
++
++namespace App\Http\Controllers\User;
++
++use App\Http\Controllers\Controller;
++use Illuminate\Http\RedirectResponse;
++use Illuminate\Notifications\DatabaseNotification;
++use Illuminate\View\View;
++
++class NotificationController extends Controller
++{
++    public function index(): View
++    {
++        $notifications = auth()->user()
++            ->notifications()
++            ->latest()
++            ->paginate(15);
++
++        return view('user.notifications.index', compact('notifications'));
++    }
++
++    public function read(DatabaseNotification $notification): RedirectResponse
++    {
++        abort_unless(
++            $notification->notifiable_type === auth()->user()::class
++            && (int) $notification->notifiable_id === (int) auth()->id(),
++            403,
++        );
++
++        $notification->markAsRead();
++
++        $url = data_get($notification->data, 'viewData.url');
++
++        return $url ? redirect()->to($url) : back();
++    }
++
++    public function readAll(): RedirectResponse
++    {
++        auth()->user()->unreadNotifications->markAsRead();
++
++        return back()->with('success', 'Semua notifikasi sudah ditandai dibaca.');
++    }
++}
+diff -ruN a/app/Http/Controllers/User/PaymentController.php b/app/Http/Controllers/User/PaymentController.php
+--- a/app/Http/Controllers/User/PaymentController.php	2026-07-11 03:53:04.000000000 +0000
++++ b/app/Http/Controllers/User/PaymentController.php	2026-07-14 13:59:58.495208660 +0000
+@@ -2,21 +2,24 @@
+ 
+ namespace App\Http\Controllers\User;
+ 
++use App\Filament\Resources\Payments\PaymentResource;
+ use App\Http\Controllers\Controller;
+ use App\Models\Booking;
+ use App\Models\Payment;
++use App\Services\SystemNotificationService;
+ use Illuminate\Http\Request;
+ use Illuminate\Support\Facades\Auth;
++use Illuminate\Support\Facades\DB;
+ use Illuminate\Support\Facades\Storage;
++use Illuminate\Validation\ValidationException;
++use Throwable;
+ 
+ class PaymentController extends Controller
+ {
+     public function index()
+     {
+         $payments = Payment::with('booking.room')
+-            ->whereHas('booking', function ($query) {
+-                $query->where('user_id', Auth::id());
+-            })
++            ->whereHas('booking', fn ($query) => $query->where('user_id', Auth::id()))
+             ->latest()
+             ->get();
+ 
+@@ -27,30 +30,25 @@
+     {
+         $bookings = Booking::with(['room', 'payment'])
+             ->where('user_id', Auth::id())
+-            ->whereIn('status', ['pending', 'approved'])
+-            ->where(function ($query) {
+-                $query->whereDoesntHave('payment')
+-                    ->orWhereHas('payment', function ($paymentQuery) {
+-                        $paymentQuery->where('status', 'rejected');
+-                    });
+-            })
++            ->where('status', 'pending')
++            ->whereHas('payment', fn ($query) => $query->where('status', 'rejected'))
+             ->latest()
+             ->get();
+ 
+         return view('user.payments.create', compact('bookings'));
+     }
+ 
+-    public function store(Request $request)
++    public function store(Request $request, SystemNotificationService $notifications)
+     {
+-        $request->validate([
+-            'booking_id' => ['required', 'exists:bookings,id'],
++        $validated = $request->validate([
++            'booking_id' => ['required', 'integer', 'exists:bookings,id'],
+             'payment_method' => ['required', 'in:bank_transfer,qris,cod'],
+             'sender_name' => ['nullable', 'string', 'max:255'],
+             'sender_bank' => ['nullable', 'string', 'max:255'],
+             'payment_proof' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+         ]);
+ 
+-        if ($request->payment_method === 'bank_transfer') {
++        if ($validated['payment_method'] === 'bank_transfer') {
+             $request->validate([
+                 'sender_name' => ['required', 'string', 'max:255'],
+                 'sender_bank' => ['required', 'string', 'max:255'],
+@@ -58,64 +56,80 @@
+             ]);
+         }
+ 
+-        if ($request->payment_method === 'qris') {
++        if ($validated['payment_method'] === 'qris') {
+             $request->validate([
+                 'sender_name' => ['required', 'string', 'max:255'],
+                 'payment_proof' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+             ]);
+         }
+ 
+-        $booking = Booking::with('payment')
+-            ->where('id', $request->booking_id)
+-            ->where('user_id', Auth::id())
+-            ->whereIn('status', ['pending', 'approved'])
+-            ->firstOrFail();
+-
+-        if ($booking->payment && $booking->payment->status !== 'rejected') {
+-            return back()
+-                ->withInput()
+-                ->withErrors([
+-                    'booking_id' => 'Booking ini sudah memiliki pembayaran yang sedang diproses atau sudah terverifikasi.',
++        $newProofPath = $request->hasFile('payment_proof')
++            ? $request->file('payment_proof')->store('payment-proofs', 'public')
++            : null;
++
++        $oldProofPath = null;
++
++        try {
++            $payment = DB::transaction(function () use ($validated, $newProofPath, &$oldProofPath): Payment {
++                $booking = Booking::query()
++                    ->with('room')
++                    ->whereKey($validated['booking_id'])
++                    ->where('user_id', Auth::id())
++                    ->where('status', 'pending')
++                    ->lockForUpdate()
++                    ->firstOrFail();
++
++                $payment = Payment::query()
++                    ->where('booking_id', $booking->id)
++                    ->lockForUpdate()
++                    ->firstOrFail();
++
++                if ($payment->status !== 'rejected') {
++                    throw ValidationException::withMessages([
++                        'booking_id' => 'Pembayaran ini tidak dapat dikirim ulang karena statusnya bukan ditolak.',
++                    ]);
++                }
++
++                $oldProofPath = $payment->payment_proof;
++
++                $payment->update([
++                    'amount' => $booking->room->price,
++                    'payment_method' => $validated['payment_method'],
++                    'sender_name' => in_array($validated['payment_method'], ['bank_transfer', 'qris'], true)
++                        ? ($validated['sender_name'] ?? null)
++                        : null,
++                    'sender_bank' => $validated['payment_method'] === 'bank_transfer'
++                        ? ($validated['sender_bank'] ?? null)
++                        : null,
++                    'payment_proof' => $newProofPath,
++                    'payment_date' => now(),
++                    'status' => 'pending',
++                    'note' => null,
+                 ]);
+-        }
+ 
+-        $proofPath = null;
++                return $payment->fresh(['booking.user', 'booking.room']);
++            }, attempts: 3);
++        } catch (Throwable $exception) {
++            if ($newProofPath) {
++                Storage::disk('public')->delete($newProofPath);
++            }
+ 
+-        if ($request->hasFile('payment_proof')) {
+-            $proofPath = $request->file('payment_proof')->store('payment-proofs', 'public');
++            throw $exception;
+         }
+ 
+-        if ($booking->payment && $booking->payment->status === 'rejected') {
+-            if ($booking->payment->payment_proof && $proofPath) {
+-                Storage::disk('public')->delete($booking->payment->payment_proof);
+-            }
+-
+-            $booking->payment->update([
+-                'amount' => $booking->total_price,
+-                'payment_method' => $request->payment_method,
+-                'sender_name' => in_array($request->payment_method, ['bank_transfer', 'qris']) ? $request->sender_name : null,
+-                'sender_bank' => $request->payment_method === 'bank_transfer' ? $request->sender_bank : null,
+-                'payment_proof' => $proofPath,
+-                'payment_date' => now(),
+-                'status' => 'pending',
+-                'note' => null,
+-            ]);
+-        } else {
+-            Payment::create([
+-                'booking_id' => $booking->id,
+-                'amount' => $booking->total_price,
+-                'payment_method' => $request->payment_method,
+-                'sender_name' => in_array($request->payment_method, ['bank_transfer', 'qris']) ? $request->sender_name : null,
+-                'sender_bank' => $request->payment_method === 'bank_transfer' ? $request->sender_bank : null,
+-                'payment_proof' => $proofPath,
+-                'payment_date' => now(),
+-                'status' => 'pending',
+-                'note' => null,
+-            ]);
++        if ($oldProofPath && $oldProofPath !== $newProofPath) {
++            Storage::disk('public')->delete($oldProofPath);
+         }
+ 
++        $notifications->admins(
++            'Pembayaran dikirim ulang',
++            $payment->booking->user->name . ' mengirim ulang pembayaran kamar ' . $payment->booking->room->room_number . '.',
++            PaymentResource::getUrl('edit', ['record' => $payment]),
++            'warning',
++        );
++
+         return redirect()
+             ->route('user.payments.index')
+-            ->with('success', 'Data pembayaran berhasil dikirim. Silakan tunggu verifikasi admin.');
++            ->with('success', 'Pembayaran berhasil dikirim ulang. Silakan tunggu verifikasi admin.');
+     }
+-}
+\ No newline at end of file
++}
+diff -ruN a/app/Http/Controllers/User/RoomController.php b/app/Http/Controllers/User/RoomController.php
+--- a/app/Http/Controllers/User/RoomController.php	2026-07-11 05:15:13.000000000 +0000
++++ b/app/Http/Controllers/User/RoomController.php	2026-07-14 13:50:33.818701171 +0000
+@@ -9,13 +9,27 @@
+ {
+     public function index()
+     {
+-        $rooms = Room::latest()->get();
++        $rooms = Room::query()
++            ->withExists('activeBookings')
++            ->latest()
++            ->get()
++            ->each(function (Room $room): void {
++                if ($room->status === 'available' && ! $room->isAvailableForBooking()) {
++                    $room->setAttribute('status', 'sedang dipesan');
++                }
++            });
+ 
+         return view('user.rooms.index', compact('rooms'));
+     }
+ 
+     public function show(Room $room)
+     {
++        $room->loadExists('activeBookings');
++
++        if ($room->status === 'available' && ! $room->isAvailableForBooking()) {
++            $room->setAttribute('status', 'sedang dipesan');
++        }
++
+         return view('user.rooms.show', compact('room'));
+     }
+-}
+\ No newline at end of file
++}
+diff -ruN a/app/Http/Middleware/EnsureUserHasRole.php b/app/Http/Middleware/EnsureUserHasRole.php
+--- a/app/Http/Middleware/EnsureUserHasRole.php	1970-01-01 00:00:00.000000000 +0000
++++ b/app/Http/Middleware/EnsureUserHasRole.php	2026-07-14 13:48:17.603936712 +0000
+@@ -0,0 +1,19 @@
++<?php
++
++namespace App\Http\Middleware;
++
++use Closure;
++use Illuminate\Http\Request;
++use Symfony\Component\HttpFoundation\Response;
++
++class EnsureUserHasRole
++{
++    public function handle(Request $request, Closure $next, string ...$roles): Response
++    {
++        $user = $request->user();
++
++        abort_unless($user && in_array($user->role, $roles, true), 403, 'Anda tidak memiliki hak akses ke halaman ini.');
++
++        return $next($request);
++    }
++}
+diff -ruN a/app/Models/Booking.php b/app/Models/Booking.php
+--- a/app/Models/Booking.php	2026-06-24 07:09:34.000000000 +0000
++++ b/app/Models/Booking.php	2026-07-14 13:48:58.187096729 +0000
+@@ -17,10 +17,14 @@
+         'status',
+     ];
+ 
+-    protected $casts = [
+-        'check_in_date' => 'date',
+-        'total_price' => 'decimal:2',
+-    ];
++    protected function casts(): array
++    {
++        return [
++            'check_in_date' => 'date',
++            'total_price' => 'decimal:2',
++            'duration_month' => 'integer',
++        ];
++    }
+ 
+     public function user(): BelongsTo
+     {
+@@ -41,4 +45,9 @@
+     {
+         return $this->hasOne(Feedback::class);
+     }
+-}
+\ No newline at end of file
++
++    public function tenant(): HasOne
++    {
++        return $this->hasOne(Tenant::class);
++    }
++}
+diff -ruN a/app/Models/Feedback.php b/app/Models/Feedback.php
+--- a/app/Models/Feedback.php	2026-06-24 07:09:54.000000000 +0000
++++ b/app/Models/Feedback.php	2026-07-14 13:48:58.203542003 +0000
+@@ -17,9 +17,13 @@
+         'is_published',
+     ];
+ 
+-    protected $casts = [
+-        'is_published' => 'boolean',
+-    ];
++    protected function casts(): array
++    {
++        return [
++            'rating' => 'integer',
++            'is_published' => 'boolean',
++        ];
++    }
+ 
+     public function user(): BelongsTo
+     {
+@@ -30,4 +34,4 @@
+     {
+         return $this->belongsTo(Booking::class);
+     }
+-}
+\ No newline at end of file
++}
+diff -ruN a/app/Models/MaintenanceReport.php b/app/Models/MaintenanceReport.php
+--- a/app/Models/MaintenanceReport.php	2026-07-11 04:38:55.000000000 +0000
++++ b/app/Models/MaintenanceReport.php	2026-07-14 13:48:58.211439823 +0000
+@@ -12,6 +12,7 @@
+     protected $fillable = [
+         'user_id',
+         'room_id',
++        'assigned_technician_id',
+         'title',
+         'description',
+         'photo',
+@@ -29,6 +30,11 @@
+         return $this->belongsTo(Room::class);
+     }
+ 
++    public function assignedTechnician(): BelongsTo
++    {
++        return $this->belongsTo(User::class, 'assigned_technician_id');
++    }
++
+     public function updates(): HasMany
+     {
+         return $this->hasMany(MaintenanceUpdate::class, 'maintenance_report_id');
+@@ -38,4 +44,4 @@
+     {
+         return $this->hasOne(MaintenanceUpdate::class, 'maintenance_report_id')->latestOfMany();
+     }
+-}
+\ No newline at end of file
++}
+diff -ruN a/app/Models/MaintenanceUpdate.php b/app/Models/MaintenanceUpdate.php
+--- a/app/Models/MaintenanceUpdate.php	2026-07-11 02:53:46.000000000 +0000
++++ b/app/Models/MaintenanceUpdate.php	2026-07-14 13:48:58.218246524 +0000
+@@ -23,4 +23,4 @@
+     {
+         return $this->belongsTo(User::class, 'technician_id');
+     }
+-}
+\ No newline at end of file
++}
+diff -ruN a/app/Models/Payment.php b/app/Models/Payment.php
+--- a/app/Models/Payment.php	2026-07-10 05:43:48.000000000 +0000
++++ b/app/Models/Payment.php	2026-07-14 13:48:58.195769466 +0000
+@@ -19,13 +19,16 @@
+         'note',
+     ];
+ 
+-    protected $casts = [
+-        'amount' => 'decimal:2',
+-        'payment_date' => 'datetime',
+-    ];
++    protected function casts(): array
++    {
++        return [
++            'amount' => 'decimal:2',
++            'payment_date' => 'datetime',
++        ];
++    }
+ 
+     public function booking(): BelongsTo
+     {
+         return $this->belongsTo(Booking::class);
+     }
+-}
+\ No newline at end of file
++}
+diff -ruN a/app/Models/Room.php b/app/Models/Room.php
+--- a/app/Models/Room.php	2026-06-24 07:09:47.000000000 +0000
++++ b/app/Models/Room.php	2026-07-14 13:48:58.178712770 +0000
+@@ -17,15 +17,24 @@
+         'status',
+     ];
+ 
+-    protected $casts = [
+-        'price' => 'decimal:2',
+-    ];
++    protected function casts(): array
++    {
++        return [
++            'price' => 'decimal:2',
++            'active_bookings_exists' => 'boolean',
++        ];
++    }
+ 
+     public function bookings(): HasMany
+     {
+         return $this->hasMany(Booking::class);
+     }
+ 
++    public function activeBookings(): HasMany
++    {
++        return $this->bookings()->whereIn('status', ['pending', 'approved']);
++    }
++
+     public function tenants(): HasMany
+     {
+         return $this->hasMany(Tenant::class);
+@@ -35,4 +44,17 @@
+     {
+         return $this->hasMany(MaintenanceReport::class);
+     }
+-}
+\ No newline at end of file
++
++    public function isAvailableForBooking(): bool
++    {
++        if ($this->status !== 'available') {
++            return false;
++        }
++
++        if (array_key_exists('active_bookings_exists', $this->getAttributes())) {
++            return ! (bool) $this->getAttribute('active_bookings_exists');
++        }
++
++        return ! $this->activeBookings()->exists();
++    }
++}
+diff -ruN a/app/Models/Tenant.php b/app/Models/Tenant.php
+--- a/app/Models/Tenant.php	2026-06-15 19:59:59.000000000 +0000
++++ b/app/Models/Tenant.php	2026-07-14 13:48:58.226885341 +0000
+@@ -8,6 +8,8 @@
+ class Tenant extends Model
+ {
+     protected $fillable = [
++        'user_id',
++        'booking_id',
+         'name',
+         'phone',
+         'email',
+@@ -16,12 +18,25 @@
+         'status',
+     ];
+ 
+-    protected $casts = [
+-        'check_in_date' => 'date',
+-    ];
++    protected function casts(): array
++    {
++        return [
++            'check_in_date' => 'date',
++        ];
++    }
++
++    public function user(): BelongsTo
++    {
++        return $this->belongsTo(User::class);
++    }
++
++    public function booking(): BelongsTo
++    {
++        return $this->belongsTo(Booking::class);
++    }
+ 
+     public function room(): BelongsTo
+     {
+         return $this->belongsTo(Room::class);
+     }
+-}
+\ No newline at end of file
++}
+diff -ruN a/app/Models/User.php b/app/Models/User.php
+--- a/app/Models/User.php	2026-06-24 13:43:08.000000000 +0000
++++ b/app/Models/User.php	2026-07-14 13:48:58.170653844 +0000
+@@ -6,6 +6,7 @@
+ use Filament\Panel;
+ use Illuminate\Database\Eloquent\Factories\HasFactory;
+ use Illuminate\Database\Eloquent\Relations\HasMany;
++use Illuminate\Database\Eloquent\Relations\HasOne;
+ use Illuminate\Foundation\Auth\User as Authenticatable;
+ use Illuminate\Notifications\Notifiable;
+ 
+@@ -28,17 +29,19 @@
+         'remember_token',
+     ];
+ 
+-    protected $casts = [
+-        'email_verified_at' => 'datetime',
+-        'password' => 'hashed',
+-    ];
++    protected function casts(): array
++    {
++        return [
++            'email_verified_at' => 'datetime',
++            'password' => 'hashed',
++        ];
++    }
+ 
+     public function canAccessPanel(Panel $panel): bool
+     {
+         return match ($panel->getId()) {
+-            'admin' => $this->role === 'admin',
+-            'teknisi' => $this->role === 'teknisi',
+-            'penghuni' => $this->role === 'penghuni',
++            'admin' => $this->isAdmin(),
++            'teknisi' => $this->isTeknisi(),
+             default => false,
+         };
+     }
+@@ -58,11 +61,21 @@
+         return $this->hasMany(MaintenanceReport::class);
+     }
+ 
++    public function assignedMaintenanceReports(): HasMany
++    {
++        return $this->hasMany(MaintenanceReport::class, 'assigned_technician_id');
++    }
++
+     public function maintenanceUpdates(): HasMany
+     {
+         return $this->hasMany(MaintenanceUpdate::class, 'technician_id');
+     }
+ 
++    public function tenant(): HasOne
++    {
++        return $this->hasOne(Tenant::class)->where('status', 'active')->latestOfMany();
++    }
++
+     public function isAdmin(): bool
+     {
+         return $this->role === 'admin';
+@@ -73,17 +86,11 @@
+         return $this->role === 'teknisi';
+     }
+ 
+-    // public function isPenghuni(): bool
+-    // {
+-    //     return $this->role === 'penghuni';
+-    // }
+-
+     public function isPenghuni(): bool
+     {
+         return $this->role === 'penghuni';
+     }
+ 
+-
+     public function getRoleLabelAttribute(): string
+     {
+         return match ($this->role) {
+@@ -93,4 +100,4 @@
+             default => 'Pengguna',
+         };
+     }
+-}
+\ No newline at end of file
++}
+diff -ruN a/app/Providers/Filament/AdminPanelProvider.php b/app/Providers/Filament/AdminPanelProvider.php
+--- a/app/Providers/Filament/AdminPanelProvider.php	2026-06-30 04:59:42.000000000 +0000
++++ b/app/Providers/Filament/AdminPanelProvider.php	2026-07-14 13:52:52.181277785 +0000
+@@ -35,6 +35,8 @@
+             ->passwordReset()
+             ->emailVerification()
+             ->profile()
++            ->databaseNotifications()
++            ->databaseNotificationsPolling('5s')
+             ->brandName(fn () => Auth::check() ? 'Admin Kost Darussalam' : 'Kost Darussalam')
+             ->favicon(asset('images/favicon.png'))
+             ->colors([
+diff -ruN a/app/Providers/Filament/TeknisiPanelProvider.php b/app/Providers/Filament/TeknisiPanelProvider.php
+--- a/app/Providers/Filament/TeknisiPanelProvider.php	2026-06-30 05:25:57.000000000 +0000
++++ b/app/Providers/Filament/TeknisiPanelProvider.php	2026-07-14 13:52:52.181565747 +0000
+@@ -30,6 +30,8 @@
+             ->path('teknisi')
+             ->login()
+             ->profile()
++            ->databaseNotifications()
++            ->databaseNotificationsPolling('5s')
+             ->brandName(fn () => Auth::check() ? 'Teknisi • ' . Auth::user()->name : 'Teknisi Kost Darussalam')
+             ->favicon(asset('images/favicon.png'))
+             ->brandLogoHeight('2.5rem')
+diff -ruN a/app/Services/BookingLifecycleService.php b/app/Services/BookingLifecycleService.php
+--- a/app/Services/BookingLifecycleService.php	1970-01-01 00:00:00.000000000 +0000
++++ b/app/Services/BookingLifecycleService.php	2026-07-14 14:02:47.008218852 +0000
+@@ -0,0 +1,220 @@
++<?php
++
++namespace App\Services;
++
++use App\Models\Booking;
++use App\Models\Payment;
++use App\Models\Room;
++use App\Models\Tenant;
++use Illuminate\Support\Facades\DB;
++use Illuminate\Validation\ValidationException;
++
++class BookingLifecycleService
++{
++    public function __construct(
++        private readonly SystemNotificationService $notifications,
++    ) {}
++
++    public function assertRoomCanBeBooked(Room $room, ?int $ignoreBookingId = null): void
++    {
++        if ($room->status !== 'available') {
++            throw ValidationException::withMessages([
++                'room_id' => 'Kamar ini sedang tidak tersedia.',
++            ]);
++        }
++
++        $conflictExists = Booking::query()
++            ->where('room_id', $room->id)
++            ->whereIn('status', ['pending', 'approved'])
++            ->when($ignoreBookingId, fn ($query) => $query->whereKeyNot($ignoreBookingId))
++            ->exists();
++
++        if ($conflictExists) {
++            throw ValidationException::withMessages([
++                'room_id' => 'Kamar ini sudah memiliki pemesanan aktif. Silakan pilih kamar lain.',
++            ]);
++        }
++    }
++
++    public function synchronizeBooking(Booking $booking, bool $notifyUser = true): void
++    {
++        DB::transaction(function () use ($booking, $notifyUser): void {
++            $booking = Booking::query()
++                ->with(['user', 'room'])
++                ->lockForUpdate()
++                ->findOrFail($booking->id);
++
++            $room = Room::query()->lockForUpdate()->findOrFail($booking->room_id);
++
++            if ($booking->status === 'approved') {
++                $conflictExists = Booking::query()
++                    ->where('room_id', $room->id)
++                    ->whereIn('status', ['pending', 'approved'])
++                    ->whereKeyNot($booking->id)
++                    ->exists();
++
++                if ($conflictExists) {
++                    throw ValidationException::withMessages([
++                        'status' => 'Kamar ini sudah ditempati oleh booking lain.',
++                    ]);
++                }
++
++                $room->update(['status' => 'occupied']);
++                $this->activateTenant($booking);
++            } elseif (in_array($booking->status, ['rejected', 'completed', 'pending'], true)) {
++                $hasOtherApprovedBooking = Booking::query()
++                    ->where('room_id', $room->id)
++                    ->where('status', 'approved')
++                    ->whereKeyNot($booking->id)
++                    ->exists();
++
++                if (! $hasOtherApprovedBooking && $room->status === 'occupied') {
++                    $room->update(['status' => 'available']);
++                }
++
++                $this->deactivateTenant($booking);
++            }
++
++            if ($notifyUser) {
++                $this->notifyBookingStatus($booking);
++            }
++        });
++    }
++
++    public function synchronizePayment(Payment $payment, bool $notifyUser = true): void
++    {
++        DB::transaction(function () use ($payment, $notifyUser): void {
++            $payment = Payment::query()
++                ->with(['booking.user', 'booking.room'])
++                ->lockForUpdate()
++                ->findOrFail($payment->id);
++
++            $booking = $payment->booking;
++
++            if (! $booking) {
++                return;
++            }
++
++            if ($payment->status === 'verified') {
++                $room = Room::query()->lockForUpdate()->findOrFail($booking->room_id);
++
++                $conflictExists = Booking::query()
++                    ->where('room_id', $room->id)
++                    ->whereIn('status', ['pending', 'approved'])
++                    ->whereKeyNot($booking->id)
++                    ->exists();
++
++                if ($conflictExists) {
++                    throw ValidationException::withMessages([
++                        'status' => 'Pembayaran tidak dapat diverifikasi karena kamar sudah ditempati booking lain.',
++                    ]);
++                }
++
++                $booking->update(['status' => 'approved']);
++                $room->update(['status' => 'occupied']);
++                $this->activateTenant($booking->fresh(['user', 'room']));
++            } else {
++                $booking->update(['status' => 'pending']);
++
++                $room = Room::query()->lockForUpdate()->findOrFail($booking->room_id);
++                $hasOtherApprovedBooking = Booking::query()
++                    ->where('room_id', $room->id)
++                    ->where('status', 'approved')
++                    ->whereKeyNot($booking->id)
++                    ->exists();
++
++                if (! $hasOtherApprovedBooking && $room->status === 'occupied') {
++                    $room->update(['status' => 'available']);
++                }
++
++                $this->deactivateTenant($booking);
++            }
++
++            if ($notifyUser) {
++                $this->notifyPaymentStatus($payment);
++            }
++        });
++    }
++
++    private function activateTenant(Booking $booking): void
++    {
++        $booking->loadMissing(['user', 'room']);
++
++        if (! $booking->user) {
++            return;
++        }
++
++        Tenant::query()->updateOrCreate(
++            ['booking_id' => $booking->id],
++            [
++                'user_id' => $booking->user_id,
++                'name' => $booking->user->name,
++                'phone' => $booking->user->phone ?: '-',
++                'email' => $booking->user->email,
++                'room_id' => $booking->room_id,
++                'check_in_date' => $booking->check_in_date,
++                'status' => 'active',
++            ],
++        );
++    }
++
++    private function deactivateTenant(Booking $booking): void
++    {
++        Tenant::query()
++            ->where('booking_id', $booking->id)
++            ->update(['status' => 'inactive']);
++    }
++
++    private function notifyBookingStatus(Booking $booking): void
++    {
++        $booking->loadMissing(['user', 'room']);
++
++        $label = match ($booking->status) {
++            'pending' => 'menunggu persetujuan',
++            'approved' => 'disetujui',
++            'rejected' => 'ditolak',
++            'completed' => 'selesai',
++            default => $booking->status,
++        };
++
++        $status = match ($booking->status) {
++            'approved', 'completed' => 'success',
++            'rejected' => 'danger',
++            default => 'warning',
++        };
++
++        $this->notifications->user(
++            $booking->user,
++            'Status pemesanan diperbarui',
++            'Pemesanan kamar ' . ($booking->room?->room_number ?? '-') . ' sekarang ' . $label . '.',
++            route('user.bookings.show', $booking),
++            $status,
++        );
++    }
++
++    private function notifyPaymentStatus(Payment $payment): void
++    {
++        $payment->loadMissing(['booking.user', 'booking.room']);
++
++        $label = match ($payment->status) {
++            'pending' => 'menunggu verifikasi',
++            'verified' => 'terverifikasi',
++            'rejected' => 'ditolak',
++            default => $payment->status,
++        };
++
++        $status = match ($payment->status) {
++            'verified' => 'success',
++            'rejected' => 'danger',
++            default => 'warning',
++        };
++
++        $this->notifications->user(
++            $payment->booking?->user,
++            'Status pembayaran diperbarui',
++            'Pembayaran kamar ' . ($payment->booking?->room?->room_number ?? '-') . ' sekarang ' . $label . '.',
++            route('user.payments.index'),
++            $status,
++        );
++    }
++}
+diff -ruN a/app/Services/SystemNotificationService.php b/app/Services/SystemNotificationService.php
+--- a/app/Services/SystemNotificationService.php	1970-01-01 00:00:00.000000000 +0000
++++ b/app/Services/SystemNotificationService.php	2026-07-14 14:02:47.008677895 +0000
+@@ -0,0 +1,76 @@
++<?php
++
++namespace App\Services;
++
++use App\Models\User;
++use Filament\Actions\Action;
++use Filament\Notifications\Notification;
++use Illuminate\Database\Eloquent\Collection;
++
++class SystemNotificationService
++{
++    public function admins(string $title, string $body, ?string $url = null, string $status = 'info'): void
++    {
++        $admins = User::query()->where('role', 'admin')->get();
++
++        $this->send($admins, $title, $body, $url, $status);
++    }
++
++    public function technicians(string $title, string $body, ?string $url = null, string $status = 'info'): void
++    {
++        $technicians = User::query()->where('role', 'teknisi')->get();
++
++        $this->send($technicians, $title, $body, $url, $status);
++    }
++
++    public function user(?User $user, string $title, string $body, ?string $url = null, string $status = 'info'): void
++    {
++        if (! $user) {
++            return;
++        }
++
++        $this->send(new Collection([$user]), $title, $body, $url, $status);
++    }
++
++    public function technician(?User $technician, string $title, string $body, ?string $url = null, string $status = 'info'): void
++    {
++        if (! $technician || $technician->role !== 'teknisi') {
++            return;
++        }
++
++        $this->send(new Collection([$technician]), $title, $body, $url, $status);
++    }
++
++    private function send(Collection $recipients, string $title, string $body, ?string $url, string $status): void
++    {
++        if ($recipients->isEmpty()) {
++            return;
++        }
++
++        $notification = Notification::make()
++            ->title($title)
++            ->body($body)
++            ->viewData([
++                'url' => $url,
++            ]);
++
++        if ($url) {
++            $notification->actions([
++                Action::make('open')
++                    ->label('Buka')
++                    ->button()
++                    ->url($url)
++                    ->markAsRead(),
++            ]);
++        }
++
++        match ($status) {
++            'success' => $notification->success(),
++            'warning' => $notification->warning(),
++            'danger' => $notification->danger(),
++            default => $notification->info(),
++        };
++
++        $notification->sendToDatabase($recipients, isEventDispatched: true);
++    }
++}
+diff -ruN a/bootstrap/app.php b/bootstrap/app.php
+--- a/bootstrap/app.php	2026-05-25 23:11:52.000000000 +0000
++++ b/bootstrap/app.php	2026-07-14 13:51:10.650036479 +0000
+@@ -1,5 +1,6 @@
+ <?php
+ 
++use App\Http\Middleware\EnsureUserHasRole;
+ use Illuminate\Foundation\Application;
+ use Illuminate\Foundation\Configuration\Exceptions;
+ use Illuminate\Foundation\Configuration\Middleware;
+@@ -12,7 +13,9 @@
+         health: '/up',
+     )
+     ->withMiddleware(function (Middleware $middleware): void {
+-        //
++        $middleware->alias([
++            'role' => EnsureUserHasRole::class,
++        ]);
+     })
+     ->withExceptions(function (Exceptions $exceptions): void {
+         $exceptions->shouldRenderJsonWhen(
+diff -ruN a/database/migrations/2026_06_10_134555_create_payments_table.php b/database/migrations/2026_06_10_134555_create_payments_table.php
+--- a/database/migrations/2026_06_10_134555_create_payments_table.php	2026-06-10 13:53:07.000000000 +0000
++++ b/database/migrations/2026_06_10_134555_create_payments_table.php	2026-07-14 13:57:45.549909146 +0000
+@@ -20,7 +20,7 @@
+ 
+         $table->decimal('amount', 12, 2);
+ 
+-        $table->string('payment_proof');
++        $table->string('payment_proof')->nullable();
+ 
+         $table->dateTime('payment_date')->nullable();
+ 
+diff -ruN a/database/migrations/2026_07_10_051153_add_manual_payment_fields_to_payments_table.php b/database/migrations/2026_07_10_051153_add_manual_payment_fields_to_payments_table.php
+--- a/database/migrations/2026_07_10_051153_add_manual_payment_fields_to_payments_table.php	2026-07-10 05:12:03.000000000 +0000
++++ b/database/migrations/2026_07_10_051153_add_manual_payment_fields_to_payments_table.php	2026-07-14 13:57:45.550271222 +0000
+@@ -9,7 +9,7 @@
+     public function up(): void
+     {
+         Schema::table('payments', function (Blueprint $table) {
+-            $table->enum('payment_method', ['bank_transfer', 'qris'])
++            $table->enum('payment_method', ['bank_transfer', 'qris', 'cod'])
+                 ->default('bank_transfer')
+                 ->after('amount');
+ 
+diff -ruN a/database/migrations/2026_07_10_070148_fix_payments_for_cod_method.php b/database/migrations/2026_07_10_070148_fix_payments_for_cod_method.php
+--- a/database/migrations/2026_07_10_070148_fix_payments_for_cod_method.php	2026-07-10 07:02:31.000000000 +0000
++++ b/database/migrations/2026_07_10_070148_fix_payments_for_cod_method.php	2026-07-14 13:57:45.550451626 +0000
+@@ -7,13 +7,20 @@
+ {
+     public function up(): void
+     {
+-        DB::statement("ALTER TABLE payments MODIFY payment_method ENUM('bank_transfer', 'qris', 'cod') DEFAULT 'bank_transfer'");
++        if (DB::getDriverName() !== 'mysql') {
++            return;
++        }
+ 
+-        DB::statement("ALTER TABLE payments MODIFY payment_proof VARCHAR(255) NULL");
++        DB::statement("ALTER TABLE payments MODIFY payment_method ENUM('bank_transfer', 'qris', 'cod') DEFAULT 'bank_transfer'");
++        DB::statement('ALTER TABLE payments MODIFY payment_proof VARCHAR(255) NULL');
+     }
+ 
+     public function down(): void
+     {
++        if (DB::getDriverName() !== 'mysql') {
++            return;
++        }
++
+         DB::table('payments')
+             ->where('payment_method', 'cod')
+             ->update([
+@@ -22,7 +29,6 @@
+             ]);
+ 
+         DB::statement("ALTER TABLE payments MODIFY payment_method ENUM('bank_transfer', 'qris') DEFAULT 'bank_transfer'");
+-
+-        DB::statement("ALTER TABLE payments MODIFY payment_proof VARCHAR(255) NOT NULL");
++        DB::statement('ALTER TABLE payments MODIFY payment_proof VARCHAR(255) NOT NULL');
+     }
+-};
+\ No newline at end of file
++};
+diff -ruN a/database/migrations/2026_07_14_210000_harden_integrated_system.php b/database/migrations/2026_07_14_210000_harden_integrated_system.php
+--- a/database/migrations/2026_07_14_210000_harden_integrated_system.php	1970-01-01 00:00:00.000000000 +0000
++++ b/database/migrations/2026_07_14_210000_harden_integrated_system.php	2026-07-14 13:48:17.569035583 +0000
+@@ -0,0 +1,189 @@
++<?php
++
++use Illuminate\Database\Migrations\Migration;
++use Illuminate\Database\Schema\Blueprint;
++use Illuminate\Support\Facades\DB;
++use Illuminate\Support\Facades\Schema;
++
++return new class extends Migration
++{
++    public function up(): void
++    {
++        $this->removeDuplicatePayments();
++        $this->removeDuplicateFeedbacks();
++
++        Schema::table('payments', function (Blueprint $table): void {
++            $table->unique('booking_id', 'payments_booking_id_unique');
++            $table->index('status', 'payments_status_index');
++        });
++
++        Schema::table('feedbacks', function (Blueprint $table): void {
++            $table->unique('booking_id', 'feedbacks_booking_id_unique');
++            $table->index(['user_id', 'is_published'], 'feedbacks_user_published_index');
++        });
++
++        Schema::table('bookings', function (Blueprint $table): void {
++            $table->index(['room_id', 'status'], 'bookings_room_status_index');
++            $table->index(['user_id', 'status'], 'bookings_user_status_index');
++        });
++
++        Schema::table('maintenance_reports', function (Blueprint $table): void {
++            $table->foreignId('assigned_technician_id')
++                ->nullable()
++                ->after('room_id')
++                ->constrained('users')
++                ->nullOnDelete();
++
++            $table->index(['assigned_technician_id', 'status'], 'maintenance_technician_status_index');
++            $table->index(['user_id', 'status'], 'maintenance_user_status_index');
++        });
++
++        Schema::table('tenants', function (Blueprint $table): void {
++            $table->foreignId('user_id')
++                ->nullable()
++                ->after('id')
++                ->constrained('users')
++                ->nullOnDelete();
++
++            $table->foreignId('booking_id')
++                ->nullable()
++                ->after('user_id')
++                ->constrained('bookings')
++                ->nullOnDelete();
++        });
++
++        $this->backfillTenantRelations();
++
++        Schema::table('tenants', function (Blueprint $table): void {
++            $table->unique('booking_id', 'tenants_booking_id_unique');
++            $table->index(['room_id', 'status'], 'tenants_room_status_index');
++            $table->index(['user_id', 'status'], 'tenants_user_status_index');
++        });
++
++        if (DB::getDriverName() === 'mysql') {
++            $this->protectHistoricalRoomRelations();
++        }
++    }
++
++    public function down(): void
++    {
++        if (DB::getDriverName() === 'mysql') {
++            $this->restoreHistoricalRoomCascades();
++        }
++
++        Schema::table('tenants', function (Blueprint $table): void {
++            $table->dropUnique('tenants_booking_id_unique');
++            $table->dropIndex('tenants_room_status_index');
++            $table->dropIndex('tenants_user_status_index');
++            $table->dropConstrainedForeignId('booking_id');
++            $table->dropConstrainedForeignId('user_id');
++        });
++
++        Schema::table('maintenance_reports', function (Blueprint $table): void {
++            $table->dropIndex('maintenance_technician_status_index');
++            $table->dropIndex('maintenance_user_status_index');
++            $table->dropConstrainedForeignId('assigned_technician_id');
++        });
++
++        Schema::table('bookings', function (Blueprint $table): void {
++            $table->dropIndex('bookings_room_status_index');
++            $table->dropIndex('bookings_user_status_index');
++        });
++
++        Schema::table('feedbacks', function (Blueprint $table): void {
++            $table->dropUnique('feedbacks_booking_id_unique');
++            $table->dropIndex('feedbacks_user_published_index');
++        });
++
++        Schema::table('payments', function (Blueprint $table): void {
++            $table->dropUnique('payments_booking_id_unique');
++            $table->dropIndex('payments_status_index');
++        });
++    }
++
++    private function removeDuplicatePayments(): void
++    {
++        DB::table('payments')
++            ->select('booking_id', DB::raw('MAX(id) as keep_id'))
++            ->groupBy('booking_id')
++            ->havingRaw('COUNT(*) > 1')
++            ->orderBy('booking_id')
++            ->each(function (object $duplicate): void {
++                DB::table('payments')
++                    ->where('booking_id', $duplicate->booking_id)
++                    ->where('id', '!=', $duplicate->keep_id)
++                    ->delete();
++            });
++    }
++
++    private function removeDuplicateFeedbacks(): void
++    {
++        DB::table('feedbacks')
++            ->select('booking_id', DB::raw('MAX(id) as keep_id'))
++            ->whereNotNull('booking_id')
++            ->groupBy('booking_id')
++            ->havingRaw('COUNT(*) > 1')
++            ->orderBy('booking_id')
++            ->each(function (object $duplicate): void {
++                DB::table('feedbacks')
++                    ->where('booking_id', $duplicate->booking_id)
++                    ->where('id', '!=', $duplicate->keep_id)
++                    ->delete();
++            });
++    }
++
++    private function backfillTenantRelations(): void
++    {
++        DB::table('tenants')
++            ->orderBy('id')
++            ->each(function (object $tenant): void {
++                $userId = null;
++                $bookingId = null;
++
++                if (! empty($tenant->email)) {
++                    $userId = DB::table('users')
++                        ->where('email', $tenant->email)
++                        ->value('id');
++                }
++
++                if ($userId && $tenant->room_id) {
++                    $bookingId = DB::table('bookings')
++                        ->where('user_id', $userId)
++                        ->where('room_id', $tenant->room_id)
++                        ->whereIn('status', ['approved', 'completed'])
++                        ->whereNotIn('id', function ($query): void {
++                            $query->select('booking_id')
++                                ->from('tenants')
++                                ->whereNotNull('booking_id');
++                        })
++                        ->latest('id')
++                        ->value('id');
++                }
++
++                DB::table('tenants')
++                    ->where('id', $tenant->id)
++                    ->update([
++                        'user_id' => $userId,
++                        'booking_id' => $bookingId,
++                    ]);
++            });
++    }
++
++    private function protectHistoricalRoomRelations(): void
++    {
++        DB::statement('ALTER TABLE bookings DROP FOREIGN KEY bookings_room_id_foreign');
++        DB::statement('ALTER TABLE bookings ADD CONSTRAINT bookings_room_id_foreign FOREIGN KEY (room_id) REFERENCES rooms(id) ON DELETE RESTRICT');
++
++        DB::statement('ALTER TABLE maintenance_reports DROP FOREIGN KEY maintenance_reports_room_id_foreign');
++        DB::statement('ALTER TABLE maintenance_reports ADD CONSTRAINT maintenance_reports_room_id_foreign FOREIGN KEY (room_id) REFERENCES rooms(id) ON DELETE RESTRICT');
++    }
++
++    private function restoreHistoricalRoomCascades(): void
++    {
++        DB::statement('ALTER TABLE bookings DROP FOREIGN KEY bookings_room_id_foreign');
++        DB::statement('ALTER TABLE bookings ADD CONSTRAINT bookings_room_id_foreign FOREIGN KEY (room_id) REFERENCES rooms(id) ON DELETE CASCADE');
++
++        DB::statement('ALTER TABLE maintenance_reports DROP FOREIGN KEY maintenance_reports_room_id_foreign');
++        DB::statement('ALTER TABLE maintenance_reports ADD CONSTRAINT maintenance_reports_room_id_foreign FOREIGN KEY (room_id) REFERENCES rooms(id) ON DELETE CASCADE');
++    }
++};
+diff -ruN a/database/migrations/2026_07_14_210100_create_exports_table.php b/database/migrations/2026_07_14_210100_create_exports_table.php
+--- a/database/migrations/2026_07_14_210100_create_exports_table.php	1970-01-01 00:00:00.000000000 +0000
++++ b/database/migrations/2026_07_14_210100_create_exports_table.php	2026-07-14 13:48:17.579850325 +0000
+@@ -0,0 +1,29 @@
++<?php
++
++use Illuminate\Database\Migrations\Migration;
++use Illuminate\Database\Schema\Blueprint;
++use Illuminate\Support\Facades\Schema;
++
++return new class extends Migration
++{
++    public function up(): void
++    {
++        Schema::create('exports', function (Blueprint $table): void {
++            $table->id();
++            $table->timestamp('completed_at')->nullable();
++            $table->string('file_disk');
++            $table->string('file_name')->nullable();
++            $table->string('exporter');
++            $table->unsignedInteger('processed_rows')->default(0);
++            $table->unsignedInteger('total_rows');
++            $table->unsignedInteger('successful_rows')->default(0);
++            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
++            $table->timestamps();
++        });
++    }
++
++    public function down(): void
++    {
++        Schema::dropIfExists('exports');
++    }
++};
+diff -ruN a/database/seeders/DatabaseSeeder.php b/database/seeders/DatabaseSeeder.php
+--- a/database/seeders/DatabaseSeeder.php	2026-05-25 23:11:52.000000000 +0000
++++ b/database/seeders/DatabaseSeeder.php	2026-07-14 14:06:20.692504780 +0000
+@@ -2,24 +2,61 @@
+ 
+ namespace Database\Seeders;
+ 
++use App\Models\Room;
+ use App\Models\User;
+-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+ use Illuminate\Database\Seeder;
++use Illuminate\Support\Facades\Hash;
+ 
+ class DatabaseSeeder extends Seeder
+ {
+-    use WithoutModelEvents;
+-
+-    /**
+-     * Seed the application's database.
+-     */
+     public function run(): void
+     {
+-        // User::factory(10)->create();
++        User::query()->updateOrCreate(
++            ['email' => 'admin@darussalam.test'],
++            [
++                'name' => 'Admin Darussalam',
++                'phone' => '081234567890',
++                'address' => 'Kosan Darussalam',
++                'role' => 'admin',
++                'password' => Hash::make('password123'),
++            ],
++        );
++
++        User::query()->updateOrCreate(
++            ['email' => 'teknisi@darussalam.test'],
++            [
++                'name' => 'Teknisi Darussalam',
++                'phone' => '081234567891',
++                'address' => 'Kosan Darussalam',
++                'role' => 'teknisi',
++                'password' => Hash::make('password123'),
++            ],
++        );
++
++        User::query()->updateOrCreate(
++            ['email' => 'penghuni@darussalam.test'],
++            [
++                'name' => 'Penghuni Demo',
++                'phone' => '081234567892',
++                'address' => 'Makassar',
++                'role' => 'penghuni',
++                'password' => Hash::make('password123'),
++            ],
++        );
+ 
+-        User::factory()->create([
+-            'name' => 'Test User',
+-            'email' => 'test@example.com',
+-        ]);
++        foreach ([
++            ['room_number' => 'A01', 'price' => 850000, 'capacity' => 1, 'size' => 12],
++            ['room_number' => 'A02', 'price' => 900000, 'capacity' => 1, 'size' => 14],
++            ['room_number' => 'B01', 'price' => 1100000, 'capacity' => 2, 'size' => 18],
++        ] as $room) {
++            Room::query()->firstOrCreate(
++                ['room_number' => $room['room_number']],
++                [
++                    ...$room,
++                    'facilities' => 'Kasur, lemari, meja belajar, kamar mandi, Wi-Fi',
++                    'status' => 'available',
++                ],
++            );
++        }
+     }
+ }
+diff -ruN a/resources/views/user/notifications/index.blade.php b/resources/views/user/notifications/index.blade.php
+--- a/resources/views/user/notifications/index.blade.php	1970-01-01 00:00:00.000000000 +0000
++++ b/resources/views/user/notifications/index.blade.php	2026-07-14 13:51:10.665963618 +0000
+@@ -0,0 +1,62 @@
++@extends('user.layouts.app')
++
++@section('title', 'Notifikasi')
++@section('hide_page_header', true)
++
++@section('content')
++<div class="section" style="padding-top: 140px;">
++    <div class="container">
++        <div class="row align-items-center mb-5">
++            <div class="col-12 col-md-8 mb-3 mb-md-0">
++                <h2 class="font-weight-bold text-primary heading mb-2">Notifikasi</h2>
++                <p class="text-dark mb-0">Informasi terbaru mengenai booking, pembayaran, dan perbaikan kamar.</p>
++            </div>
++
++            <div class="col-12 col-md-4 text-md-end">
++                <form action="{{ route('user.notifications.read-all') }}" method="POST">
++                    @csrf
++                    <button type="submit" class="btn btn-outline-primary py-2 px-3">
++                        Tandai Semua Dibaca
++                    </button>
++                </form>
++            </div>
++        </div>
++
++        <div class="row">
++            <div class="col-12">
++                @forelse($notifications as $notification)
++                    <div class="box-feature mb-3 {{ is_null($notification->read_at) ? 'border border-primary' : '' }}">
++                        <div class="d-flex justify-content-between align-items-start gap-3">
++                            <div>
++                                <h3 class="mb-2">{{ data_get($notification->data, 'title', 'Notifikasi') }}</h3>
++                                <p class="text-dark mb-2">{{ data_get($notification->data, 'body', '-') }}</p>
++                                <small class="text-black-50">{{ $notification->created_at->format('d M Y H:i') }}</small>
++                            </div>
++
++                            @if(is_null($notification->read_at))
++                                <span class="badge bg-primary rounded-0">Baru</span>
++                            @endif
++                        </div>
++
++                        <form action="{{ route('user.notifications.read', $notification) }}" method="POST" class="mt-3">
++                            @csrf
++                            <button type="submit" class="btn btn-primary py-2 px-3">
++                                Buka
++                            </button>
++                        </form>
++                    </div>
++                @empty
++                    <div class="box-feature text-center">
++                        <h3 class="mb-3">Belum Ada Notifikasi</h3>
++                        <p class="text-dark mb-0">Notifikasi baru akan muncul di halaman ini.</p>
++                    </div>
++                @endforelse
++
++                <div class="mt-4">
++                    {{ $notifications->links() }}
++                </div>
++            </div>
++        </div>
++    </div>
++</div>
++@endsection
+diff -ruN a/resources/views/user/partials/navbar.blade.php b/resources/views/user/partials/navbar.blade.php
+--- a/resources/views/user/partials/navbar.blade.php	2026-07-10 08:27:02.000000000 +0000
++++ b/resources/views/user/partials/navbar.blade.php	2026-07-14 13:52:52.181744309 +0000
+@@ -43,6 +43,15 @@
+                             <a href="{{ route('user.feedback.index') }}">Feedback</a>
+                         </li>
+ 
++                        <li class="{{ request()->routeIs('user.notifications.*') ? 'active' : '' }}">
++                            <a href="{{ route('user.notifications.index') }}">
++                                Notifikasi
++                                @if(auth()->user()->unreadNotifications()->count() > 0)
++                                    ({{ auth()->user()->unreadNotifications()->count() }})
++                                @endif
++                            </a>
++                        </li>
++
+                         <li class="d-lg-none">
+                             <a href="#" class="open-profile-modal">
+                                 Masuk ke Akun
+diff -ruN a/routes/web.php b/routes/web.php
+--- a/routes/web.php	2026-07-10 15:39:54.000000000 +0000
++++ b/routes/web.php	2026-07-14 13:51:10.658536172 +0000
+@@ -1,57 +1,70 @@
+ <?php
+ 
+-use Illuminate\Support\Facades\Route;
+-use Illuminate\Support\Facades\Auth;
+ use App\Http\Controllers\Auth\AuthController;
+-use App\Http\Controllers\User\DashboardController;
+-use App\Http\Controllers\User\RoomController;
+ use App\Http\Controllers\User\BookingController;
+-use App\Http\Controllers\User\PaymentController;
+-use App\Http\Controllers\User\MaintenanceController;
++use App\Http\Controllers\User\DashboardController;
+ use App\Http\Controllers\User\FeedbackController;
++use App\Http\Controllers\User\MaintenanceController;
++use App\Http\Controllers\User\NotificationController;
++use App\Http\Controllers\User\PaymentController;
+ use App\Http\Controllers\User\ProfileController;
++use App\Http\Controllers\User\RoomController;
++use Illuminate\Support\Facades\Auth;
++use Illuminate\Support\Facades\Route;
+ 
+ Route::get('/', function () {
+-    if (Auth::check()) {
+-        return redirect()->route('user.dashboard');
++    if (! Auth::check()) {
++        return redirect()->route('login');
+     }
+-    return redirect()->route('login');
++
++    return match (Auth::user()->role) {
++        'admin' => redirect('/admin'),
++        'teknisi' => redirect('/teknisi'),
++        default => redirect()->route('user.dashboard'),
++    };
+ });
+ 
+-Route::middleware('guest')->group(function () {
++Route::middleware('guest')->group(function (): void {
+     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+     Route::post('/login', [AuthController::class, 'login'])->name('login.post');
+     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
+     Route::post('/register', [AuthController::class, 'register'])->name('register.post');
+ });
+ 
+-Route::middleware('auth')->prefix('user')->name('user.')->group(function () {
+-    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+-
+-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+-
+-    Route::get('/rooms', [RoomController::class, 'index'])->name('rooms.index');
+-    Route::get('/rooms/{room}', [RoomController::class, 'show'])->name('rooms.show');
+-
+-    Route::get('/bookings', [BookingController::class, 'index'])->name('bookings.index');
+-    Route::get('/bookings/create', [BookingController::class, 'create'])->name('bookings.create');
+-    Route::post('/bookings', [BookingController::class, 'store'])->name('bookings.store');
+-    Route::get('/bookings/{booking}', [BookingController::class, 'show'])->name('bookings.show');
+-
+-    Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
+-    Route::get('/payments/create', [PaymentController::class, 'create'])->name('payments.create');
+-    Route::post('/payments', [PaymentController::class, 'store'])->name('payments.store');
+-
+-Route::get('/maintenance', [MaintenanceController::class, 'index'])->name('maintenance.index');
+-Route::get('/maintenance/create', [MaintenanceController::class, 'create'])->name('maintenance.create');
+-Route::post('/maintenance', [MaintenanceController::class, 'store'])->name('maintenance.store');
+-Route::get('/maintenance/{maintenanceReport}/edit', [MaintenanceController::class, 'edit'])->name('maintenance.edit');
+-Route::put('/maintenance/{maintenanceReport}', [MaintenanceController::class, 'update'])->name('maintenance.update');
+-
+-    Route::get('/feedback', [FeedbackController::class, 'index'])->name('feedback.index');
+-    Route::get('/feedback/create', [FeedbackController::class, 'create'])->name('feedback.create');
+-    Route::post('/feedback', [FeedbackController::class, 'store'])->name('feedback.store');
+-
+-    Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
+-    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+-});
++Route::middleware(['auth', 'role:penghuni'])
++    ->prefix('user')
++    ->name('user.')
++    ->group(function (): void {
++        Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
++
++        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
++
++        Route::get('/rooms', [RoomController::class, 'index'])->name('rooms.index');
++        Route::get('/rooms/{room}', [RoomController::class, 'show'])->name('rooms.show');
++
++        Route::get('/bookings', [BookingController::class, 'index'])->name('bookings.index');
++        Route::get('/bookings/create', [BookingController::class, 'create'])->name('bookings.create');
++        Route::post('/bookings', [BookingController::class, 'store'])->name('bookings.store');
++        Route::get('/bookings/{booking}', [BookingController::class, 'show'])->name('bookings.show');
++
++        Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
++        Route::get('/payments/create', [PaymentController::class, 'create'])->name('payments.create');
++        Route::post('/payments', [PaymentController::class, 'store'])->name('payments.store');
++
++        Route::get('/maintenance', [MaintenanceController::class, 'index'])->name('maintenance.index');
++        Route::get('/maintenance/create', [MaintenanceController::class, 'create'])->name('maintenance.create');
++        Route::post('/maintenance', [MaintenanceController::class, 'store'])->name('maintenance.store');
++        Route::get('/maintenance/{maintenanceReport}/edit', [MaintenanceController::class, 'edit'])->name('maintenance.edit');
++        Route::put('/maintenance/{maintenanceReport}', [MaintenanceController::class, 'update'])->name('maintenance.update');
++
++        Route::get('/feedback', [FeedbackController::class, 'index'])->name('feedback.index');
++        Route::get('/feedback/create', [FeedbackController::class, 'create'])->name('feedback.create');
++        Route::post('/feedback', [FeedbackController::class, 'store'])->name('feedback.store');
++
++        Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
++        Route::post('/notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.read-all');
++        Route::post('/notifications/{notification}/read', [NotificationController::class, 'read'])->name('notifications.read');
++
++        Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
++        Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
++    });
+diff -ruN a/tests/Feature/ExampleTest.php b/tests/Feature/ExampleTest.php
+--- a/tests/Feature/ExampleTest.php	2026-06-10 13:17:39.000000000 +0000
++++ b/tests/Feature/ExampleTest.php	2026-07-14 13:59:57.356047159 +0000
+@@ -1,7 +1,6 @@
+ <?php
+ 
+-test('the application returns a successful response', function () {
+-    $response = $this->get('/');
+-
+-    $response->assertStatus(200);
++test('halaman utama mengarahkan pengguna ke login', function () {
++    $this->get('/')
++        ->assertRedirect(route('login'));
+ });
+diff -ruN a/tests/Feature/IntegratedSystemTest.php b/tests/Feature/IntegratedSystemTest.php
+--- a/tests/Feature/IntegratedSystemTest.php	1970-01-01 00:00:00.000000000 +0000
++++ b/tests/Feature/IntegratedSystemTest.php	2026-07-14 13:57:45.701562822 +0000
+@@ -0,0 +1,150 @@
++<?php
++
++use App\Models\Booking;
++use App\Models\Payment;
++use App\Models\Room;
++use App\Models\Tenant;
++use App\Models\User;
++use App\Services\BookingLifecycleService;
++use Illuminate\Http\UploadedFile;
++use Illuminate\Support\Facades\Storage;
++
++function createUserWithRole(string $role, string $email): User
++{
++    return User::factory()->create([
++        'role' => $role,
++        'email' => $email,
++        'phone' => '081234567890',
++        'address' => 'Makassar',
++    ]);
++}
++
++it('melindungi halaman penghuni berdasarkan role', function () {
++    $admin = createUserWithRole('admin', 'admin-test@example.com');
++    $penghuni = createUserWithRole('penghuni', 'penghuni-test@example.com');
++
++    $this->actingAs($admin)
++        ->get(route('user.dashboard'))
++        ->assertForbidden();
++
++    $this->actingAs($penghuni)
++        ->get(route('user.dashboard'))
++        ->assertOk();
++});
++
++it('mencegah kamar dipesan dua pengguna sekaligus', function () {
++    Storage::fake('public');
++
++    $room = Room::query()->create([
++        'room_number' => 'A01',
++        'price' => 850000,
++        'capacity' => 1,
++        'size' => 12,
++        'facilities' => 'Wi-Fi',
++        'status' => 'available',
++    ]);
++
++    $firstUser = createUserWithRole('penghuni', 'first@example.com');
++    $secondUser = createUserWithRole('penghuni', 'second@example.com');
++
++    $this->actingAs($firstUser)
++        ->post(route('user.bookings.store'), [
++            'room_id' => $room->id,
++            'check_in_date' => now()->addDay()->toDateString(),
++            'duration_month' => 6,
++            'payment_method' => 'cod',
++        ])
++        ->assertRedirect();
++
++    $this->actingAs($secondUser)
++        ->from(route('user.rooms.index'))
++        ->post(route('user.bookings.store'), [
++            'room_id' => $room->id,
++            'check_in_date' => now()->addDays(2)->toDateString(),
++            'duration_month' => 3,
++            'payment_method' => 'cod',
++        ])
++        ->assertSessionHasErrors('room_id');
++
++    expect(Booking::query()->where('room_id', $room->id)->count())->toBe(1);
++});
++
++it('menghubungkan pembayaran booking kamar dan penghuni ketika diverifikasi', function () {
++    $user = createUserWithRole('penghuni', 'tenant@example.com');
++
++    $room = Room::query()->create([
++        'room_number' => 'B01',
++        'price' => 1000000,
++        'capacity' => 1,
++        'size' => 14,
++        'facilities' => 'Wi-Fi',
++        'status' => 'available',
++    ]);
++
++    $booking = Booking::query()->create([
++        'user_id' => $user->id,
++        'room_id' => $room->id,
++        'check_in_date' => now()->addDay()->toDateString(),
++        'duration_month' => 12,
++        'total_price' => 12000000,
++        'status' => 'pending',
++    ]);
++
++    $payment = Payment::query()->create([
++        'booking_id' => $booking->id,
++        'amount' => 1000000,
++        'payment_method' => 'cod',
++        'payment_date' => now(),
++        'status' => 'verified',
++    ]);
++
++    app(BookingLifecycleService::class)->synchronizePayment($payment, notifyUser: false);
++
++    expect($booking->fresh()->status)->toBe('approved')
++        ->and($room->fresh()->status)->toBe('occupied');
++
++    $tenant = Tenant::query()->where('booking_id', $booking->id)->first();
++
++    expect($tenant)->not->toBeNull()
++        ->and($tenant->user_id)->toBe($user->id)
++        ->and($tenant->room_id)->toBe($room->id)
++        ->and($tenant->status)->toBe('active');
++});
++
++it('hanya mengizinkan feedback satu kali untuk satu booking', function () {
++    $user = createUserWithRole('penghuni', 'feedback@example.com');
++
++    $room = Room::query()->create([
++        'room_number' => 'C01',
++        'price' => 750000,
++        'capacity' => 1,
++        'size' => 10,
++        'facilities' => 'Wi-Fi',
++        'status' => 'occupied',
++    ]);
++
++    $booking = Booking::query()->create([
++        'user_id' => $user->id,
++        'room_id' => $room->id,
++        'check_in_date' => now()->toDateString(),
++        'duration_month' => 1,
++        'total_price' => 750000,
++        'status' => 'approved',
++    ]);
++
++    $this->actingAs($user)
++        ->post(route('user.feedback.store'), [
++            'booking_id' => $booking->id,
++            'rating' => 5,
++            'comment' => 'Pelayanan sangat baik.',
++        ])
++        ->assertRedirect(route('user.feedback.index'));
++
++    $this->actingAs($user)
++        ->post(route('user.feedback.store'), [
++            'booking_id' => $booking->id,
++            'rating' => 4,
++            'comment' => 'Feedback kedua.',
++        ])
++        ->assertNotFound();
++});
+diff -ruN a/tests/Pest.php b/tests/Pest.php
+--- a/tests/Pest.php	2026-06-10 13:17:31.000000000 +0000
++++ b/tests/Pest.php	2026-07-14 13:57:45.693803830 +0000
+@@ -3,48 +3,6 @@
+ use Illuminate\Foundation\Testing\RefreshDatabase;
+ use Tests\TestCase;
+ 
+-/*
+-|--------------------------------------------------------------------------
+-| Test Case
+-|--------------------------------------------------------------------------
+-|
+-| The closure you provide to your test functions is always bound to a specific PHPUnit test
+-| case class. By default, that class is "PHPUnit\Framework\TestCase". Of course, you may
+-| need to change it using the "pest()" function to bind different classes or traits.
+-|
+-*/
+-
+ pest()->extend(TestCase::class)
+- // ->use(RefreshDatabase::class)
++    ->use(RefreshDatabase::class)
+     ->in('Feature');
+-
+-/*
+-|--------------------------------------------------------------------------
+-| Expectations
+-|--------------------------------------------------------------------------
+-|
+-| When you're writing tests, you often need to check that values meet certain conditions. The
+-| "expect()" function gives you access to a set of "expectations" methods that you can use
+-| to assert different things. Of course, you may extend the Expectation API at any time.
+-|
+-*/
+-
+-expect()->extend('toBeOne', function () {
+-    return $this->toBe(1);
+-});
+-
+-/*
+-|--------------------------------------------------------------------------
+-| Functions
+-|--------------------------------------------------------------------------
+-|
+-| While Pest is very powerful out-of-the-box, you may have some testing code specific to your
+-| project that you don't want to repeat in every file. Here you can also expose helpers as
+-| global functions to help you to reduce the number of lines of code in your test files.
+-|
+-*/
+-
+-function something()
+-{
+-    // ..
+-}

@@ -19,10 +19,13 @@ class Payment extends Model
         'note',
     ];
 
-    protected $casts = [
-        'amount' => 'decimal:2',
-        'payment_date' => 'datetime',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'amount' => 'decimal:2',
+            'payment_date' => 'datetime',
+        ];
+    }
 
     public function booking(): BelongsTo
     {

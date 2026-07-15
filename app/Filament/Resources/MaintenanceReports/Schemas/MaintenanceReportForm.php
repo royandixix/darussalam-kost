@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\MaintenanceReports\Schemas;
 
+use App\Models\User;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -28,13 +29,26 @@ class MaintenanceReportForm
                     ->preload()
                     ->required(),
 
+                Select::make('assigned_technician_id')
+                    ->label('Teknisi yang Ditugaskan')
+                    ->options(fn (): array => User::query()
+                        ->where('role', 'teknisi')
+                        ->orderBy('name')
+                        ->pluck('name', 'id')
+                        ->all())
+                    ->searchable()
+                    ->preload()
+                    ->nullable(),
+
                 TextInput::make('title')
                     ->label('Judul Laporan')
-                    ->required(),
+                    ->required()
+                    ->maxLength(255),
 
                 Textarea::make('description')
                     ->label('Deskripsi Kerusakan')
                     ->required()
+                    ->rows(5)
                     ->columnSpanFull(),
 
                 FileUpload::make('photo')

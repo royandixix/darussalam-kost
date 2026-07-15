@@ -7,13 +7,20 @@ return new class extends Migration
 {
     public function up(): void
     {
-        DB::statement("ALTER TABLE payments MODIFY payment_method ENUM('bank_transfer', 'qris', 'cod') DEFAULT 'bank_transfer'");
+        if (DB::getDriverName() !== 'mysql') {
+            return;
+        }
 
-        DB::statement("ALTER TABLE payments MODIFY payment_proof VARCHAR(255) NULL");
+        DB::statement("ALTER TABLE payments MODIFY payment_method ENUM('bank_transfer', 'qris', 'cod') DEFAULT 'bank_transfer'");
+        DB::statement('ALTER TABLE payments MODIFY payment_proof VARCHAR(255) NULL');
     }
 
     public function down(): void
     {
+        if (DB::getDriverName() !== 'mysql') {
+            return;
+        }
+
         DB::table('payments')
             ->where('payment_method', 'cod')
             ->update([
@@ -22,7 +29,6 @@ return new class extends Migration
             ]);
 
         DB::statement("ALTER TABLE payments MODIFY payment_method ENUM('bank_transfer', 'qris') DEFAULT 'bank_transfer'");
-
-        DB::statement("ALTER TABLE payments MODIFY payment_proof VARCHAR(255) NOT NULL");
+        DB::statement('ALTER TABLE payments MODIFY payment_proof VARCHAR(255) NOT NULL');
     }
 };

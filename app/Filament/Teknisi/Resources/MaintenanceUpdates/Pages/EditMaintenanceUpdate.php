@@ -3,16 +3,32 @@
 namespace App\Filament\Teknisi\Resources\MaintenanceUpdates\Pages;
 
 use App\Filament\Teknisi\Resources\MaintenanceUpdates\MaintenanceUpdateResource;
-use Filament\Actions\DeleteAction;
+use App\Services\SystemNotificationService;
 use Filament\Resources\Pages\EditRecord;
+use Illuminate\Support\Facades\Auth;
 
 class EditMaintenanceUpdate extends EditRecord
 {
     protected static string $resource = MaintenanceUpdateResource::class;
 
-    public function getTitle(): string
+    protected function beforeSave(): void
     {
-        return 'Edit Catatan Perbaikan';
+        abort_unless((int) $this->record->technician_id === (int) Auth::id(), 403);
+    }
+
+    protected function afterSave(): void
+    {
+        $report = $this->record->report;
+        $report?->update(['status' => $this->record->status]);
+        $report?->loadMissing('user');
+
+        app(SystemNotificationService::class)->user(
+            $report?->user,
+            'Catatan perbaikan diperbarui',
+            $this->record->note,
+            route('user.maintenance.index'),
+            $this->record->status === 'completed' ? 'success' : 'info',
+        );
     }
 
     protected function getSavedNotificationTitle(): ?string
@@ -20,21 +36,8 @@ class EditMaintenanceUpdate extends EditRecord
         return 'Catatan perbaikan berhasil diperbarui';
     }
 
-    protected function afterSave(): void
-    {
-        $this->record->report?->update([
-            'status' => $this->record->status,
-        ]);
-    }
-
     protected function getHeaderActions(): array
     {
-        return [
-            DeleteAction::make()
-                ->label('Hapus')
-                ->modalHeading('Hapus Catatan Perbaikan')
-                ->modalDescription('Apakah Anda yakin ingin menghapus data ini?')
-                ->modalSubmitActionLabel('Ya, Hapus'),
-        ];
+        return [];
     }
 }

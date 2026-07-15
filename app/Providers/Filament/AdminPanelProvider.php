@@ -35,6 +35,8 @@ class AdminPanelProvider extends PanelProvider
             ->passwordReset()
             ->emailVerification()
             ->profile()
+            ->databaseNotifications()
+            ->databaseNotificationsPolling('5s')
             ->brandName(fn () => Auth::check() ? 'Admin Kost Darussalam' : 'Kost Darussalam')
             ->favicon(asset('images/favicon.png'))
             ->colors([

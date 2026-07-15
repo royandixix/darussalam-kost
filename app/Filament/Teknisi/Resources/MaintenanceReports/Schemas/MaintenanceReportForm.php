@@ -17,20 +17,24 @@ class MaintenanceReportForm
                 Select::make('user_id')
                     ->label('Nama Penghuni')
                     ->relationship('user', 'name')
-                    ->disabled(),
+                    ->disabled()
+                    ->dehydrated(false),
 
                 Select::make('room_id')
                     ->label('Kamar')
                     ->relationship('room', 'room_number')
-                    ->disabled(),
+                    ->disabled()
+                    ->dehydrated(false),
 
                 TextInput::make('title')
                     ->label('Judul Kerusakan')
-                    ->disabled(),
+                    ->disabled()
+                    ->dehydrated(false),
 
                 Textarea::make('description')
                     ->label('Deskripsi Kerusakan')
                     ->disabled()
+                    ->dehydrated(false)
                     ->rows(4)
                     ->columnSpanFull(),
 
@@ -38,9 +42,9 @@ class MaintenanceReportForm
                     ->label('Foto Kerusakan')
                     ->image()
                     ->disk('public')
-                    ->directory('maintenance-reports')
                     ->visibility('public')
-                    ->disabled(),
+                    ->disabled()
+                    ->dehydrated(false),
 
                 Select::make('priority')
                     ->label('Prioritas')
@@ -49,7 +53,8 @@ class MaintenanceReportForm
                         'medium' => 'Sedang',
                         'high' => 'Tinggi',
                     ])
-                    ->disabled(),
+                    ->disabled()
+                    ->dehydrated(false),
 
                 Select::make('status')
                     ->label('Status Pengerjaan')
@@ -62,7 +67,7 @@ class MaintenanceReportForm
 
                 Textarea::make('technician_note')
                     ->label('Catatan Teknisi')
-                    ->placeholder('Contoh: Area kamar sudah dicek, ditemukan banyak sarang laba-laba dan akan dilakukan pembersihan.')
+                    ->placeholder('Tuliskan hasil pemeriksaan atau pekerjaan yang sudah dilakukan.')
                     ->rows(4)
                     ->dehydrated(false)
                     ->columnSpanFull(),

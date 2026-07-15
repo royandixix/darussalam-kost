@@ -17,10 +17,14 @@ class Booking extends Model
         'status',
     ];
 
-    protected $casts = [
-        'check_in_date' => 'date',
-        'total_price' => 'decimal:2',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'check_in_date' => 'date',
+            'total_price' => 'decimal:2',
+            'duration_month' => 'integer',
+        ];
+    }
 
     public function user(): BelongsTo
     {
@@ -40,5 +44,10 @@ class Booking extends Model
     public function feedback(): HasOne
     {
         return $this->hasOne(Feedback::class);
+    }
+
+    public function tenant(): HasOne
+    {
+        return $this->hasOne(Tenant::class);
     }
 }

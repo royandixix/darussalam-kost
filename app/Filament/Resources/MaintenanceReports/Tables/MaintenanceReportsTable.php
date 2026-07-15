@@ -2,12 +2,12 @@
 
 namespace App\Filament\Resources\MaintenanceReports\Tables;
 
-use App\Models\MaintenanceReport;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
+use App\Filament\Exports\MaintenanceReportExporter;
 use Filament\Actions\EditAction;
+use Filament\Actions\ExportAction;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class MaintenanceReportsTable
@@ -15,31 +15,14 @@ class MaintenanceReportsTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->poll('5s')
             ->columns([
-                TextColumn::make('no')
-                    ->label('No')
-                    ->rowIndex(),
-
-                TextColumn::make('user.name')
-                    ->label('Penghuni')
-                    ->searchable()
-                    ->sortable(),
-
-                TextColumn::make('room.room_number')
-                    ->label('Kamar')
-                    ->searchable()
-                    ->sortable(),
-
-                TextColumn::make('title')
-                    ->label('Judul Laporan')
-                    ->searchable()
-                    ->sortable(),
-
-                ImageColumn::make('photo')
-                    ->label('Foto')
-                    ->disk('public')
-                    ->size(60),
-
+                TextColumn::make('no')->label('No')->rowIndex(),
+                TextColumn::make('user.name')->label('Penghuni')->searchable()->sortable(),
+                TextColumn::make('room.room_number')->label('Kamar')->searchable()->sortable(),
+                TextColumn::make('assignedTechnician.name')->label('Teknisi')->placeholder('Belum ditugaskan')->searchable(),
+                TextColumn::make('title')->label('Judul')->searchable()->sortable(),
+                ImageColumn::make('photo')->label('Foto')->disk('public')->size(60),
                 TextColumn::make('priority')
                     ->label('Prioritas')
                     ->badge()
@@ -49,9 +32,8 @@ class MaintenanceReportsTable
                         'high' => 'Tinggi',
                         default => $state,
                     }),
-
                 TextColumn::make('status')
-                    ->label('Status Laporan')
+                    ->label('Status')
                     ->badge()
                     ->formatStateUsing(fn (string $state): string => match ($state) {
                         'pending' => 'Menunggu',
@@ -60,83 +42,28 @@ class MaintenanceReportsTable
                         'completed' => 'Selesai',
                         default => $state,
                     }),
-
-                TextColumn::make('technician_name')
-                    ->label('Teknisi')
-                    ->state(function (MaintenanceReport $record): string {
-                        $latestUpdate = $record->updates()
-                            ->with('technician')
-                            ->latest()
-                            ->first();
-
-                        return $latestUpdate?->technician?->name ?? '-';
-                    }),
-
-                TextColumn::make('latest_technician_note')
-                    ->label('Catatan Teknisi Terakhir')
-                    ->state(function (MaintenanceReport $record): string {
-                        $latestUpdate = $record->updates()
-                            ->latest()
-                            ->first();
-
-                        return $latestUpdate?->note ?? '-';
-                    })
-                    ->limit(60)
-                    ->searchable(false),
-
-                TextColumn::make('latest_update_status')
-                    ->label('Status Update')
-                    ->state(function (MaintenanceReport $record): string {
-                        $latestUpdate = $record->updates()
-                            ->latest()
-                            ->first();
-
-                        return match ($latestUpdate?->status) {
-                            'assigned' => 'Ditugaskan',
-                            'in_progress' => 'Sedang Dikerjakan',
-                            'completed' => 'Selesai',
-                            default => '-',
-                        };
-                    })
-                    ->badge(),
-
-                TextColumn::make('latest_update_date')
-                    ->label('Update Terakhir')
-                    ->state(function (MaintenanceReport $record): string {
-                        $latestUpdate = $record->updates()
-                            ->latest()
-                            ->first();
-
-                        return $latestUpdate?->created_at
-                            ? $latestUpdate->created_at->format('d M Y H:i')
-                            : '-';
-                    }),
-
-                TextColumn::make('created_at')
-                    ->label('Tanggal Dibuat')
-                    ->dateTime('d M Y H:i')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-
-                TextColumn::make('updated_at')
-                    ->label('Tanggal Diperbarui')
-                    ->dateTime('d M Y H:i')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('created_at')->label('Tanggal Laporan')->dateTime('d M Y H:i')->sortable(),
             ])
-            ->filters([])
-            ->recordActions([
-                EditAction::make()
-                    ->label('Edit'),
-            ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make()
-                        ->label('Hapus Terpilih')
-                        ->modalHeading('Hapus Data Laporan Perbaikan')
-                        ->modalDescription('Apakah Anda yakin ingin menghapus data laporan perbaikan yang dipilih?')
-                        ->modalSubmitActionLabel('Ya, Hapus'),
+            ->filters([
+                SelectFilter::make('priority')->options([
+                    'low' => 'Rendah',
+                    'medium' => 'Sedang',
+                    'high' => 'Tinggi',
                 ]),
+                SelectFilter::make('status')->options([
+                    'pending' => 'Menunggu',
+                    'assigned' => 'Ditugaskan',
+                    'in_progress' => 'Sedang Dikerjakan',
+                    'completed' => 'Selesai',
+                ]),
+            ])
+            ->headerActions([
+                ExportAction::make('export')
+                    ->label('Export Maintenance')
+                    ->exporter(MaintenanceReportExporter::class),
+            ])
+            ->recordActions([
+                EditAction::make()->label('Kelola'),
             ])
             ->defaultSort('created_at', 'desc');
     }

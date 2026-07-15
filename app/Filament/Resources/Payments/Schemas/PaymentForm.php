@@ -18,14 +18,14 @@ class PaymentForm
                 Select::make('booking_id')
                     ->label('Pemesanan')
                     ->relationship('booking', 'id')
-                    ->searchable()
-                    ->preload()
+                    ->disabledOn('edit')
                     ->required(),
 
                 TextInput::make('amount')
                     ->label('Jumlah Pembayaran')
                     ->numeric()
                     ->prefix('Rp')
+                    ->disabledOn('edit')
                     ->required(),
 
                 Select::make('payment_method')
@@ -35,34 +35,27 @@ class PaymentForm
                         'qris' => 'QRIS',
                         'cod' => 'COD / Bayar di Tempat',
                     ])
-                    ->default('bank_transfer')
-                    ->live()
+                    ->disabledOn('edit')
                     ->required(),
 
                 TextInput::make('sender_name')
                     ->label('Nama Pengirim')
-                    ->maxLength(255)
-                    ->visible(fn ($get): bool => in_array($get('payment_method'), ['bank_transfer', 'qris']))
-                    ->required(fn ($get): bool => in_array($get('payment_method'), ['bank_transfer', 'qris'])),
+                    ->disabledOn('edit'),
 
                 TextInput::make('sender_bank')
                     ->label('Bank / Aplikasi Pengirim')
-                    ->maxLength(255)
-                    ->visible(fn ($get): bool => $get('payment_method') === 'bank_transfer')
-                    ->required(fn ($get): bool => $get('payment_method') === 'bank_transfer'),
+                    ->disabledOn('edit'),
 
                 FileUpload::make('payment_proof')
                     ->label('Bukti Pembayaran')
                     ->image()
                     ->disk('public')
-                    ->directory('payment-proofs')
                     ->visibility('public')
-                    ->maxSize(2048)
-                    ->visible(fn ($get): bool => in_array($get('payment_method'), ['bank_transfer', 'qris']))
-                    ->required(fn ($get): bool => in_array($get('payment_method'), ['bank_transfer', 'qris'])),
+                    ->disabledOn('edit'),
 
                 DateTimePicker::make('payment_date')
-                    ->label('Tanggal Pembayaran'),
+                    ->label('Tanggal Pembayaran')
+                    ->disabledOn('edit'),
 
                 Select::make('status')
                     ->label('Status Pembayaran')
@@ -71,7 +64,6 @@ class PaymentForm
                         'verified' => 'Terverifikasi',
                         'rejected' => 'Ditolak',
                     ])
-                    ->default('pending')
                     ->required(),
 
                 Textarea::make('note')

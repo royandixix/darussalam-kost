@@ -11,22 +11,19 @@ use App\Models\MaintenanceUpdate;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 use UnitEnum;
 
 class MaintenanceUpdateResource extends Resource
 {
     protected static ?string $model = MaintenanceUpdate::class;
-
     protected static ?string $navigationLabel = 'Catatan Perbaikan';
-
     protected static string|UnitEnum|null $navigationGroup = 'Layanan Perbaikan';
-
     protected static ?int $navigationSort = 2;
-
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedWrenchScrewdriver;
-
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-clipboard-document-check';
     protected static ?string $recordTitleAttribute = 'note';
 
     public static function getModelLabel(): string
@@ -49,9 +46,19 @@ class MaintenanceUpdateResource extends Resource
         return MaintenanceUpdatesTable::configure($table);
     }
 
-    public static function getRelations(): array
+    public static function getEloquentQuery(): Builder
     {
-        return [];
+        return parent::getEloquentQuery()->where('technician_id', Auth::id());
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        return (int) $record->technician_id === (int) Auth::id();
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return false;
     }
 
     public static function getPages(): array

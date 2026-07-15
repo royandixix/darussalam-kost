@@ -6,6 +6,7 @@ use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -28,17 +29,19 @@ class User extends Authenticatable implements FilamentUser
         'remember_token',
     ];
 
-    protected $casts = [
-        'email_verified_at' => 'datetime',
-        'password' => 'hashed',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
+        ];
+    }
 
     public function canAccessPanel(Panel $panel): bool
     {
         return match ($panel->getId()) {
-            'admin' => $this->role === 'admin',
-            'teknisi' => $this->role === 'teknisi',
-            'penghuni' => $this->role === 'penghuni',
+            'admin' => $this->isAdmin(),
+            'teknisi' => $this->isTeknisi(),
             default => false,
         };
     }
@@ -58,9 +61,19 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasMany(MaintenanceReport::class);
     }
 
+    public function assignedMaintenanceReports(): HasMany
+    {
+        return $this->hasMany(MaintenanceReport::class, 'assigned_technician_id');
+    }
+
     public function maintenanceUpdates(): HasMany
     {
         return $this->hasMany(MaintenanceUpdate::class, 'technician_id');
+    }
+
+    public function tenant(): HasOne
+    {
+        return $this->hasOne(Tenant::class)->where('status', 'active')->latestOfMany();
     }
 
     public function isAdmin(): bool
@@ -73,16 +86,10 @@ class User extends Authenticatable implements FilamentUser
         return $this->role === 'teknisi';
     }
 
-    // public function isPenghuni(): bool
-    // {
-    //     return $this->role === 'penghuni';
-    // }
-
     public function isPenghuni(): bool
     {
         return $this->role === 'penghuni';
     }
-
 
     public function getRoleLabelAttribute(): string
     {

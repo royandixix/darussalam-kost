@@ -1,7 +1,6 @@
 <?php
 
-test('the application returns a successful response', function () {
-    $response = $this->get('/');
-
-    $response->assertStatus(200);
+test('halaman utama mengarahkan pengguna ke login', function () {
+    $this->get('/')
+        ->assertRedirect(route('login'));
 });

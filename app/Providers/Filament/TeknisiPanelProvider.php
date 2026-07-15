@@ -30,6 +30,8 @@ class TeknisiPanelProvider extends PanelProvider
             ->path('teknisi')
             ->login()
             ->profile()
+            ->databaseNotifications()
+            ->databaseNotificationsPolling('5s')
             ->brandName(fn () => Auth::check() ? 'Teknisi • ' . Auth::user()->name : 'Teknisi Kost Darussalam')
             ->favicon(asset('images/favicon.png'))
             ->brandLogoHeight('2.5rem')

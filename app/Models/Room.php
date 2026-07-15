@@ -17,13 +17,22 @@ class Room extends Model
         'status',
     ];
 
-    protected $casts = [
-        'price' => 'decimal:2',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'price' => 'decimal:2',
+            'active_bookings_exists' => 'boolean',
+        ];
+    }
 
     public function bookings(): HasMany
     {
         return $this->hasMany(Booking::class);
+    }
+
+    public function activeBookings(): HasMany
+    {
+        return $this->bookings()->whereIn('status', ['pending', 'approved']);
     }
 
     public function tenants(): HasMany
@@ -34,5 +43,18 @@ class Room extends Model
     public function maintenanceReports(): HasMany
     {
         return $this->hasMany(MaintenanceReport::class);
+    }
+
+    public function isAvailableForBooking(): bool
+    {
+        if ($this->status !== 'available') {
+            return false;
+        }
+
+        if (array_key_exists('active_bookings_exists', $this->getAttributes())) {
+            return ! (bool) $this->getAttribute('active_bookings_exists');
+        }
+
+        return ! $this->activeBookings()->exists();
     }
 }

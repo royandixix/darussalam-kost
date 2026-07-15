@@ -17,9 +17,13 @@ class Feedback extends Model
         'is_published',
     ];
 
-    protected $casts = [
-        'is_published' => 'boolean',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'rating' => 'integer',
+            'is_published' => 'boolean',
+        ];
+    }
 
     public function user(): BelongsTo
     {

@@ -43,6 +43,15 @@
                             <a href="{{ route('user.feedback.index') }}">Feedback</a>
                         </li>
 
+                        <li class="{{ request()->routeIs('user.notifications.*') ? 'active' : '' }}">
+                            <a href="{{ route('user.notifications.index') }}">
+                                Notifikasi
+                                @if(auth()->user()->unreadNotifications()->count() > 0)
+                                    ({{ auth()->user()->unreadNotifications()->count() }})
+                                @endif
+                            </a>
+                        </li>
+
                         <li class="d-lg-none">
                             <a href="#" class="open-profile-modal">
                                 Masuk ke Akun

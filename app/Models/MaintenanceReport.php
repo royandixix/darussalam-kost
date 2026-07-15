@@ -12,6 +12,7 @@ class MaintenanceReport extends Model
     protected $fillable = [
         'user_id',
         'room_id',
+        'assigned_technician_id',
         'title',
         'description',
         'photo',
@@ -27,6 +28,11 @@ class MaintenanceReport extends Model
     public function room(): BelongsTo
     {
         return $this->belongsTo(Room::class);
+    }
+
+    public function assignedTechnician(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'assigned_technician_id');
     }
 
     public function updates(): HasMany

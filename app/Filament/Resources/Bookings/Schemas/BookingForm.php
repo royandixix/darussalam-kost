@@ -18,6 +18,7 @@ class BookingForm
                     ->relationship('user', 'name')
                     ->searchable()
                     ->preload()
+                    ->disabledOn('edit')
                     ->required(),
 
                 Select::make('room_id')
@@ -25,21 +26,26 @@ class BookingForm
                     ->relationship('room', 'room_number')
                     ->searchable()
                     ->preload()
+                    ->disabledOn('edit')
                     ->required(),
 
                 DatePicker::make('check_in_date')
                     ->label('Tanggal Masuk')
+                    ->disabledOn('edit')
                     ->required(),
 
                 TextInput::make('duration_month')
-                    ->label('Durasi Sewa Bulan')
+                    ->label('Durasi Sewa')
                     ->numeric()
+                    ->suffix(' bulan')
+                    ->disabledOn('edit')
                     ->required(),
 
                 TextInput::make('total_price')
-                    ->label('Total Biaya')
+                    ->label('Total Kontrak')
                     ->numeric()
                     ->prefix('Rp')
+                    ->disabledOn('edit')
                     ->required(),
 
                 Select::make('status')

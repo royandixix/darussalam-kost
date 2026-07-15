@@ -3,16 +3,31 @@
 namespace App\Filament\Resources\Bookings\Pages;
 
 use App\Filament\Resources\Bookings\BookingResource;
-use Filament\Actions\DeleteAction;
+use App\Services\BookingLifecycleService;
 use Filament\Resources\Pages\EditRecord;
 
 class EditBooking extends EditRecord
 {
     protected static string $resource = BookingResource::class;
 
+    private ?string $oldStatus = null;
+
     public function getTitle(): string
     {
-        return 'Edit Pemesanan Kamar';
+        return 'Kelola Pemesanan Kamar';
+    }
+
+    protected function beforeSave(): void
+    {
+        $this->oldStatus = $this->record->status;
+    }
+
+    protected function afterSave(): void
+    {
+        app(BookingLifecycleService::class)->synchronizeBooking(
+            $this->record,
+            notifyUser: $this->oldStatus !== $this->record->status,
+        );
     }
 
     protected function getSavedNotificationTitle(): ?string
@@ -20,31 +35,8 @@ class EditBooking extends EditRecord
         return 'Pemesanan kamar berhasil diperbarui';
     }
 
-    protected function afterSave(): void
-    {
-        $this->record->loadMissing('room');
-
-        if ($this->record->status === 'approved') {
-            $this->record->room?->update([
-                'status' => 'occupied',
-            ]);
-        }
-
-        if (in_array($this->record->status, ['pending', 'rejected', 'completed'])) {
-            $this->record->room?->update([
-                'status' => 'available',
-            ]);
-        }
-    }
-
     protected function getHeaderActions(): array
     {
-        return [
-            DeleteAction::make()
-                ->label('Hapus')
-                ->modalHeading('Hapus Pemesanan Kamar')
-                ->modalDescription('Apakah Anda yakin ingin menghapus pemesanan kamar ini?')
-                ->modalSubmitActionLabel('Ya, Hapus'),
-        ];
+        return [];
     }
 }

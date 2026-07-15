@@ -20,7 +20,7 @@ return new class extends Migration
 
         $table->decimal('amount', 12, 2);
 
-        $table->string('payment_proof');
+        $table->string('payment_proof')->nullable();
 
         $table->dateTime('payment_date')->nullable();
 
