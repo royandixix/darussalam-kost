@@ -21,9 +21,13 @@ class MaintenanceReportResource extends Resource
     protected static ?string $model = MaintenanceReport::class;
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-wrench-screwdriver';
+
     protected static ?string $navigationLabel = 'Tugas Perbaikan';
+
     protected static string|UnitEnum|null $navigationGroup = 'Layanan Perbaikan';
+
     protected static ?int $navigationSort = 1;
+
     protected static ?string $recordTitleAttribute = 'title';
 
     public static function getModelLabel(): string
@@ -49,7 +53,11 @@ class MaintenanceReportResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->where('assigned_technician_id', Auth::id());
+            ->where(function (Builder $query): void {
+                $query
+                    ->where('assigned_technician_id', Auth::id())
+                    ->orWhereNull('assigned_technician_id');
+            });
     }
 
     public static function canCreate(): bool
@@ -59,7 +67,8 @@ class MaintenanceReportResource extends Resource
 
     public static function canEdit(Model $record): bool
     {
-        return (int) $record->assigned_technician_id === (int) Auth::id();
+        return $record->assigned_technician_id === null
+            || (int) $record->assigned_technician_id === (int) Auth::id();
     }
 
     public static function canDelete(Model $record): bool

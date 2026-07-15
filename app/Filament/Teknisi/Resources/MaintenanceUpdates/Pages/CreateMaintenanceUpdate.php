@@ -4,25 +4,36 @@ namespace App\Filament\Teknisi\Resources\MaintenanceUpdates\Pages;
 
 use App\Filament\Teknisi\Resources\MaintenanceUpdates\MaintenanceUpdateResource;
 use App\Models\MaintenanceReport;
-use App\Services\SystemNotificationService;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 
 class CreateMaintenanceUpdate extends CreateRecord
 {
     protected static string $resource = MaintenanceUpdateResource::class;
 
-    public function getTitle(): string
-    {
-        return 'Tambah Catatan Perbaikan';
-    }
-
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         $report = MaintenanceReport::query()
-            ->whereKey($data['maintenance_report_id'])
-            ->where('assigned_technician_id', Auth::id())
-            ->firstOrFail();
+            ->lockForUpdate()
+            ->findOrFail($data['maintenance_report_id']);
+
+        if (
+            $report->assigned_technician_id !== null
+            && (int) $report->assigned_technician_id !== (int) Auth::id()
+        ) {
+            throw ValidationException::withMessages([
+                'maintenance_report_id' =>
+                    'Laporan ini sudah ditugaskan kepada teknisi lain.',
+            ]);
+        }
+
+        if ($report->assigned_technician_id === null) {
+            $report->update([
+                'assigned_technician_id' => Auth::id(),
+                'status' => 'assigned',
+            ]);
+        }
 
         $data['technician_id'] = Auth::id();
 
@@ -31,21 +42,21 @@ class CreateMaintenanceUpdate extends CreateRecord
 
     protected function afterCreate(): void
     {
-        $report = $this->record->report;
-        $report?->update(['status' => $this->record->status]);
-        $report?->loadMissing(['user', 'room']);
+        $update = $this->record;
 
-        app(SystemNotificationService::class)->user(
-            $report?->user,
-            'Perkembangan perbaikan kamar',
-            'Laporan "' . ($report?->title ?? '-') . '" diperbarui: ' . $this->record->note,
-            route('user.maintenance.index'),
-            $this->record->status === 'completed' ? 'success' : 'info',
-        );
+        $report = MaintenanceReport::query()
+            ->find($update->maintenance_report_id);
+
+        if ($report) {
+            $report->update([
+                'assigned_technician_id' => Auth::id(),
+                'status' => $update->status,
+            ]);
+        }
     }
 
-    protected function getCreatedNotificationTitle(): ?string
+    protected function getRedirectUrl(): string
     {
-        return 'Catatan perbaikan berhasil ditambahkan';
+        return static::getResource()::getUrl('index');
     }
 }

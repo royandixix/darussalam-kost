@@ -17,16 +17,40 @@ class MaintenanceUpdateForm
             ->components([
                 Select::make('maintenance_report_id')
                     ->label('Laporan Kerusakan')
-                    ->options(fn (): array => MaintenanceReport::query()
-                        ->with(['user', 'room'])
-                        ->where('assigned_technician_id', Auth::id())
-                        ->whereIn('status', ['assigned', 'in_progress'])
-                        ->latest()
-                        ->get()
-                        ->mapWithKeys(fn (MaintenanceReport $report): array => [
-                            $report->id => $report->title . ' - ' . ($report->user?->name ?? 'Penghuni') . ' - Kamar ' . ($report->room?->room_number ?? '-'),
-                        ])
-                        ->all())
+                    ->options(function (): array {
+                        return MaintenanceReport::query()
+                            ->with(['user', 'room'])
+                            ->where(function ($query): void {
+                                $query
+                                    ->where('assigned_technician_id', Auth::id())
+                                    ->orWhereNull('assigned_technician_id');
+                            })
+                            ->whereIn('status', [
+                                'pending',
+                                'assigned',
+                                'in_progress',
+                            ])
+                            ->latest()
+                            ->get()
+                            ->mapWithKeys(
+                                fn (MaintenanceReport $report): array => [
+                                    $report->id =>
+                                        $report->title
+                                        . ' - '
+                                        . ($report->user?->name ?? 'Penghuni')
+                                        . ' - Kamar '
+                                        . ($report->room?->room_number ?? '-')
+                                        . ' - '
+                                        . match ($report->status) {
+                                            'pending' => 'Belum Ditugaskan',
+                                            'assigned' => 'Ditugaskan',
+                                            'in_progress' => 'Sedang Dikerjakan',
+                                            default => $report->status,
+                                        },
+                                ]
+                            )
+                            ->all();
+                    })
                     ->searchable()
                     ->required(),
 
@@ -46,6 +70,7 @@ class MaintenanceUpdateForm
                         'in_progress' => 'Sedang Dikerjakan',
                         'completed' => 'Selesai',
                     ])
+                    ->default('in_progress')
                     ->required(),
             ]);
     }
